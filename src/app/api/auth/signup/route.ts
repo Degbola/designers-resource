@@ -18,16 +18,6 @@ export async function POST(req: NextRequest) {
   await initDb()
   const db = getDb()
 
-  // Only allow signup when no users exist (first user setup)
-  const countResult = await db.execute('SELECT COUNT(*) as count FROM users')
-  const userCount = countResult.rows[0] as unknown as { count: number }
-  if (userCount.count > 0) {
-    return NextResponse.json(
-      { error: 'Signup is disabled. Contact the administrator.' },
-      { status: 403 }
-    )
-  }
-
   const body = await req.json()
 
   const error = validate(body, [

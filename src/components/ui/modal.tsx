@@ -52,7 +52,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
         'max-h-[85vh] flex flex-col',
         sizes[size]
       )}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-dark-600">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-dark-600">
           <h2 className="text-lg font-semibold text-white">{title}</h2>
           <button
             onClick={onClose}
@@ -61,7 +61,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
             <X size={20} />
           </button>
         </div>
-        <div className="px-6 py-4 overflow-y-auto flex-1">
+        <div className="px-4 sm:px-6 py-4 overflow-y-auto flex-1">
           {children}
         </div>
       </div>

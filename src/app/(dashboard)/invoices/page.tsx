@@ -138,16 +138,16 @@ export default function InvoicesPage() {
         ))}
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="relative">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 flex-wrap w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-none">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400" />
             <input type="text" placeholder="Search invoices..." value={search} onChange={(e) => setSearch(e.target.value)}
-              className="bg-dark-700 border border-dark-600 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-64" />
+              className="bg-dark-700 border border-dark-600 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64" />
           </div>
           <Select options={[{ value: 'all', label: 'All' }, { value: 'draft', label: 'Draft' }, { value: 'sent', label: 'Sent' }, { value: 'paid', label: 'Paid' }, { value: 'overdue', label: 'Overdue' }]} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-32" />
         </div>
-        <Button onClick={() => { setForm({ client_id: clients[0]?.id?.toString() || '', project_id: '', status: 'draft', issue_date: new Date().toISOString().split('T')[0], due_date: '', tax_rate: '0', notes: '' }); setItems([{ description: '', quantity: 1, unit_price: 0 }]); setShowModal(true) }}>
+        <Button onClick={() => { setForm({ client_id: clients[0]?.id?.toString() || '', project_id: '', status: 'draft', issue_date: new Date().toISOString().split('T')[0], due_date: '', tax_rate: '0', notes: '' }); setItems([{ description: '', quantity: 1, unit_price: 0 }]); setShowModal(true) }} className="w-full sm:w-auto">
           <Plus size={16} /> Create Invoice
         </Button>
       </div>
@@ -157,16 +157,16 @@ export default function InvoicesPage() {
       ) : (
         <div className="space-y-3">
           {filtered.map((inv) => (
-            <Card key={inv.id} className="!p-4 flex items-center justify-between hover:border-dark-500 transition-colors">
-              <div className="flex items-center gap-4">
-                <div className="p-2 rounded-lg bg-dark-700"><DollarSign size={20} className="text-accent" /></div>
-                <div>
+            <Card key={inv.id} className="!p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-dark-500 transition-colors">
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="p-2 rounded-lg bg-dark-700 flex-shrink-0"><DollarSign size={20} className="text-accent" /></div>
+                <div className="min-w-0">
                   <Link href={`/invoices/${inv.id}`} className="font-medium text-white hover:text-accent transition-colors">{inv.invoice_number}</Link>
-                  <p className="text-xs text-dark-400">{inv.client_name} &middot; {formatDate(inv.issue_date)}</p>
+                  <p className="text-xs text-dark-400 truncate">{inv.client_name} &middot; {formatDate(inv.issue_date)}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="text-right">
+              <div className="flex items-center justify-between sm:justify-end gap-4">
+                <div className="text-left sm:text-right">
                   <p className="font-semibold text-white">{formatCurrency(inv.total)}</p>
                   <Badge variant={inv.status}>{inv.status}</Badge>
                 </div>
@@ -188,11 +188,11 @@ export default function InvoicesPage() {
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Create Invoice" size="xl">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Select label="Client *" value={form.client_id} onChange={(e) => setForm({ ...form, client_id: e.target.value })} options={clients.map((c) => ({ value: String(c.id), label: c.name }))} />
             <Select label="Project" value={form.project_id} onChange={(e) => setForm({ ...form, project_id: e.target.value })} options={[{ value: '', label: 'None' }, ...projects.filter((p) => !form.client_id || p.client_id === Number(form.client_id)).map((p) => ({ value: String(p.id), label: p.name }))]} />
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Input label="Issue Date *" type="date" value={form.issue_date} onChange={(e) => setForm({ ...form, issue_date: e.target.value })} required />
             <Input label="Due Date *" type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} required />
             <Input label="Tax Rate (%)" type="number" min="0" max="100" value={form.tax_rate} onChange={(e) => setForm({ ...form, tax_rate: e.target.value })} />
@@ -200,17 +200,19 @@ export default function InvoicesPage() {
 
           <div>
             <label className="block text-sm font-medium text-dark-200 mb-2">Line Items</label>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {items.map((item, idx) => (
-                <div key={idx} className="flex gap-2 items-start">
+                <div key={idx} className="space-y-2 sm:space-y-0 sm:flex sm:gap-2 sm:items-start bg-dark-700/30 sm:bg-transparent rounded-lg p-3 sm:p-0">
                   <input placeholder="Description" value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)}
-                    className="flex-1 bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50" />
-                  <input type="number" placeholder="Qty" min="1" value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', Number(e.target.value))}
-                    className="w-20 bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-accent/50" />
-                  <input type="number" placeholder="Price" min="0" step="0.01" value={item.unit_price} onChange={(e) => updateItem(idx, 'unit_price', Number(e.target.value))}
-                    className="w-28 bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-accent/50" />
-                  <span className="w-24 py-2 text-sm text-dark-200 text-right">{formatCurrency(item.quantity * item.unit_price)}</span>
-                  {items.length > 1 && <button type="button" onClick={() => removeItem(idx)} className="p-2 text-dark-400 hover:text-red-400 cursor-pointer"><X size={16} /></button>}
+                    className="w-full sm:flex-1 bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50" />
+                  <div className="flex gap-2 items-center">
+                    <input type="number" placeholder="Qty" min="1" value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', Number(e.target.value))}
+                      className="w-20 bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-accent/50" />
+                    <input type="number" placeholder="Price" min="0" step="0.01" value={item.unit_price} onChange={(e) => updateItem(idx, 'unit_price', Number(e.target.value))}
+                      className="flex-1 sm:w-28 sm:flex-none bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-accent/50" />
+                    <span className="w-24 py-2 text-sm text-dark-200 text-right flex-shrink-0">{formatCurrency(item.quantity * item.unit_price)}</span>
+                    {items.length > 1 && <button type="button" onClick={() => removeItem(idx)} className="p-2 text-dark-400 hover:text-red-400 cursor-pointer flex-shrink-0"><X size={16} /></button>}
+                  </div>
                 </div>
               ))}
             </div>

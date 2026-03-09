@@ -89,7 +89,7 @@ export default function ResourcesPage() {
               placeholder="Search resources..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-dark-700 border border-dark-600 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-64"
+              className="bg-dark-700 border border-dark-600 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64"
             />
           </div>
           <Select
@@ -170,7 +170,7 @@ export default function ResourcesPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input label="Title *" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
           <Textarea label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="URL" type="url" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://..." />
             <Select
               label="Category"

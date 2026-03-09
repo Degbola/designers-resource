@@ -50,7 +50,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
         }} items={items.map(i => ({ description: i.description, quantity: i.quantity, unit_price: i.unit_price, amount: i.amount }))} />
       </div>
 
-      <Card className="!p-8">
+      <Card className="!p-4 sm:!p-8">
         <div className="flex items-start justify-between mb-8">
           <div>
             <h2 className="text-3xl font-bold text-white mb-1">INVOICE</h2>
@@ -59,7 +59,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
           <Badge variant={invoice.status} className="text-sm px-3 py-1">{invoice.status}</Badge>
         </div>
 
-        <div className="grid grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
           <div>
             <h4 className="text-xs uppercase tracking-wider text-dark-400 mb-2">Bill To</h4>
             <p className="font-semibold text-white">{invoice.client_name}</p>
@@ -68,7 +68,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
             {invoice.phone && <p className="text-sm text-dark-300">{invoice.phone}</p>}
             {invoice.address && <p className="text-sm text-dark-300">{invoice.address}</p>}
           </div>
-          <div className="text-right">
+          <div className="sm:text-right">
             <div className="space-y-1 text-sm">
               <p className="text-dark-400">Issue Date: <span className="text-dark-200">{formatDate(invoice.issue_date)}</span></p>
               <p className="text-dark-400">Due Date: <span className="text-dark-200">{formatDate(invoice.due_date)}</span></p>
@@ -77,7 +77,8 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
 
-        <table className="w-full mb-8">
+        <div className="overflow-x-auto -mx-4 sm:-mx-8 px-4 sm:px-8">
+        <table className="w-full mb-8 min-w-[400px]">
           <thead>
             <tr className="border-b border-dark-600">
               <th className="text-left py-3 text-xs uppercase tracking-wider text-dark-400">Description</th>
@@ -100,9 +101,10 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
             )}
           </tbody>
         </table>
+        </div>
 
         <div className="flex justify-end">
-          <div className="w-72 space-y-2">
+          <div className="w-full sm:w-72 space-y-2">
             <div className="flex justify-between text-sm text-dark-300"><span>Subtotal</span><span>{formatCurrency(invoice.subtotal)}</span></div>
             <div className="flex justify-between text-sm text-dark-300"><span>Tax ({invoice.tax_rate}%)</span><span>{formatCurrency(invoice.tax_amount)}</span></div>
             <div className="flex justify-between font-bold text-xl text-white border-t border-dark-600 pt-3"><span>Total</span><span>{formatCurrency(invoice.total)}</span></div>

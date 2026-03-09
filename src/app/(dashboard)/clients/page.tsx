@@ -58,16 +58,16 @@ export default function ClientsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="relative">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 flex-wrap w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-none">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400" />
             <input
               type="text"
               placeholder="Search clients..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-dark-700 border border-dark-600 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-64"
+              className="bg-dark-700 border border-dark-600 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64"
             />
           </div>
           <Select
@@ -83,7 +83,7 @@ export default function ClientsPage() {
             className="w-40"
           />
         </div>
-        <Button onClick={() => { setEditingClient(null); setForm({ name: '', email: '', phone: '', company: '', address: '', status: 'lead', notes: '' }); setShowModal(true) }}>
+        <Button onClick={() => { setEditingClient(null); setForm({ name: '', email: '', phone: '', company: '', address: '', status: 'lead', notes: '' }); setShowModal(true) }} className="w-full sm:w-auto">
           <Plus size={16} /> Add Client
         </Button>
       </div>
@@ -131,11 +131,11 @@ export default function ClientsPage() {
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title={editingClient ? 'Edit Client' : 'Add New Client'} size="lg">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
             <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             <Input label="Company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
           </div>

@@ -14,7 +14,9 @@ export function getDb(): Client {
         authToken: process.env.TURSO_AUTH_TOKEN,
       })
     } else {
-      const dataDir = path.join(process.cwd(), 'data')
+      const dataDir = process.env.RAILWAY_ENVIRONMENT
+        ? '/data'
+        : path.join(process.cwd(), 'data')
       if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true })
       }

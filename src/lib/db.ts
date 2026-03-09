@@ -1,5 +1,6 @@
 import { createClient, type Client } from '@libsql/client'
 import path from 'path'
+import fs from 'fs'
 
 let client: Client | null = null
 let initialized = false
@@ -13,7 +14,11 @@ export function getDb(): Client {
         authToken: process.env.TURSO_AUTH_TOKEN,
       })
     } else {
-      const dbPath = path.join(process.cwd(), 'data', 'designer-hub.db')
+      const dataDir = path.join(process.cwd(), 'data')
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true })
+      }
+      const dbPath = path.join(dataDir, 'designer-hub.db')
       client = createClient({
         url: `file:${dbPath}`,
       })

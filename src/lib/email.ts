@@ -1,6 +1,8 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY || 'placeholder')
+}
 
 export async function sendInvoiceEmail(
   to: string,
@@ -15,6 +17,7 @@ export async function sendInvoiceEmail(
 
   const fromAddress = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
 
+  const resend = getResend()
   const { error } = await resend.emails.send({
     from: fromAddress,
     to,

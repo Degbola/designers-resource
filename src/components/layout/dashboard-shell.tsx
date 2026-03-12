@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Sidebar, MobileMenuButton } from '@/components/layout/Sidebar'
+import { Sidebar, MobileMenuButton } from '@/components/layout/sidebar'
 import { Header } from '@/components/layout/Header'
 import type { SafeUser } from '@/types'
 

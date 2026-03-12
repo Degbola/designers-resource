@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getEmailTransporter } from '@/lib/email'
+import { Resend } from 'resend'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
@@ -11,12 +13,11 @@ export async function POST(req: NextRequest) {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   const portalUrl = `${appUrl}/portal/${token}`
+  const fromAddress = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
 
   try {
-    const transporter = getEmailTransporter()
-
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
+    const { error } = await resend.emails.send({
+      from: fromAddress,
       to: clientEmail,
       subject: 'Your Client Portal Access - Seysey Studios',
       html: `
@@ -34,6 +35,10 @@ export async function POST(req: NextRequest) {
         </div>
       `,
     })
+
+    if (error) {
+      return NextResponse.json({ error: 'Failed to send email. Check email configuration.' }, { status: 500 })
+    }
 
     return NextResponse.json({ success: true })
   } catch {

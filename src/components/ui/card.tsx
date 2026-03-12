@@ -9,8 +9,8 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Card({ children, className, padding = true, ...rest }: CardProps) {
   return (
     <div className={cn(
-      'bg-dark-800 border border-dark-600 rounded-xl',
-      padding && 'p-6',
+      'bg-dark-800 border border-dark-600/70 rounded-xl',
+      padding && 'p-5',
       className
     )} {...rest}>
       {children}
@@ -23,7 +23,7 @@ export function CardHeader({ children, className }: { children: React.ReactNode;
 }
 
 export function CardTitle({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <h3 className={cn('text-lg font-semibold text-white', className)}>{children}</h3>
+  return <h3 className={cn('font-display font-bold text-white text-base tracking-tight', className)}>{children}</h3>
 }
 
 export function CardDescription({ children, className }: { children: React.ReactNode; className?: string }) {

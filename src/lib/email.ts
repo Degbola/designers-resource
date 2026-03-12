@@ -1,14 +1,6 @@
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 
-export function getEmailTransporter() {
-  return nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD,
-    },
-  })
-}
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function sendInvoiceEmail(
   to: string,
@@ -17,21 +9,21 @@ export async function sendInvoiceEmail(
   dueDate: string,
   pdfBuffer?: Buffer
 ) {
-  const transporter = getEmailTransporter()
-
   const attachments = pdfBuffer
     ? [{ filename: `${invoiceNumber}.pdf`, content: pdfBuffer }]
     : []
 
-  await transporter.sendMail({
-    from: process.env.GMAIL_USER,
+  const fromAddress = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
+
+  const { error } = await resend.emails.send({
+    from: fromAddress,
     to,
     subject: `Invoice ${invoiceNumber} - Payment Due ${dueDate}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #6366f1;">Invoice ${invoiceNumber}</h2>
         <p>Hello,</p>
-        <p>Please find your invoice attached. Here are the details:</p>
+        <p>Please find your invoice details below:</p>
         <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
           <tr>
             <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">Invoice Number</td>
@@ -53,4 +45,8 @@ export async function sendInvoiceEmail(
     `,
     attachments,
   })
+
+  if (error) {
+    throw new Error(error.message)
+  }
 }

@@ -6,8 +6,7 @@ import {
   Users,
   FolderKanban,
   FileText,
-  DollarSign,
-  TrendingUp,
+  ArrowRight,
   Clock,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -34,50 +33,97 @@ async function getStats() {
   return { clientCount, activeProjects, pendingInvoices, totalRevenue, totalExpenses, recentProjects, recentInvoices }
 }
 
+function StatBlock({ value, label, href, index }: { value: string | number; label: string; href: string; index: number }) {
+  return (
+    <Link href={href} className={`group stagger-${index}`}>
+      <div className="p-5 rounded-xl bg-dark-800 border border-dark-600/70 hover:border-dark-500 transition-all duration-200">
+        <p className="font-display font-bold text-white text-3xl tracking-tight tabular-nums leading-none mb-2 group-hover:text-accent transition-colors">
+          {value}
+        </p>
+        <p className="text-[10px] text-dark-400 uppercase tracking-widest font-medium">{label}</p>
+      </div>
+    </Link>
+  )
+}
+
 export default async function DashboardPage() {
   const stats = await getStats()
   const profit = stats.totalRevenue - stats.totalExpenses
-
-  const statCards = [
-    { label: 'Total Clients', value: stats.clientCount, icon: Users, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-    { label: 'Active Projects', value: stats.activeProjects, icon: FolderKanban, color: 'text-purple-400', bg: 'bg-purple-500/10' },
-    { label: 'Pending Invoices', value: stats.pendingInvoices, icon: FileText, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-    { label: 'Total Revenue', value: formatCurrency(stats.totalRevenue), icon: DollarSign, color: 'text-green-400', bg: 'bg-green-500/10' },
-    { label: 'Expenses', value: formatCurrency(stats.totalExpenses), icon: TrendingUp, color: 'text-red-400', bg: 'bg-red-500/10' },
-    { label: 'Net Profit', value: formatCurrency(profit), icon: DollarSign, color: profit >= 0 ? 'text-green-400' : 'text-red-400', bg: profit >= 0 ? 'bg-green-500/10' : 'bg-red-500/10' },
-  ]
+  const profitPositive = profit >= 0
+  const revenueBarWidth = (stats.totalRevenue + stats.totalExpenses) > 0
+    ? Math.min(100, Math.round((stats.totalRevenue / (stats.totalRevenue + stats.totalExpenses)) * 100))
+    : 50
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {statCards.map((stat) => (
-          <Card key={stat.label} className="flex items-center gap-4">
-            <div className={`p-3 rounded-xl ${stat.bg}`}>
-              <stat.icon size={24} className={stat.color} />
-            </div>
-            <div>
-              <p className="text-sm text-dark-300">{stat.label}</p>
-              <p className="text-2xl font-bold text-white">{stat.value}</p>
-            </div>
-          </Card>
-        ))}
+    <div className="space-y-4 animate-fade-in">
+
+      {/* Key Stats Row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatBlock value={stats.clientCount} label="Clients" href="/clients" index={1} />
+        <StatBlock value={stats.activeProjects} label="Active Projects" href="/projects" index={2} />
+        <StatBlock value={stats.pendingInvoices} label="Pending Invoices" href="/invoices" index={3} />
+        <StatBlock value={formatCurrency(profit)} label="Net Profit" href="/finances" index={4} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-white">Recent Projects</h3>
-            <Link href="/projects" className="text-sm text-accent hover:text-accent-hover">View all</Link>
+      {/* Financial Overview */}
+      <div className="stagger-5">
+        <Card className="!p-0 overflow-hidden">
+          <div className="px-5 py-4">
+            <p className="text-[10px] font-display font-bold tracking-[0.15em] uppercase text-dark-400 mb-3">Financial Overview</p>
+            <div className="flex items-center gap-6 flex-wrap md:flex-nowrap">
+              <div className="flex gap-6">
+                <div>
+                  <p className="text-[10px] text-dark-400 uppercase tracking-widest mb-0.5">Revenue</p>
+                  <p className="font-display font-bold text-white tabular-nums">{formatCurrency(stats.totalRevenue)}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-dark-400 uppercase tracking-widest mb-0.5">Expenses</p>
+                  <p className="font-display font-bold text-white tabular-nums">{formatCurrency(stats.totalExpenses)}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-dark-400 uppercase tracking-widest mb-0.5">Net Profit</p>
+                  <p className={`font-display font-bold tabular-nums ${profitPositive ? 'text-emerald-400' : 'text-red-400'}`}>{formatCurrency(profit)}</p>
+                </div>
+              </div>
+              <div className="flex-1 min-w-[120px]">
+                <div className="h-1 bg-dark-600 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-accent rounded-full transition-all duration-1000"
+                    style={{ width: `${revenueBarWidth}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-[9px] text-dark-600 mt-1 tracking-wider uppercase">
+                  <span>Revenue</span>
+                  <span>Expenses</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 stagger-6">
+        <Card className="!p-0 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-dark-600/60">
+            <p className="text-[10px] font-display font-bold tracking-[0.15em] uppercase text-dark-400">Recent Projects</p>
+            <Link href="/projects" className="text-[10px] text-accent hover:text-accent-hover flex items-center gap-1 transition-colors">
+              View all <ArrowRight size={10} />
+            </Link>
           </div>
           {stats.recentProjects.length === 0 ? (
-            <p className="text-dark-400 text-sm py-8 text-center">No projects yet. Create your first project!</p>
+            <div className="flex flex-col items-center justify-center py-10 px-5">
+              <FolderKanban size={24} className="text-dark-600 mb-2" />
+              <p className="text-dark-500 text-xs">No projects yet</p>
+              <Link href="/projects" className="text-xs text-accent mt-2 hover:text-accent-hover transition-colors">Create your first →</Link>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="divide-y divide-dark-600/40">
               {stats.recentProjects.map((project) => (
-                <div key={project.id as number} className="flex items-center justify-between p-3 rounded-lg bg-dark-700/50">
-                  <div>
-                    <p className="font-medium text-white text-sm">{project.name as string}</p>
-                    <p className="text-xs text-dark-300">{project.client_name as string}</p>
+                <div key={project.id as number} className="flex items-center justify-between px-5 py-3 hover:bg-dark-700/30 transition-colors">
+                  <div className="min-w-0 mr-3">
+                    <p className="text-sm font-medium text-white truncate">{project.name as string}</p>
+                    <p className="text-[11px] text-dark-400 truncate">{project.client_name as string}</p>
                   </div>
                   <Badge variant={project.status as string}>{(project.status as string).replace('_', ' ')}</Badge>
                 </div>
@@ -86,23 +132,29 @@ export default async function DashboardPage() {
           )}
         </Card>
 
-        <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-white">Recent Invoices</h3>
-            <Link href="/invoices" className="text-sm text-accent hover:text-accent-hover">View all</Link>
+        <Card className="!p-0 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-dark-600/60">
+            <p className="text-[10px] font-display font-bold tracking-[0.15em] uppercase text-dark-400">Recent Invoices</p>
+            <Link href="/invoices" className="text-[10px] text-accent hover:text-accent-hover flex items-center gap-1 transition-colors">
+              View all <ArrowRight size={10} />
+            </Link>
           </div>
           {stats.recentInvoices.length === 0 ? (
-            <p className="text-dark-400 text-sm py-8 text-center">No invoices yet. Create your first invoice!</p>
+            <div className="flex flex-col items-center justify-center py-10 px-5">
+              <FileText size={24} className="text-dark-600 mb-2" />
+              <p className="text-dark-500 text-xs">No invoices yet</p>
+              <Link href="/invoices" className="text-xs text-accent mt-2 hover:text-accent-hover transition-colors">Create your first →</Link>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="divide-y divide-dark-600/40">
               {stats.recentInvoices.map((inv) => (
-                <div key={inv.id as number} className="flex items-center justify-between p-3 rounded-lg bg-dark-700/50">
-                  <div>
-                    <p className="font-medium text-white text-sm">{inv.invoice_number as string}</p>
-                    <p className="text-xs text-dark-300">{inv.client_name as string}</p>
+                <div key={inv.id as number} className="flex items-center justify-between px-5 py-3 hover:bg-dark-700/30 transition-colors">
+                  <div className="min-w-0 mr-3">
+                    <p className="text-sm font-medium text-white tabular-nums">{inv.invoice_number as string}</p>
+                    <p className="text-[11px] text-dark-400 truncate">{inv.client_name as string}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium text-white text-sm">{formatCurrency(inv.total as number)}</p>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-sm font-semibold text-white tabular-nums">{formatCurrency(inv.total as number)}</p>
                     <Badge variant={inv.status as string}>{inv.status as string}</Badge>
                   </div>
                 </div>
@@ -112,22 +164,28 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <Card>
-        <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Quick Actions */}
+      <Card className="!p-0 overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-dark-600/60">
+          <p className="text-[10px] font-display font-bold tracking-[0.15em] uppercase text-dark-400">Quick Actions</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 divide-dark-600/40" style={{ borderTop: 'none' }}>
           {[
-            { href: '/clients', label: 'Add Client', icon: Users, color: 'text-blue-400' },
-            { href: '/projects', label: 'New Project', icon: FolderKanban, color: 'text-purple-400' },
-            { href: '/invoices', label: 'Create Invoice', icon: FileText, color: 'text-amber-400' },
-            { href: '/tools/colors', label: 'Color Palette', icon: Clock, color: 'text-green-400' },
-          ].map((action) => (
+            { href: '/clients', label: 'Add Client', sub: 'Manage clients', icon: Users },
+            { href: '/projects', label: 'New Project', sub: 'Track work', icon: FolderKanban },
+            { href: '/invoices', label: 'Create Invoice', sub: 'Get paid faster', icon: FileText },
+            { href: '/tools/brief', label: 'Brand Builder', sub: 'Design strategy', icon: Clock },
+          ].map((action, i) => (
             <Link
               key={action.href}
               href={action.href}
-              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-dark-700/50 hover:bg-dark-700 transition-colors border border-dark-600 hover:border-dark-500"
+              className={`flex flex-col gap-2.5 p-5 hover:bg-dark-700/40 transition-colors group border-dark-600/40 ${i > 0 ? 'border-l' : ''} ${i >= 2 ? 'border-t md:border-t-0' : ''}`}
             >
-              <action.icon size={24} className={action.color} />
-              <span className="text-sm text-dark-200">{action.label}</span>
+              <action.icon size={17} className="text-dark-500 group-hover:text-accent transition-colors" />
+              <div>
+                <p className="text-sm font-medium text-white group-hover:text-accent transition-colors leading-tight">{action.label}</p>
+                <p className="text-[11px] text-dark-500 mt-0.5">{action.sub}</p>
+              </div>
             </Link>
           ))}
         </div>

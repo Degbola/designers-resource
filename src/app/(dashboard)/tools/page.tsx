@@ -11,7 +11,7 @@ const TOOLS = [
   { name: 'Color Palette', description: 'Generate harmonious color palettes, explore shades and tints, and export CSS variables.', href: '/tools/colors', icon: Palette, color: 'text-green-400', bg: 'bg-green-500/20' },
   { name: 'Unit Converter', description: 'Convert between px, rem, em, pt, and viewport units for responsive design.', href: '/tools/converter', icon: Ruler, color: 'text-blue-400', bg: 'bg-blue-500/20' },
   { name: 'Font Pairing', description: 'Explore curated font pairings with live preview for your design projects.', href: '/tools/fonts', icon: Type, color: 'text-pink-400', bg: 'bg-pink-500/20' },
-  { name: 'Design Brief', description: 'Input a creative brief and get AI-powered color palette and typography suggestions.', href: '/tools/brief', icon: Sparkles, color: 'text-amber-400', bg: 'bg-amber-500/20' },
+  { name: 'Brand Builder', description: 'Build brand strategy from questionnaires and get AI-powered color palette and typography suggestions.', href: '/tools/brief', icon: Sparkles, color: 'text-amber-400', bg: 'bg-amber-500/20' },
 ]
 
 const LOREM = [

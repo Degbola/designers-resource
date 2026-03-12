@@ -1,28 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-dark-900: #0a0a0f;
-  --color-dark-800: #12121a;
-  --color-dark-700: #1a1a27;
-  --color-dark-600: #252536;
-  --color-dark-500: #32324a;
-  --color-dark-400: #4a4a6a;
-  --color-dark-300: #6b6b8a;
-  --color-dark-200: #9494b0;
-  --color-dark-100: #c4c4d4;
-  --color-accent: #6366f1;
-  --color-accent-hover: #818cf8;
-  --color-accent-dark: #4f46e5;
+  --color-dark-900: #09090e;
+  --color-dark-800: #0f0f16;
+  --color-dark-700: #16161f;
+  --color-dark-600: #1e1e2c;
+  --color-dark-500: #2a2a3c;
+  --color-dark-400: #42425c;
+  --color-dark-300: #64648a;
+  --color-dark-200: #9494b8;
+  --color-dark-100: #c0c0d8;
+  --color-accent: #d4785e;
+  --color-accent-hover: #e08a6e;
+  --color-accent-dark: #b85e46;
 }
 
 body {
   background-color: var(--color-dark-900);
-  color: #e4e4e7;
+  color: #e8e4de;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+/* Syne utility class for headings and display text */
+.font-display {
+  font-family: 'Syne', system-ui, sans-serif;
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -39,19 +46,31 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateX(-12px); }
+  from { opacity: 0; transform: translateX(-14px); }
   to { opacity: 1; transform: translateX(0); }
 }
 
 .animate-slide-in {
-  animation: slideIn 0.25s ease-out;
+  animation: slideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+@keyframes stagger {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stagger-1 { animation: stagger 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
+.stagger-2 { animation: stagger 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
+.stagger-3 { animation: stagger 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both; }
+.stagger-4 { animation: stagger 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both; }
+.stagger-5 { animation: stagger 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both; }
+.stagger-6 { animation: stagger 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both; }

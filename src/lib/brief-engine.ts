@@ -1,4 +1,5 @@
 // Rule-based design brief analysis engine
+import { CURATED_PAIRINGS } from './font-pairings'
 
 export interface BriefInput {
   brandName: string
@@ -117,20 +118,7 @@ const MOOD_MODIFIERS: Record<string, MoodModifier> = {
 
 // --- Font pairings database ---
 
-const FONT_PAIRINGS: FontSuggestion[] = [
-  { heading: 'Playfair Display', body: 'Source Sans 3', headingWeight: 700, bodyWeight: 400, category: 'Classic', rationale: '' },
-  { heading: 'Montserrat', body: 'Merriweather', headingWeight: 700, bodyWeight: 400, category: 'Modern', rationale: '' },
-  { heading: 'Oswald', body: 'Quattrocento', headingWeight: 600, bodyWeight: 400, category: 'Editorial', rationale: '' },
-  { heading: 'Raleway', body: 'Lato', headingWeight: 700, bodyWeight: 400, category: 'Clean', rationale: '' },
-  { heading: 'Abril Fatface', body: 'Poppins', headingWeight: 400, bodyWeight: 300, category: 'Bold', rationale: '' },
-  { heading: 'Cormorant Garamond', body: 'Fira Sans', headingWeight: 600, bodyWeight: 400, category: 'Elegant', rationale: '' },
-  { heading: 'Work Sans', body: 'Bitter', headingWeight: 700, bodyWeight: 400, category: 'Professional', rationale: '' },
-  { heading: 'DM Serif Display', body: 'DM Sans', headingWeight: 400, bodyWeight: 400, category: 'Harmonious', rationale: '' },
-  { heading: 'Space Grotesk', body: 'Space Mono', headingWeight: 700, bodyWeight: 400, category: 'Tech', rationale: '' },
-  { heading: 'Libre Baskerville', body: 'Open Sans', headingWeight: 700, bodyWeight: 400, category: 'Traditional', rationale: '' },
-  { heading: 'Bebas Neue', body: 'Roboto', headingWeight: 400, bodyWeight: 300, category: 'Impact', rationale: '' },
-  { heading: 'Crimson Pro', body: 'Work Sans', headingWeight: 600, bodyWeight: 400, category: 'Literary', rationale: '' },
-]
+const FONT_PAIRINGS: FontSuggestion[] = CURATED_PAIRINGS.map(p => ({ ...p, rationale: '' }))
 
 // --- Core analysis ---
 

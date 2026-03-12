@@ -23,16 +23,36 @@ import {
 import { useState, useEffect } from 'react'
 import type { SafeUser } from '@/types'
 
-const navItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/clients', label: 'Clients', icon: Users },
-  { href: '/projects', label: 'Projects', icon: FolderKanban },
-  { href: '/invoices', label: 'Invoices', icon: FileText },
-  { href: '/finances', label: 'Finances', icon: DollarSign },
-  { href: '/resources', label: 'Resources', icon: BookOpen },
-  { href: '/tools', label: 'Design Tools', icon: Wrench },
-  { href: '/tools/colors', label: 'Color Palette', icon: Palette },
-  { href: '/tools/brief', label: 'Design Brief', icon: Sparkles },
+const NAV_GROUPS = [
+  {
+    label: 'Workspace',
+    items: [
+      { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/clients', label: 'Clients', icon: Users },
+      { href: '/projects', label: 'Projects', icon: FolderKanban },
+      { href: '/invoices', label: 'Invoices', icon: FileText },
+    ],
+  },
+  {
+    label: 'Finance',
+    items: [
+      { href: '/finances', label: 'Finances', icon: DollarSign },
+    ],
+  },
+  {
+    label: 'Library',
+    items: [
+      { href: '/resources', label: 'Resources', icon: BookOpen },
+    ],
+  },
+  {
+    label: 'Tools',
+    items: [
+      { href: '/tools', label: 'Design Tools', icon: Wrench },
+      { href: '/tools/colors', label: 'Color Palette', icon: Palette },
+      { href: '/tools/brief', label: 'Brand Builder', icon: Sparkles },
+    ],
+  },
 ]
 
 export function MobileMenuButton({ onClick }: { onClick: () => void }) {
@@ -42,7 +62,7 @@ export function MobileMenuButton({ onClick }: { onClick: () => void }) {
       className="md:hidden p-2 rounded-lg text-dark-300 hover:bg-dark-700 hover:text-white transition-colors cursor-pointer"
       aria-label="Open menu"
     >
-      <Menu size={22} />
+      <Menu size={20} />
     </button>
   )
 }
@@ -52,12 +72,10 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
 
-  // Close mobile menu on route change
   useEffect(() => {
     onMobileClose?.()
   }, [pathname]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = 'hidden'
@@ -73,95 +91,138 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
     router.refresh()
   }
 
+  const isActive = (href: string) =>
+    href === '/'
+      ? pathname === '/'
+      : pathname === href || (href !== '/tools' && pathname.startsWith(href))
+
   const sidebarContent = (
-    <>
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-dark-600">
-        <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
-          <Palette size={18} className="text-white" />
+    <div className="flex flex-col h-full">
+      {/* Logo */}
+      <div className={cn(
+        'flex items-center gap-3 border-b border-dark-600/60 transition-all duration-300',
+        collapsed && !mobileOpen ? 'h-16 justify-center px-0' : 'h-16 px-5'
+      )}>
+        <div className="w-7 h-7 bg-accent rounded-md flex items-center justify-center flex-shrink-0">
+          <span className="font-display text-white text-[10px] font-bold tracking-tight">SS</span>
         </div>
         {(!collapsed || mobileOpen) && (
-          <span className="font-bold text-white text-lg tracking-tight">Seysey Studios</span>
+          <div className="overflow-hidden">
+            <p className="font-display font-bold text-white text-sm tracking-widest uppercase leading-none">Seysey</p>
+            <p className="text-[10px] text-dark-400 tracking-widest uppercase leading-tight mt-0.5">Studios</p>
+          </div>
         )}
-        {/* Mobile close button */}
         {mobileOpen && (
           <button
             onClick={onMobileClose}
-            className="ml-auto p-1 rounded-lg text-dark-300 hover:bg-dark-700 hover:text-white transition-colors md:hidden cursor-pointer"
+            className="ml-auto p-1.5 rounded-lg text-dark-400 hover:bg-dark-700 hover:text-white transition-colors cursor-pointer"
           >
-            <X size={20} />
+            <X size={16} />
           </button>
         )}
       </div>
 
-      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href ||
-            (item.href !== '/' && item.href !== '/tools' && pathname.startsWith(item.href))
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
-                isActive
-                  ? 'bg-accent/10 text-accent'
-                  : 'text-dark-300 hover:bg-dark-700 hover:text-dark-100',
-                collapsed && !mobileOpen && 'justify-center px-2'
-              )}
-              title={collapsed && !mobileOpen ? item.label : undefined}
-            >
-              <item.icon size={20} className="flex-shrink-0" />
-              {(!collapsed || mobileOpen) && <span>{item.label}</span>}
-            </Link>
-          )
-        })}
+      {/* Navigation */}
+      <nav className="flex-1 py-4 overflow-y-auto">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.label} className={cn('mb-1', collapsed && !mobileOpen ? 'px-2' : 'px-3')}>
+            {/* Group label */}
+            {(!collapsed || mobileOpen) && (
+              <p className="text-[9px] font-display font-bold tracking-[0.15em] uppercase text-dark-400 px-2 mb-1.5 mt-2">
+                {group.label}
+              </p>
+            )}
+            {collapsed && !mobileOpen && (
+              <div className="border-t border-dark-600/40 my-2" />
+            )}
+
+            {/* Group items */}
+            {group.items.map((item) => {
+              const active = isActive(item.href)
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-all duration-150 group relative mb-0.5',
+                    active
+                      ? 'text-accent bg-accent/8'
+                      : 'text-dark-300 hover:text-dark-100 hover:bg-dark-700/60',
+                    collapsed && !mobileOpen && 'justify-center px-2'
+                  )}
+                  title={collapsed && !mobileOpen ? item.label : undefined}
+                >
+                  {/* Active indicator bar */}
+                  {active && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-accent rounded-r-full" />
+                  )}
+                  <item.icon
+                    size={16}
+                    className={cn('flex-shrink-0 transition-colors', active ? 'text-accent' : 'text-dark-400 group-hover:text-dark-200')}
+                  />
+                  {(!collapsed || mobileOpen) && (
+                    <span className="font-medium text-[13px]">{item.label}</span>
+                  )}
+                </Link>
+              )
+            })}
+          </div>
+        ))}
       </nav>
 
-      <div className="px-3 py-3 border-t border-dark-600 space-y-2">
+      {/* Footer */}
+      <div className={cn(
+        'border-t border-dark-600/60 py-3 space-y-1',
+        collapsed && !mobileOpen ? 'px-2' : 'px-3'
+      )}>
+        {/* User info */}
         <div className={cn(
-          'flex items-center gap-3 px-3 py-2 rounded-lg',
-          collapsed && !mobileOpen && 'justify-center px-2'
+          'flex items-center gap-2.5 px-2 py-2 rounded-lg',
+          collapsed && !mobileOpen && 'justify-center'
         )}>
-          <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
-            <UserIcon size={16} className="text-accent" />
+          <div className="w-7 h-7 rounded-full bg-accent/15 border border-accent/25 flex items-center justify-center flex-shrink-0">
+            <span className="font-display text-accent text-[10px] font-bold uppercase">
+              {user.name?.charAt(0) || 'U'}
+            </span>
           </div>
           {(!collapsed || mobileOpen) && (
-            <div className="overflow-hidden">
-              <p className="text-sm font-medium text-white truncate">{user.name}</p>
-              <p className="text-xs text-dark-400 truncate">{user.email}</p>
+            <div className="overflow-hidden min-w-0">
+              <p className="text-[12px] font-semibold text-white truncate leading-tight">{user.name}</p>
+              <p className="text-[10px] text-dark-400 truncate leading-tight">{user.email}</p>
             </div>
           )}
         </div>
 
+        {/* Sign out */}
         <button
           onClick={handleLogout}
           className={cn(
-            'flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-dark-300 hover:bg-dark-700 hover:text-red-400 transition-colors cursor-pointer',
-            collapsed && !mobileOpen && 'justify-center px-2'
+            'flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-[12px] text-dark-400 hover:text-red-400 hover:bg-red-500/8 transition-all cursor-pointer group',
+            collapsed && !mobileOpen && 'justify-center'
           )}
           title={collapsed && !mobileOpen ? 'Sign out' : undefined}
         >
-          <LogOut size={18} className="flex-shrink-0" />
+          <LogOut size={14} className="flex-shrink-0 group-hover:text-red-400 transition-colors" />
           {(!collapsed || mobileOpen) && <span>Sign Out</span>}
         </button>
 
         {/* Collapse toggle - desktop only */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="hidden md:flex items-center justify-center w-full py-2 rounded-lg text-dark-400 hover:bg-dark-700 hover:text-dark-200 transition-colors cursor-pointer"
+          className="hidden md:flex items-center justify-center w-full py-1.5 rounded-lg text-dark-500 hover:text-dark-300 hover:bg-dark-700/40 transition-all cursor-pointer"
         >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
       </div>
-    </>
+    </div>
   )
 
   return (
     <>
       {/* Desktop sidebar */}
       <aside className={cn(
-        'hidden md:flex h-screen sticky top-0 bg-dark-800 border-r border-dark-600 flex-col transition-all duration-300',
-        collapsed ? 'w-[68px]' : 'w-[240px]'
+        'hidden md:flex h-screen sticky top-0 bg-dark-800 border-r border-dark-600/60 flex-col transition-all duration-300',
+        collapsed ? 'w-[60px]' : 'w-[220px]'
       )}>
         {sidebarContent}
       </aside>
@@ -169,11 +230,11 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm md:hidden animate-fade-in"
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm md:hidden animate-fade-in"
           onClick={onMobileClose}
         >
           <aside
-            className="w-[280px] h-full bg-dark-800 border-r border-dark-600 flex flex-col animate-slide-in"
+            className="w-[260px] h-full bg-dark-800 border-r border-dark-600/60 flex flex-col animate-slide-in"
             onClick={(e) => e.stopPropagation()}
           >
             {sidebarContent}

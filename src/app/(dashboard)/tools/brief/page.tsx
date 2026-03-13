@@ -294,10 +294,26 @@ export default function BrandBuilderPage() {
   }, [])
 
   // Strategy handlers
-  const handleParseStrategy = () => {
+  const handleParseStrategy = async () => {
     if (!strategyText.trim()) return
+    setLoading(true)
+    if (useAi && aiAvailable) {
+      try {
+        const res = await fetch('/api/brief/strategy', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: strategyText }),
+        })
+        const data = await res.json()
+        if (data.available && data.result && !data.error) {
+          setStrategy(data.result)
+          setLoading(false)
+          return
+        }
+      } catch {}
+    }
     const parsed = parseStrategyQuestionnaire(strategyText)
     setStrategy(parsed)
+    setLoading(false)
   }
 
   const handleUseInBrief = () => {
@@ -423,11 +439,21 @@ export default function BrandBuilderPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Input */}
           <Card>
-            <h3 className="text-lg font-semibold text-dark-100 flex items-center gap-2 mb-4">
-              <FileText size={20} className="text-accent" /> Brand Strategy
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-dark-100 flex items-center gap-2">
+                <FileText size={20} className="text-accent" /> Brand Strategy
+              </h3>
+              {aiAvailable && (
+                <button
+                  onClick={() => setUseAi(!useAi)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${useAi ? 'bg-accent/20 text-accent border border-accent/50' : 'bg-white/30 text-dark-400 border border-white/40'}`}
+                >
+                  <Zap size={12} /> AI Enhanced
+                </button>
+              )}
+            </div>
             <p className="text-sm text-dark-400 mb-4">
-              Paste your answered brand strategy questionnaire below. The parser will extract mission, vision, values, positioning, personality, tone of voice, and more.
+              Paste your answered brand strategy questionnaire below.{aiAvailable && useAi ? ' Claude will intelligently extract and enrich your strategy.' : ' The parser will extract mission, vision, values, positioning, personality, tone of voice, and more.'}
             </p>
             <Textarea
               label="Paste answered questionnaire"
@@ -436,8 +462,8 @@ export default function BrandBuilderPage() {
               placeholder={`Paste your brand strategy questionnaire answers here...\n\nExample format:\n\nBrand Name: Luxe Beauty\nIndustry: Beauty & Cosmetics\n\nMission: To empower women with premium, sustainably-sourced skincare...\n\nVision: To become the leading clean beauty brand globally...\n\nCore Values:\n- Sustainability\n- Transparency\n- Empowerment\n\nTarget Audience: Women aged 25-45 who prioritize clean beauty...\n\nBrand Personality: Elegant, warm, and trustworthy...\n\nTone of Voice: Confident yet approachable, knowledgeable but never condescending...\n\nPositioning: The premium clean beauty brand for the conscious consumer...\n\nTagline: "Beauty, Consciously Crafted"`}
               className="!min-h-[360px]"
             />
-            <Button onClick={handleParseStrategy} disabled={!strategyText.trim()} className="w-full mt-4">
-              <Sparkles size={16} /> Generate Strategy
+            <Button onClick={handleParseStrategy} disabled={!strategyText.trim() || loading} className="w-full mt-4">
+              {loading && activeSection === 'strategy' ? <><Loader2 size={16} className="animate-spin" /> Generating...</> : <><Sparkles size={16} /> Generate Strategy</>}
             </Button>
           </Card>
 

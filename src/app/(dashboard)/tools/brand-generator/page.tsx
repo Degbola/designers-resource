@@ -369,7 +369,7 @@ export default function BrandGeneratorPage() {
               })}
             </div>
             <Button onClick={handleUseInBrief} className="w-full">
-              <Sparkles size={16} /> Use in Design Brief
+              <Sparkles size={16} /> Use in Visual Identity
             </Button>
           </Card>
 

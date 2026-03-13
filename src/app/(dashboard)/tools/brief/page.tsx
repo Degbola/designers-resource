@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input, Textarea, Select } from '@/components/ui/input'
@@ -260,13 +261,14 @@ function StrategyDisplay({ strategy, onUseInBrief }: { strategy: BrandStrategy; 
 
       {/* Use in Brief button */}
       <Button onClick={onUseInBrief} className="w-full">
-        <ArrowRight size={16} /> Use in Design Brief
+        <ArrowRight size={16} /> Use in Visual Identity
       </Button>
     </div>
   )
 }
 
-export default function BrandBuilderPage() {
+function BrandBuilderInner() {
+  const searchParams = useSearchParams()
   const [activeSection, setActiveSection] = useState<'strategy' | 'brief'>('strategy')
 
   // Strategy state
@@ -274,8 +276,12 @@ export default function BrandBuilderPage() {
   const [strategy, setStrategy] = useState<BrandStrategy | null>(null)
 
   // Brief state
-  const [form, setForm] = useState<BriefInput>({
-    brandName: '', industry: 'tech', moods: [], targetAudience: '', description: '', brandColors: [],
+  const [form, setForm] = useState<BriefInput>(() => {
+    const brandName = searchParams?.get('brandName') || ''
+    const industry = searchParams?.get('industry') || 'tech'
+    const description = searchParams?.get('description') || ''
+    const targetAudience = searchParams?.get('targetAudience') || ''
+    return { brandName, industry, moods: [], targetAudience, description, brandColors: [] }
   })
   const [colorInput, setColorInput] = useState('#6366f1')
   const [result, setResult] = useState<BriefResult | null>(null)
@@ -285,6 +291,10 @@ export default function BrandBuilderPage() {
   const [aiUsed, setAiUsed] = useState(false)
   const [inputMode, setInputMode] = useState<'form' | 'paste'>('form')
   const [pastedBrief, setPastedBrief] = useState('')
+
+  useEffect(() => {
+    if (searchParams?.get('brandName')) setActiveSection('brief')
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetch('/api/brief/analyze').then(r => r.json()).then(d => {
@@ -430,7 +440,7 @@ export default function BrandBuilderPage() {
             activeSection === 'brief' ? 'bg-accent text-white' : 'text-dark-400 hover:text-dark-200'
           }`}
         >
-          <Sparkles size={15} /> Design Brief
+          <Sparkles size={15} /> Visual Identity
         </button>
       </div>
 
@@ -490,7 +500,7 @@ export default function BrandBuilderPage() {
           <Card>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-dark-100 flex items-center gap-2">
-                <Sparkles size={20} className="text-accent" /> Design Brief
+                <Sparkles size={20} className="text-accent" /> Visual Identity
               </h3>
               {aiAvailable && (
                 <button
@@ -623,5 +633,13 @@ export default function BrandBuilderPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function BrandBuilderPage() {
+  return (
+    <Suspense>
+      <BrandBuilderInner />
+    </Suspense>
   )
 }

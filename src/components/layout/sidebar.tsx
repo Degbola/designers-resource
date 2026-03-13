@@ -13,6 +13,7 @@ import {
   Palette,
   Wrench,
   Sparkles,
+  Wand2,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -51,6 +52,7 @@ const NAV_GROUPS = [
       { href: '/tools', label: 'Design Tools', icon: Wrench },
       { href: '/tools/colors', label: 'Color Palette', icon: Palette },
       { href: '/tools/brief', label: 'Brand Builder', icon: Sparkles },
+      { href: '/tools/brand-generator', label: 'Brand Generator', icon: Wand2 },
     ],
   },
 ]

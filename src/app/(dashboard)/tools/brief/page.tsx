@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input, Textarea, Select } from '@/components/ui/input'
@@ -267,8 +266,7 @@ function StrategyDisplay({ strategy, onUseInBrief }: { strategy: BrandStrategy; 
   )
 }
 
-function BrandBuilderInner() {
-  const searchParams = useSearchParams()
+export default function BrandBuilderPage() {
   const [activeSection, setActiveSection] = useState<'strategy' | 'brief'>('strategy')
 
   // Strategy state
@@ -276,12 +274,8 @@ function BrandBuilderInner() {
   const [strategy, setStrategy] = useState<BrandStrategy | null>(null)
 
   // Brief state
-  const [form, setForm] = useState<BriefInput>(() => {
-    const brandName = searchParams?.get('brandName') || ''
-    const industry = searchParams?.get('industry') || 'tech'
-    const description = searchParams?.get('description') || ''
-    const targetAudience = searchParams?.get('targetAudience') || ''
-    return { brandName, industry, moods: [], targetAudience, description, brandColors: [] }
+  const [form, setForm] = useState<BriefInput>({
+    brandName: '', industry: 'tech', moods: [], targetAudience: '', description: '', brandColors: [],
   })
   const [colorInput, setColorInput] = useState('#6366f1')
   const [result, setResult] = useState<BriefResult | null>(null)
@@ -293,7 +287,18 @@ function BrandBuilderInner() {
   const [pastedBrief, setPastedBrief] = useState('')
 
   useEffect(() => {
-    if (searchParams?.get('brandName')) setActiveSection('brief')
+    const params = new URLSearchParams(window.location.search)
+    const brandName = params.get('brandName')
+    if (brandName) {
+      setForm(prev => ({
+        ...prev,
+        brandName,
+        industry: params.get('industry') || prev.industry,
+        description: params.get('description') || prev.description,
+        targetAudience: params.get('targetAudience') || prev.targetAudience,
+      }))
+      setActiveSection('brief')
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -636,10 +641,3 @@ function BrandBuilderInner() {
   )
 }
 
-export default function BrandBuilderPage() {
-  return (
-    <Suspense>
-      <BrandBuilderInner />
-    </Suspense>
-  )
-}

@@ -23,20 +23,20 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <Link href="/clients" className="inline-flex items-center gap-2 text-sm text-dark-300 hover:text-white transition-colors">
+      <Link href="/clients" className="inline-flex items-center gap-2 text-sm text-dark-300 hover:text-dark-100 transition-colors">
         <ArrowLeft size={16} /> Back to Clients
       </Link>
 
       <div className="flex items-start gap-6">
         <div
-          className="w-16 h-16 rounded-xl flex items-center justify-center text-white font-bold text-2xl flex-shrink-0"
+          className="w-16 h-16 rounded-xl flex items-center justify-center text-white font-bold text-2xl flex-shrink-0 shadow-sm"
           style={{ backgroundColor: client.avatar_color }}
         >
           {client.name.charAt(0).toUpperCase()}
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-white">{client.name}</h2>
+            <h2 className="text-2xl font-bold text-dark-100">{client.name}</h2>
             <Badge variant={client.status}>{client.status}</Badge>
           </div>
           <div className="flex flex-wrap gap-4 mt-2 text-sm text-dark-300">
@@ -45,7 +45,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             {client.phone && <span className="flex items-center gap-1.5"><Phone size={14} /> {client.phone}</span>}
             {client.address && <span className="flex items-center gap-1.5"><MapPin size={14} /> {client.address}</span>}
           </div>
-          {client.notes && <p className="mt-3 text-sm text-dark-200 bg-dark-700/50 p-3 rounded-lg">{client.notes}</p>}
+          {client.notes && <p className="mt-3 text-sm text-dark-300 bg-white/40 p-3 rounded-lg">{client.notes}</p>}
           <PortalLink token={client.portal_token} clientName={client.name} clientEmail={client.email} />
         </div>
       </div>
@@ -53,7 +53,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-white flex items-center gap-2"><FolderKanban size={18} /> Projects ({projects.length})</h3>
+            <h3 className="font-semibold text-dark-100 flex items-center gap-2"><FolderKanban size={18} /> Projects ({projects.length})</h3>
             <Link href="/projects" className="text-sm text-accent hover:text-accent-hover">New Project</Link>
           </div>
           {projects.length === 0 ? (
@@ -61,9 +61,9 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           ) : (
             <div className="space-y-3">
               {projects.map((p) => (
-                <Link key={p.id} href={`/projects/${p.id}`} className="flex items-center justify-between p-3 rounded-lg bg-dark-700/50 hover:bg-dark-700 transition-colors">
+                <Link key={p.id} href={`/projects/${p.id}`} className="flex items-center justify-between p-3 rounded-lg bg-white/30 hover:bg-white/40 transition-colors">
                   <div>
-                    <p className="font-medium text-white text-sm">{p.name}</p>
+                    <p className="font-medium text-dark-100 text-sm">{p.name}</p>
                     <p className="text-xs text-dark-400">{p.due_date ? `Due ${formatDate(p.due_date)}` : 'No due date'}</p>
                   </div>
                   <div className="text-right">
@@ -78,7 +78,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
 
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-white flex items-center gap-2"><FileText size={18} /> Invoices ({invoices.length})</h3>
+            <h3 className="font-semibold text-dark-100 flex items-center gap-2"><FileText size={18} /> Invoices ({invoices.length})</h3>
             <Link href="/invoices" className="text-sm text-accent hover:text-accent-hover">New Invoice</Link>
           </div>
           {invoices.length === 0 ? (
@@ -86,13 +86,13 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           ) : (
             <div className="space-y-3">
               {invoices.map((inv) => (
-                <Link key={inv.id} href={`/invoices/${inv.id}`} className="flex items-center justify-between p-3 rounded-lg bg-dark-700/50 hover:bg-dark-700 transition-colors">
+                <Link key={inv.id} href={`/invoices/${inv.id}`} className="flex items-center justify-between p-3 rounded-lg bg-white/30 hover:bg-white/40 transition-colors">
                   <div>
-                    <p className="font-medium text-white text-sm">{inv.invoice_number}</p>
+                    <p className="font-medium text-dark-100 text-sm">{inv.invoice_number}</p>
                     <p className="text-xs text-dark-400">{formatDate(inv.issue_date)}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium text-white text-sm">{formatCurrency(inv.total)}</p>
+                    <p className="font-medium text-dark-100 text-sm">{formatCurrency(inv.total)}</p>
                     <Badge variant={inv.status}>{inv.status}</Badge>
                   </div>
                 </Link>

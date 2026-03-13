@@ -11,10 +11,10 @@ export function Button({ variant = 'primary', size = 'md', className, children, 
   const base = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'
 
   const variants = {
-    primary: 'bg-accent hover:bg-accent-hover text-white shadow-lg shadow-accent/25',
-    secondary: 'bg-dark-700 hover:bg-dark-600 text-dark-100 border border-dark-500',
-    ghost: 'hover:bg-dark-700 text-dark-200 hover:text-dark-100',
-    danger: 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20',
+    primary: 'bg-accent hover:bg-accent-hover text-white shadow-lg shadow-accent/20',
+    secondary: 'glass hover:bg-white/70 text-dark-200',
+    ghost: 'hover:bg-white/40 text-dark-300 hover:text-dark-200',
+    danger: 'bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20',
   }
 
   const sizes = {

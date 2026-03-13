@@ -28,7 +28,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
   return (
     <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
-        <Link href="/invoices" className="inline-flex items-center gap-2 text-sm text-dark-300 hover:text-white transition-colors">
+        <Link href="/invoices" className="inline-flex items-center gap-2 text-sm text-dark-300 hover:text-dark-100 transition-colors">
           <ArrowLeft size={16} /> Back to Invoices
         </Link>
         <PdfDownloadButton invoice={{
@@ -53,7 +53,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
       <Card className="!p-4 sm:!p-8">
         <div className="flex items-start justify-between mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-white mb-1">INVOICE</h2>
+            <h2 className="text-3xl font-bold text-dark-100 mb-1">INVOICE</h2>
             <p className="text-accent font-mono text-lg">{invoice.invoice_number}</p>
           </div>
           <Badge variant={invoice.status} className="text-sm px-3 py-1">{invoice.status}</Badge>
@@ -62,7 +62,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
           <div>
             <h4 className="text-xs uppercase tracking-wider text-dark-400 mb-2">Bill To</h4>
-            <p className="font-semibold text-white">{invoice.client_name}</p>
+            <p className="font-semibold text-dark-100">{invoice.client_name}</p>
             {invoice.company && <p className="text-sm text-dark-300">{invoice.company}</p>}
             {invoice.client_email && <p className="text-sm text-dark-300">{invoice.client_email}</p>}
             {invoice.phone && <p className="text-sm text-dark-300">{invoice.phone}</p>}
@@ -80,7 +80,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
         <div className="overflow-x-auto -mx-4 sm:-mx-8 px-4 sm:px-8">
         <table className="w-full mb-8 min-w-[400px]">
           <thead>
-            <tr className="border-b border-dark-600">
+            <tr className="border-b border-white/40">
               <th className="text-left py-3 text-xs uppercase tracking-wider text-dark-400">Description</th>
               <th className="text-right py-3 text-xs uppercase tracking-wider text-dark-400">Qty</th>
               <th className="text-right py-3 text-xs uppercase tracking-wider text-dark-400">Price</th>
@@ -89,11 +89,11 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
           </thead>
           <tbody>
             {items.map((item) => (
-              <tr key={item.id} className="border-b border-dark-700">
-                <td className="py-3 text-white">{item.description}</td>
+              <tr key={item.id} className="border-b border-white/40">
+                <td className="py-3 text-dark-100">{item.description}</td>
                 <td className="py-3 text-dark-200 text-right">{item.quantity}</td>
                 <td className="py-3 text-dark-200 text-right">{formatCurrency(item.unit_price)}</td>
-                <td className="py-3 text-white text-right">{formatCurrency(item.amount)}</td>
+                <td className="py-3 text-dark-100 text-right">{formatCurrency(item.amount)}</td>
               </tr>
             ))}
             {items.length === 0 && (
@@ -107,12 +107,12 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
           <div className="w-full sm:w-72 space-y-2">
             <div className="flex justify-between text-sm text-dark-300"><span>Subtotal</span><span>{formatCurrency(invoice.subtotal)}</span></div>
             <div className="flex justify-between text-sm text-dark-300"><span>Tax ({invoice.tax_rate}%)</span><span>{formatCurrency(invoice.tax_amount)}</span></div>
-            <div className="flex justify-between font-bold text-xl text-white border-t border-dark-600 pt-3"><span>Total</span><span>{formatCurrency(invoice.total)}</span></div>
+            <div className="flex justify-between font-bold text-xl text-dark-100 border-t border-white/40 pt-3"><span>Total</span><span>{formatCurrency(invoice.total)}</span></div>
           </div>
         </div>
 
         {invoice.notes && (
-          <div className="mt-8 pt-6 border-t border-dark-600">
+          <div className="mt-8 pt-6 border-t border-white/40">
             <h4 className="text-xs uppercase tracking-wider text-dark-400 mb-2">Notes</h4>
             <p className="text-sm text-dark-300">{invoice.notes}</p>
           </div>

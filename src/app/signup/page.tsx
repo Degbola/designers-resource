@@ -56,20 +56,20 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-dark-900">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center mb-4">
             <Palette size={24} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Create Account</h1>
+          <h1 className="text-2xl font-bold text-dark-100">Create Account</h1>
           <p className="text-dark-300 mt-1">Get started with Seysey Studios</p>
         </div>
 
         <Card>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 text-sm text-red-400">
+              <div className="bg-red-50/80 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-600">
                 {error}
               </div>
             )}

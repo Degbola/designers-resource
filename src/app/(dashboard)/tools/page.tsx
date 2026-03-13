@@ -57,16 +57,16 @@ function AspectRatioCalculator() {
 
   return (
     <Card>
-      <h3 className="font-semibold text-white mb-4">Aspect Ratio Calculator</h3>
+      <h3 className="font-semibold text-dark-100 mb-4">Aspect Ratio Calculator</h3>
       <div className="grid grid-cols-2 gap-3 mb-4">
         <Input label="Width" type="number" value={width} onChange={(e) => setWidth(Number(e.target.value))} />
         <Input label="Height" type="number" value={height} onChange={(e) => setHeight(Number(e.target.value))} />
       </div>
-      <p className="text-sm text-dark-300 mb-3">Ratio: <span className="text-white font-semibold">{ratioW}:{ratioH}</span></p>
+      <p className="text-sm text-dark-300 mb-3">Ratio: <span className="text-dark-100 font-semibold">{ratioW}:{ratioH}</span></p>
       <div className="space-y-1">
         {commonRatios.map((r) => (
           <button key={r.label} onClick={() => { setWidth(r.w * 100); setHeight(r.h * 100) }}
-            className="text-xs bg-dark-600 hover:bg-dark-500 text-dark-200 px-2.5 py-1 rounded mr-2 transition-colors cursor-pointer">
+            className="text-xs bg-white/30 hover:bg-white/40 text-dark-200 px-2.5 py-1 rounded mr-2 transition-colors cursor-pointer">
             {r.label}
           </button>
         ))}
@@ -90,7 +90,7 @@ function LoremIpsumGenerator() {
   return (
     <Card>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-white">Lorem Ipsum Generator</h3>
+        <h3 className="font-semibold text-dark-100">Lorem Ipsum Generator</h3>
         <button onClick={handleCopy} className="flex items-center gap-1 text-xs text-accent hover:text-accent-hover transition-colors cursor-pointer">
           {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy</>}
         </button>
@@ -99,12 +99,12 @@ function LoremIpsumGenerator() {
         <label className="text-sm text-dark-300">Paragraphs:</label>
         {[1, 2, 3, 4, 5].map((n) => (
           <button key={n} onClick={() => setParagraphs(n)}
-            className={`w-7 h-7 rounded text-xs font-medium cursor-pointer transition-colors ${n === paragraphs ? 'bg-accent text-white' : 'bg-dark-600 text-dark-300 hover:bg-dark-500'}`}>
+            className={`w-7 h-7 rounded text-xs font-medium cursor-pointer transition-colors ${n === paragraphs ? 'bg-accent text-white' : 'bg-white/30 text-dark-300 hover:bg-white/40'}`}>
             {n}
           </button>
         ))}
       </div>
-      <div className="bg-dark-800 rounded-lg p-3 max-h-40 overflow-y-auto text-sm text-dark-300 leading-relaxed whitespace-pre-line">{text}</div>
+      <div className="bg-white/30 rounded-lg p-3 max-h-40 overflow-y-auto text-sm text-dark-300 leading-relaxed whitespace-pre-line">{text}</div>
     </Card>
   )
 }
@@ -121,20 +121,20 @@ function ContrastChecker() {
 
   return (
     <Card>
-      <h3 className="font-semibold text-white mb-4">Contrast Checker</h3>
+      <h3 className="font-semibold text-dark-100 mb-4">Contrast Checker</h3>
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div>
           <label className="block text-xs text-dark-400 mb-1">Foreground</label>
           <div className="flex items-center gap-2">
             <input type="color" value={fg} onChange={(e) => setFg(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-            <input type="text" value={fg} onChange={(e) => setFg(e.target.value)} className="bg-dark-700 border border-dark-600 rounded px-2 py-1 text-sm text-white w-24 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+            <input type="text" value={fg} onChange={(e) => setFg(e.target.value)} className="bg-white/40 border border-white/30 rounded px-2 py-1 text-sm text-dark-100 w-24 focus:outline-none focus:ring-1 focus:ring-accent/50" />
           </div>
         </div>
         <div>
           <label className="block text-xs text-dark-400 mb-1">Background</label>
           <div className="flex items-center gap-2">
             <input type="color" value={bg} onChange={(e) => setBg(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-            <input type="text" value={bg} onChange={(e) => setBg(e.target.value)} className="bg-dark-700 border border-dark-600 rounded px-2 py-1 text-sm text-white w-24 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+            <input type="text" value={bg} onChange={(e) => setBg(e.target.value)} className="bg-white/40 border border-white/30 rounded px-2 py-1 text-sm text-dark-100 w-24 focus:outline-none focus:ring-1 focus:ring-accent/50" />
           </div>
         </div>
       </div>
@@ -143,14 +143,14 @@ function ContrastChecker() {
         <p className="text-sm">The quick brown fox jumps over the lazy dog</p>
       </div>
       <div className="text-center mb-3">
-        <span className="text-2xl font-bold text-white">{ratio.toFixed(2)}</span>
+        <span className="text-2xl font-bold text-dark-100">{ratio.toFixed(2)}</span>
         <span className="text-sm text-dark-400 ml-1">: 1</span>
       </div>
       <div className="grid grid-cols-2 gap-2 text-xs">
-        <div className={`rounded p-2 text-center ${aaNormal ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>AA Normal: {aaNormal ? 'Pass' : 'Fail'}</div>
-        <div className={`rounded p-2 text-center ${aaLarge ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>AA Large: {aaLarge ? 'Pass' : 'Fail'}</div>
-        <div className={`rounded p-2 text-center ${aaaNormal ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>AAA Normal: {aaaNormal ? 'Pass' : 'Fail'}</div>
-        <div className={`rounded p-2 text-center ${aaaLarge ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>AAA Large: {aaaLarge ? 'Pass' : 'Fail'}</div>
+        <div className={`rounded p-2 text-center ${aaNormal ? 'bg-green-500/20 text-green-400' : 'bg-red-50/80 text-red-500'}`}>AA Normal: {aaNormal ? 'Pass' : 'Fail'}</div>
+        <div className={`rounded p-2 text-center ${aaLarge ? 'bg-green-500/20 text-green-400' : 'bg-red-50/80 text-red-500'}`}>AA Large: {aaLarge ? 'Pass' : 'Fail'}</div>
+        <div className={`rounded p-2 text-center ${aaaNormal ? 'bg-green-500/20 text-green-400' : 'bg-red-50/80 text-red-500'}`}>AAA Normal: {aaaNormal ? 'Pass' : 'Fail'}</div>
+        <div className={`rounded p-2 text-center ${aaaLarge ? 'bg-green-500/20 text-green-400' : 'bg-red-50/80 text-red-500'}`}>AAA Large: {aaaLarge ? 'Pass' : 'Fail'}</div>
       </div>
     </Card>
   )
@@ -160,17 +160,17 @@ export default function ToolsPage() {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h2 className="text-lg font-semibold text-white mb-4">Design Tools</h2>
+        <h2 className="text-lg font-semibold text-dark-100 mb-4">Design Tools</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {TOOLS.map((tool) => {
             const Icon = tool.icon
             return (
               <Link key={tool.href} href={tool.href}>
-                <Card className="hover:border-dark-500 transition-colors group h-full">
+                <Card className="hover:border-white/60 transition-colors group h-full">
                   <div className={`w-10 h-10 rounded-lg ${tool.bg} flex items-center justify-center mb-3`}>
                     <Icon size={20} className={tool.color} />
                   </div>
-                  <h3 className="font-semibold text-white mb-1 group-hover:text-accent transition-colors">{tool.name}</h3>
+                  <h3 className="font-semibold text-dark-100 mb-1 group-hover:text-accent transition-colors">{tool.name}</h3>
                   <p className="text-sm text-dark-300 mb-3">{tool.description}</p>
                   <span className="text-sm text-accent flex items-center gap-1 group-hover:gap-2 transition-all">
                     Open <ArrowRight size={14} />
@@ -183,7 +183,7 @@ export default function ToolsPage() {
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold text-white mb-4">Quick Utilities</h2>
+        <h2 className="text-lg font-semibold text-dark-100 mb-4">Quick Utilities</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <AspectRatioCalculator />
           <LoremIpsumGenerator />

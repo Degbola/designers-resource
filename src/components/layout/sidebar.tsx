@@ -59,7 +59,7 @@ export function MobileMenuButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="md:hidden p-2 rounded-lg text-dark-300 hover:bg-dark-700 hover:text-white transition-colors cursor-pointer"
+      className="md:hidden p-2 rounded-lg text-dark-300 hover:bg-white/40 hover:text-dark-100 transition-colors cursor-pointer"
       aria-label="Open menu"
     >
       <Menu size={20} />
@@ -100,7 +100,7 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className={cn(
-        'flex items-center gap-3 border-b border-dark-600/60 transition-all duration-300',
+        'flex items-center gap-3 border-b border-white/30 transition-all duration-300',
         collapsed && !mobileOpen ? 'h-16 justify-center px-0' : 'h-16 px-5'
       )}>
         <div className="w-7 h-7 bg-accent rounded-md flex items-center justify-center flex-shrink-0">
@@ -108,14 +108,14 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
         </div>
         {(!collapsed || mobileOpen) && (
           <div className="overflow-hidden">
-            <p className="font-display font-bold text-white text-sm tracking-widest uppercase leading-none">Seysey</p>
+            <p className="font-display font-bold text-dark-100 text-sm tracking-widest uppercase leading-none">Seysey</p>
             <p className="text-[10px] text-dark-400 tracking-widest uppercase leading-tight mt-0.5">Studios</p>
           </div>
         )}
         {mobileOpen && (
           <button
             onClick={onMobileClose}
-            className="ml-auto p-1.5 rounded-lg text-dark-400 hover:bg-dark-700 hover:text-white transition-colors cursor-pointer"
+            className="ml-auto p-1.5 rounded-lg text-dark-400 hover:bg-white/40 hover:text-dark-200 transition-colors cursor-pointer"
           >
             <X size={16} />
           </button>
@@ -133,7 +133,7 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
               </p>
             )}
             {collapsed && !mobileOpen && (
-              <div className="border-t border-dark-600/40 my-2" />
+              <div className="border-t border-white/30 my-2" />
             )}
 
             {/* Group items */}
@@ -144,21 +144,17 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-all duration-150 group relative mb-0.5',
+                    'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-150 group relative mb-0.5',
                     active
-                      ? 'text-accent bg-accent/8'
-                      : 'text-dark-300 hover:text-dark-100 hover:bg-dark-700/60',
+                      ? 'text-white bg-accent shadow-sm shadow-accent/20'
+                      : 'text-dark-300 hover:text-dark-100 hover:bg-white/40',
                     collapsed && !mobileOpen && 'justify-center px-2'
                   )}
                   title={collapsed && !mobileOpen ? item.label : undefined}
                 >
-                  {/* Active indicator bar */}
-                  {active && (
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-accent rounded-r-full" />
-                  )}
                   <item.icon
                     size={16}
-                    className={cn('flex-shrink-0 transition-colors', active ? 'text-accent' : 'text-dark-400 group-hover:text-dark-200')}
+                    className={cn('flex-shrink-0 transition-colors', active ? 'text-white' : 'text-dark-400 group-hover:text-dark-200')}
                   />
                   {(!collapsed || mobileOpen) && (
                     <span className="font-medium text-[13px]">{item.label}</span>
@@ -172,7 +168,7 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
 
       {/* Footer */}
       <div className={cn(
-        'border-t border-dark-600/60 py-3 space-y-1',
+        'border-t border-white/30 py-3 space-y-1',
         collapsed && !mobileOpen ? 'px-2' : 'px-3'
       )}>
         {/* User info */}
@@ -187,7 +183,7 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
           </div>
           {(!collapsed || mobileOpen) && (
             <div className="overflow-hidden min-w-0">
-              <p className="text-[12px] font-semibold text-white truncate leading-tight">{user.name}</p>
+              <p className="text-[12px] font-semibold text-dark-100 truncate leading-tight">{user.name}</p>
               <p className="text-[10px] text-dark-400 truncate leading-tight">{user.email}</p>
             </div>
           )}
@@ -197,19 +193,19 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
         <button
           onClick={handleLogout}
           className={cn(
-            'flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-[12px] text-dark-400 hover:text-red-400 hover:bg-red-500/8 transition-all cursor-pointer group',
+            'flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-[12px] text-dark-400 hover:text-red-500 hover:bg-red-50/60 transition-all cursor-pointer group',
             collapsed && !mobileOpen && 'justify-center'
           )}
           title={collapsed && !mobileOpen ? 'Sign out' : undefined}
         >
-          <LogOut size={14} className="flex-shrink-0 group-hover:text-red-400 transition-colors" />
+          <LogOut size={14} className="flex-shrink-0 group-hover:text-red-500 transition-colors" />
           {(!collapsed || mobileOpen) && <span>Sign Out</span>}
         </button>
 
         {/* Collapse toggle - desktop only */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="hidden md:flex items-center justify-center w-full py-1.5 rounded-lg text-dark-500 hover:text-dark-300 hover:bg-dark-700/40 transition-all cursor-pointer"
+          className="hidden md:flex items-center justify-center w-full py-1.5 rounded-lg text-dark-400 hover:text-dark-300 hover:bg-white/40 transition-all cursor-pointer"
         >
           {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
@@ -221,7 +217,7 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
     <>
       {/* Desktop sidebar */}
       <aside className={cn(
-        'hidden md:flex h-screen sticky top-0 bg-dark-800 border-r border-dark-600/60 flex-col transition-all duration-300',
+        'hidden md:flex h-screen sticky top-0 glass-sidebar border-r border-white/30 flex-col transition-all duration-300',
         collapsed ? 'w-[60px]' : 'w-[220px]'
       )}>
         {sidebarContent}
@@ -230,11 +226,11 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm md:hidden animate-fade-in"
+          className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm md:hidden animate-fade-in"
           onClick={onMobileClose}
         >
           <aside
-            className="w-[260px] h-full bg-dark-800 border-r border-dark-600/60 flex flex-col animate-slide-in"
+            className="w-[260px] h-full glass-sidebar border-r border-white/30 flex flex-col animate-slide-in"
             onClick={(e) => e.stopPropagation()}
           >
             {sidebarContent}

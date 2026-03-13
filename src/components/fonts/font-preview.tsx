@@ -38,11 +38,11 @@ export function FontPreview({
     <Card className="lg:sticky lg:top-6 lg:self-start">
       <h3 className="text-sm text-dark-400 uppercase tracking-wider mb-4">Live Preview</h3>
       <div
-        className="bg-dark-800 rounded-lg p-6 space-y-4"
+        className="bg-white/40 rounded-lg p-6 space-y-4"
         style={{ opacity: loaded ? 1 : 0.5, transition: 'opacity 0.3s' }}
       >
         <h1
-          className="text-3xl text-white leading-tight"
+          className="text-3xl text-dark-100 leading-tight"
           style={{ fontFamily: `'${headingFamily}', serif`, fontWeight: headingWeight }}
         >
           {SAMPLE_HEADING}
@@ -61,7 +61,7 @@ export function FontPreview({
         </p>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-dark-600 grid grid-cols-2 gap-4">
+      <div className="mt-4 pt-4 border-t border-white/40 grid grid-cols-2 gap-4">
         <FontSelector
           label="Heading Font"
           selectedFamily={headingFamily}

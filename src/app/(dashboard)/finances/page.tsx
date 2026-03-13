@@ -58,15 +58,15 @@ export default function FinancesPage() {
   const deleteIncome = async (id: number) => { await fetch(`/api/finances/income?id=${id}`, { method: 'DELETE' }); load() }
   const deleteExpense = async (id: number) => { await fetch(`/api/finances/expenses?id=${id}`, { method: 'DELETE' }); load() }
 
-  const tooltipStyle = { contentStyle: { background: '#1a1a27', border: '1px solid #32324a', borderRadius: '8px', color: '#e4e4e7' } }
+  const tooltipStyle = { contentStyle: { background: 'rgba(255,255,255,0.9)', border: '1px solid rgba(200,210,230,0.5)', borderRadius: '8px', color: '#1a1a27' } }
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { label: 'Total Income', value: summary?.total_income || 0, icon: TrendingUp, color: 'text-green-400', bg: 'bg-green-500/10' },
-          { label: 'Total Expenses', value: summary?.total_expenses || 0, icon: TrendingDown, color: 'text-red-400', bg: 'bg-red-500/10' },
-          { label: 'Net Profit', value: summary?.net_profit || 0, icon: DollarSign, color: (summary?.net_profit || 0) >= 0 ? 'text-green-400' : 'text-red-400', bg: (summary?.net_profit || 0) >= 0 ? 'bg-green-500/10' : 'bg-red-500/10' },
+          { label: 'Total Income', value: summary?.total_income || 0, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50/80' },
+          { label: 'Total Expenses', value: summary?.total_expenses || 0, icon: TrendingDown, color: 'text-red-500', bg: 'bg-red-50/80' },
+          { label: 'Net Profit', value: summary?.net_profit || 0, icon: DollarSign, color: (summary?.net_profit || 0) >= 0 ? 'text-emerald-600' : 'text-red-500', bg: (summary?.net_profit || 0) >= 0 ? 'bg-emerald-50/80' : 'bg-red-50/80' },
         ].map((s) => (
           <Card key={s.label} className="flex items-center gap-4">
             <div className={`p-3 rounded-xl ${s.bg}`}><s.icon size={24} className={s.color} /></div>
@@ -80,12 +80,12 @@ export default function FinancesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <h3 className="font-semibold text-white mb-4">Income vs Expenses</h3>
+          <h3 className="font-semibold text-dark-100 mb-4">Income vs Expenses</h3>
           {summary && summary.monthly_data.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={summary.monthly_data}>
-                <XAxis dataKey="month" stroke="#6b6b8a" tick={{ fontSize: 12 }} />
-                <YAxis stroke="#6b6b8a" tick={{ fontSize: 12 }} />
+                <XAxis dataKey="month" stroke="#8494a7" tick={{ fontSize: 12, fill: '#8494a7' }} />
+                <YAxis stroke="#8494a7" tick={{ fontSize: 12, fill: '#8494a7' }} />
                 <Tooltip {...tooltipStyle} />
                 <Bar dataKey="income" fill="#22c55e" radius={[4, 4, 0, 0]} name="Income" />
                 <Bar dataKey="expenses" fill="#ef4444" radius={[4, 4, 0, 0]} name="Expenses" />
@@ -97,7 +97,7 @@ export default function FinancesPage() {
         </Card>
 
         <Card>
-          <h3 className="font-semibold text-white mb-4">Expense Breakdown</h3>
+          <h3 className="font-semibold text-dark-100 mb-4">Expense Breakdown</h3>
           {summary && summary.expense_categories.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -127,12 +127,12 @@ export default function FinancesPage() {
                   {incomeList.map((inc) => (
                     <Card key={inc.id} className="!p-3 flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-white font-medium">{inc.description || inc.category}</p>
+                        <p className="text-sm text-dark-100 font-medium">{inc.description || inc.category}</p>
                         <p className="text-xs text-dark-400">{inc.client_name ? `${inc.client_name} · ` : ''}{formatDate(inc.date)}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-green-400 font-semibold">+{formatCurrency(inc.amount)}</span>
-                        <button onClick={() => deleteIncome(inc.id)} className="p-1 text-dark-400 hover:text-red-400 cursor-pointer"><Trash2 size={14} /></button>
+                        <span className="text-emerald-600 font-semibold">+{formatCurrency(inc.amount)}</span>
+                        <button onClick={() => deleteIncome(inc.id)} className="p-1 text-dark-400 hover:text-red-500 cursor-pointer"><Trash2 size={14} /></button>
                       </div>
                     </Card>
                   ))}
@@ -151,12 +151,12 @@ export default function FinancesPage() {
                   {expenseList.map((exp) => (
                     <Card key={exp.id} className="!p-3 flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-white font-medium">{exp.description || exp.category}</p>
+                        <p className="text-sm text-dark-100 font-medium">{exp.description || exp.category}</p>
                         <p className="text-xs text-dark-400">{exp.vendor ? `${exp.vendor} · ` : ''}{formatDate(exp.date)}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-red-400 font-semibold">-{formatCurrency(exp.amount)}</span>
-                        <button onClick={() => deleteExpense(exp.id)} className="p-1 text-dark-400 hover:text-red-400 cursor-pointer"><Trash2 size={14} /></button>
+                        <span className="text-red-500 font-semibold">-{formatCurrency(exp.amount)}</span>
+                        <button onClick={() => deleteExpense(exp.id)} className="p-1 text-dark-400 hover:text-red-500 cursor-pointer"><Trash2 size={14} /></button>
                       </div>
                     </Card>
                   ))}

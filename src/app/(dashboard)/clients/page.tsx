@@ -67,7 +67,7 @@ export default function ClientsPage() {
               placeholder="Search clients..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-dark-700 border border-dark-600 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64"
+              className="bg-white/40 border border-white/30 rounded-lg pl-9 pr-4 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64"
             />
           </div>
           <Select
@@ -95,31 +95,31 @@ export default function ClientsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((client) => (
-            <Card key={client.id} className="hover:border-dark-500 transition-colors">
+            <Card key={client.id} className="hover:border-white/60 transition-colors">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm"
                     style={{ backgroundColor: client.avatar_color }}
                   >
                     {client.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <Link href={`/clients/${client.id}`} className="font-semibold text-white hover:text-accent transition-colors">
+                    <Link href={`/clients/${client.id}`} className="font-semibold text-dark-100 hover:text-accent transition-colors">
                       {client.name}
                     </Link>
                     <Badge variant={client.status} className="ml-2">{client.status}</Badge>
                   </div>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => openEdit(client)} className="p-1.5 rounded-lg hover:bg-dark-700 text-dark-400 hover:text-white transition-colors cursor-pointer"><Edit2 size={14} /></button>
-                  <button onClick={() => handleDelete(client.id)} className="p-1.5 rounded-lg hover:bg-dark-700 text-dark-400 hover:text-red-400 transition-colors cursor-pointer"><Trash2 size={14} /></button>
+                  <button onClick={() => openEdit(client)} className="p-1.5 rounded-lg hover:bg-white/40 text-dark-400 hover:text-dark-100 transition-colors cursor-pointer"><Edit2 size={14} /></button>
+                  <button onClick={() => handleDelete(client.id)} className="p-1.5 rounded-lg hover:bg-white/40 text-dark-400 hover:text-red-500 transition-colors cursor-pointer"><Trash2 size={14} /></button>
                 </div>
               </div>
               {client.company && <p className="text-sm text-dark-300 flex items-center gap-1.5 mb-1"><Building2 size={14} /> {client.company}</p>}
               {client.email && <p className="text-sm text-dark-300 flex items-center gap-1.5 mb-1"><Mail size={14} /> {client.email}</p>}
               {client.phone && <p className="text-sm text-dark-300 flex items-center gap-1.5 mb-1"><Phone size={14} /> {client.phone}</p>}
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-dark-600 text-xs text-dark-400">
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/30 text-xs text-dark-400">
                 <span>{client.project_count} project{client.project_count !== 1 ? 's' : ''}</span>
                 <span>${(client.total_paid || 0).toLocaleString()} earned</span>
                 <Link href={`/portal/${client.portal_token}`} className="flex items-center gap-1 text-accent hover:text-accent-hover" target="_blank"><ExternalLink size={12} /> Portal</Link>

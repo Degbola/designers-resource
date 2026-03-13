@@ -136,27 +136,27 @@ export default function ColorPalettePage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <Link href="/tools" className="inline-flex items-center gap-2 text-sm text-dark-300 hover:text-white transition-colors">
+      <Link href="/tools" className="inline-flex items-center gap-2 text-sm text-dark-300 hover:text-dark-100 transition-colors">
         <ArrowLeft size={16} /> Back to Tools
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Color Picker */}
         <Card>
-          <h3 className="font-semibold text-white mb-4">Base Color</h3>
+          <h3 className="font-semibold text-dark-100 mb-4">Base Color</h3>
           <div className="flex items-center gap-4 mb-4">
             <input
               type="color"
               value={baseColor}
               onChange={(e) => { setBaseColor(e.target.value); setHexInput(e.target.value) }}
-              className="w-16 h-16 rounded-lg cursor-pointer border-2 border-dark-600 bg-transparent"
+              className="w-16 h-16 rounded-lg cursor-pointer border-2 border-white/30 bg-transparent"
             />
             <div className="flex-1">
               <input
                 type="text"
                 value={hexInput}
                 onChange={(e) => handleHexInput(e.target.value)}
-                className="bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-sm text-white font-mono w-full mb-2 focus:outline-none focus:ring-2 focus:ring-accent/50"
+                className="bg-white/40 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 font-mono w-full mb-2 focus:outline-none focus:ring-2 focus:ring-accent/50"
               />
               <div className="text-xs text-dark-400 space-y-0.5">
                 <p>RGB: {r}, {g}, {b}</p>
@@ -170,7 +170,7 @@ export default function ColorPalettePage() {
         {/* Harmony Type */}
         <Card className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-white">Color Harmony</h3>
+            <h3 className="font-semibold text-dark-100">Color Harmony</h3>
             <div className="flex gap-1">
               <Button variant="secondary" size="sm" onClick={exportCSS}>
                 {copiedColor === 'css' ? <><Check size={14} /> Copied CSS</> : <><Download size={14} /> Export CSS</>}
@@ -185,7 +185,7 @@ export default function ColorPalettePage() {
               <button
                 key={t.value}
                 onClick={() => setHarmonyType(t.value)}
-                className={`px-3 py-1.5 rounded-lg text-sm cursor-pointer transition-colors ${harmonyType === t.value ? 'bg-accent text-white' : 'bg-dark-600 text-dark-300 hover:bg-dark-500'}`}
+                className={`px-3 py-1.5 rounded-lg text-sm cursor-pointer transition-colors ${harmonyType === t.value ? 'bg-accent text-white' : 'bg-white/30 text-dark-300 hover:bg-white/40'}`}
               >
                 {t.label}
               </button>
@@ -211,7 +211,7 @@ export default function ColorPalettePage() {
 
       {/* Shades */}
       <Card>
-        <h3 className="font-semibold text-white mb-4">Shades & Tints</h3>
+        <h3 className="font-semibold text-dark-100 mb-4">Shades & Tints</h3>
         <div className="flex gap-1 h-20">
           {shades.map((color, i) => (
             <button
@@ -229,7 +229,7 @@ export default function ColorPalettePage() {
       {/* Saved Palettes */}
       {savedPalettes.length > 0 && (
         <Card>
-          <h3 className="font-semibold text-white mb-4">Saved Palettes</h3>
+          <h3 className="font-semibold text-dark-100 mb-4">Saved Palettes</h3>
           <div className="space-y-3">
             {savedPalettes.map((pal, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -246,7 +246,7 @@ export default function ColorPalettePage() {
                 </div>
                 <button
                   onClick={() => savePalettes(savedPalettes.filter((_, idx) => idx !== i))}
-                  className="p-1.5 rounded hover:bg-dark-700 text-dark-400 hover:text-red-400 transition-colors cursor-pointer"
+                  className="p-1.5 rounded hover:bg-white/40 text-dark-400 hover:text-red-500 transition-colors cursor-pointer"
                 >
                   <Trash2 size={14} />
                 </button>

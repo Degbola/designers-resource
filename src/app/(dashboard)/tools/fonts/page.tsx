@@ -94,7 +94,7 @@ export default function FontPairingPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <Link href="/tools" className="inline-flex items-center gap-2 text-sm text-dark-300 hover:text-white transition-colors">
+      <Link href="/tools" className="inline-flex items-center gap-2 text-sm text-dark-300 hover:text-dark-100 transition-colors">
         <ArrowLeft size={16} /> Back to Tools
       </Link>
 
@@ -126,15 +126,15 @@ export default function FontPairingPage() {
                       return (
                         <Card
                           key={i}
-                          className={`cursor-pointer transition-all ${isActive ? 'ring-2 ring-accent border-accent' : 'hover:border-dark-500'}`}
+                          className={`cursor-pointer transition-all ${isActive ? 'ring-2 ring-accent border-accent' : 'hover:border-white/60'}`}
                           onClick={() => applyPairing(pairing)}
                         >
                           <div className="flex items-start justify-between mb-2">
-                            <span className="text-xs bg-dark-600 text-dark-300 px-2 py-0.5 rounded">{pairing.category}</span>
+                            <span className="text-xs bg-white/30 text-dark-300 px-2 py-0.5 rounded">{pairing.category}</span>
                             {isActive && <Eye size={16} className="text-accent" />}
                           </div>
                           <h4
-                            className="text-xl text-white mb-1"
+                            className="text-xl text-dark-100 mb-1"
                             style={{
                               fontFamily: `'${pairing.heading}', serif`,
                               fontWeight: pairing.headingWeight,
@@ -174,7 +174,7 @@ export default function FontPairingPage() {
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                         placeholder="Search fonts..."
-                        className="w-full bg-dark-700 border border-dark-500 rounded-lg pl-10 pr-3 py-2 text-sm text-white placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all"
+                        className="w-full bg-white/40 border border-white/30 rounded-lg pl-10 pr-3 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all"
                       />
                     </div>
 
@@ -187,7 +187,7 @@ export default function FontPairingPage() {
                           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                             categoryFilter === cat.id
                               ? 'bg-accent text-white'
-                              : 'bg-dark-700 text-dark-300 hover:bg-dark-600 hover:text-white'
+                              : 'bg-white/40 text-dark-300 hover:bg-white/50 hover:text-dark-100'
                           }`}
                         >
                           {cat.label}
@@ -203,7 +203,7 @@ export default function FontPairingPage() {
                           onClick={() => setSortBy(sort.id)}
                           className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1 ${
                             sortBy === sort.id
-                              ? 'bg-dark-600 text-white'
+                              ? 'bg-white/30 text-dark-100'
                               : 'text-dark-400 hover:text-dark-200'
                           }`}
                         >

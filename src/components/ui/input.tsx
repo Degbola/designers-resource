@@ -18,15 +18,15 @@ export function Input({ label, error, className, id, ...props }: InputProps) {
       <input
         id={id}
         className={cn(
-          'w-full bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white',
-          'placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent',
-          'transition-all duration-200',
-          error && 'border-red-500 focus:ring-red-500/50',
+          'w-full bg-white/60 border border-white/70 rounded-lg px-3 py-2 text-sm text-dark-100',
+          'placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50',
+          'backdrop-blur-sm transition-all duration-200',
+          error && 'border-red-400 focus:ring-red-400/50',
           className
         )}
         {...props}
       />
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   )
 }
@@ -46,9 +46,9 @@ export function Textarea({ label, className, id, ...props }: TextareaProps) {
       <textarea
         id={id}
         className={cn(
-          'w-full bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white',
-          'placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent',
-          'transition-all duration-200 min-h-[80px] resize-y',
+          'w-full bg-white/60 border border-white/70 rounded-lg px-3 py-2 text-sm text-dark-100',
+          'placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50',
+          'backdrop-blur-sm transition-all duration-200 min-h-[80px] resize-y',
           className
         )}
         {...props}
@@ -73,9 +73,9 @@ export function Select({ label, options, className, id, ...props }: SelectProps)
       <select
         id={id}
         className={cn(
-          'w-full bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white',
-          'focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent',
-          'transition-all duration-200 cursor-pointer',
+          'w-full bg-white/60 border border-white/70 rounded-lg px-3 py-2 text-sm text-dark-100',
+          'focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50',
+          'backdrop-blur-sm transition-all duration-200 cursor-pointer',
           className
         )}
         {...props}

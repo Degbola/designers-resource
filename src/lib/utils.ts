@@ -35,25 +35,25 @@ export function cn(...classes: (string | boolean | undefined | null)[]): string 
 
 export function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
-    lead: 'bg-yellow-500/20 text-yellow-400',
-    active: 'bg-green-500/20 text-green-400',
-    completed: 'bg-blue-500/20 text-blue-400',
-    archived: 'bg-zinc-500/20 text-zinc-400',
-    not_started: 'bg-zinc-500/20 text-zinc-400',
-    in_progress: 'bg-blue-500/20 text-blue-400',
-    review: 'bg-purple-500/20 text-purple-400',
-    draft: 'bg-zinc-500/20 text-zinc-400',
-    sent: 'bg-blue-500/20 text-blue-400',
-    paid: 'bg-green-500/20 text-green-400',
-    overdue: 'bg-red-500/20 text-red-400',
-    pending: 'bg-yellow-500/20 text-yellow-400',
-    approved: 'bg-green-500/20 text-green-400',
-    revision: 'bg-orange-500/20 text-orange-400',
-    low: 'bg-zinc-500/20 text-zinc-400',
-    medium: 'bg-yellow-500/20 text-yellow-400',
-    high: 'bg-red-500/20 text-red-400',
+    lead: 'bg-yellow-100/70 text-yellow-700',
+    active: 'bg-emerald-100/70 text-emerald-700',
+    completed: 'bg-blue-100/70 text-blue-700',
+    archived: 'bg-zinc-100/70 text-zinc-600',
+    not_started: 'bg-zinc-100/70 text-zinc-600',
+    in_progress: 'bg-blue-100/70 text-blue-700',
+    review: 'bg-purple-100/70 text-purple-700',
+    draft: 'bg-zinc-100/70 text-zinc-600',
+    sent: 'bg-blue-100/70 text-blue-700',
+    paid: 'bg-emerald-100/70 text-emerald-700',
+    overdue: 'bg-red-100/70 text-red-600',
+    pending: 'bg-yellow-100/70 text-yellow-700',
+    approved: 'bg-emerald-100/70 text-emerald-700',
+    revision: 'bg-orange-100/70 text-orange-700',
+    low: 'bg-zinc-100/70 text-zinc-600',
+    medium: 'bg-yellow-100/70 text-yellow-700',
+    high: 'bg-red-100/70 text-red-600',
   }
-  return colors[status] || 'bg-zinc-500/20 text-zinc-400'
+  return colors[status] || 'bg-zinc-100/70 text-zinc-600'
 }
 
 export const AVATAR_COLORS = [

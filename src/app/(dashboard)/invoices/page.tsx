@@ -129,7 +129,7 @@ export default function InvoicesPage() {
           { label: 'Draft', value: statusTotals.draft, color: 'text-zinc-400' },
           { label: 'Sent', value: statusTotals.sent, color: 'text-blue-400' },
           { label: 'Paid', value: statusTotals.paid, color: 'text-green-400' },
-          { label: 'Overdue', value: statusTotals.overdue, color: 'text-red-400' },
+          { label: 'Overdue', value: statusTotals.overdue, color: 'text-red-500' },
         ].map((s) => (
           <Card key={s.label} className="!p-4">
             <p className="text-xs text-dark-400">{s.label}</p>
@@ -143,7 +143,7 @@ export default function InvoicesPage() {
           <div className="relative flex-1 sm:flex-none">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400" />
             <input type="text" placeholder="Search invoices..." value={search} onChange={(e) => setSearch(e.target.value)}
-              className="bg-dark-700 border border-dark-600 rounded-lg pl-9 pr-4 py-2 text-sm text-white placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64" />
+              className="bg-white/40 border border-white/30 rounded-lg pl-9 pr-4 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64" />
           </div>
           <Select options={[{ value: 'all', label: 'All' }, { value: 'draft', label: 'Draft' }, { value: 'sent', label: 'Sent' }, { value: 'paid', label: 'Paid' }, { value: 'overdue', label: 'Overdue' }]} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-32" />
         </div>
@@ -157,28 +157,28 @@ export default function InvoicesPage() {
       ) : (
         <div className="space-y-3">
           {filtered.map((inv) => (
-            <Card key={inv.id} className="!p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-dark-500 transition-colors">
+            <Card key={inv.id} className="!p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-white/60 transition-colors">
               <div className="flex items-center gap-4 min-w-0">
-                <div className="p-2 rounded-lg bg-dark-700 flex-shrink-0"><DollarSign size={20} className="text-accent" /></div>
+                <div className="p-2 rounded-lg bg-white/30 flex-shrink-0"><DollarSign size={20} className="text-accent" /></div>
                 <div className="min-w-0">
-                  <Link href={`/invoices/${inv.id}`} className="font-medium text-white hover:text-accent transition-colors">{inv.invoice_number}</Link>
+                  <Link href={`/invoices/${inv.id}`} className="font-medium text-dark-100 hover:text-accent transition-colors">{inv.invoice_number}</Link>
                   <p className="text-xs text-dark-400 truncate">{inv.client_name} &middot; {formatDate(inv.issue_date)}</p>
                 </div>
               </div>
               <div className="flex items-center justify-between sm:justify-end gap-4">
                 <div className="text-left sm:text-right">
-                  <p className="font-semibold text-white">{formatCurrency(inv.total)}</p>
+                  <p className="font-semibold text-dark-100">{formatCurrency(inv.total)}</p>
                   <Badge variant={inv.status}>{inv.status}</Badge>
                 </div>
                 <div className="flex gap-1">
-                  <Link href={`/invoices/${inv.id}`} className="p-2 rounded-lg hover:bg-dark-700 text-dark-400 hover:text-white transition-colors"><Eye size={16} /></Link>
+                  <Link href={`/invoices/${inv.id}`} className="p-2 rounded-lg hover:bg-white/40 text-dark-400 hover:text-dark-100 transition-colors"><Eye size={16} /></Link>
                   {inv.status === 'draft' && (
-                    <button onClick={() => handleSend(inv.id)} disabled={sending === inv.id} className="p-2 rounded-lg hover:bg-dark-700 text-dark-400 hover:text-blue-400 transition-colors cursor-pointer disabled:opacity-50"><Send size={16} /></button>
+                    <button onClick={() => handleSend(inv.id)} disabled={sending === inv.id} className="p-2 rounded-lg hover:bg-white/40 text-dark-400 hover:text-blue-400 transition-colors cursor-pointer disabled:opacity-50"><Send size={16} /></button>
                   )}
                   {(inv.status === 'sent' || inv.status === 'overdue') && (
-                    <button onClick={() => markPaid(inv)} className="p-2 rounded-lg hover:bg-dark-700 text-dark-400 hover:text-green-400 transition-colors cursor-pointer"><DollarSign size={16} /></button>
+                    <button onClick={() => markPaid(inv)} className="p-2 rounded-lg hover:bg-white/40 text-dark-400 hover:text-green-400 transition-colors cursor-pointer"><DollarSign size={16} /></button>
                   )}
-                  <button onClick={() => handleDelete(inv.id)} className="p-2 rounded-lg hover:bg-dark-700 text-dark-400 hover:text-red-400 transition-colors cursor-pointer"><Trash2 size={16} /></button>
+                  <button onClick={() => handleDelete(inv.id)} className="p-2 rounded-lg hover:bg-white/40 text-dark-400 hover:text-red-500 transition-colors cursor-pointer"><Trash2 size={16} /></button>
                 </div>
               </div>
             </Card>
@@ -202,16 +202,16 @@ export default function InvoicesPage() {
             <label className="block text-sm font-medium text-dark-200 mb-2">Line Items</label>
             <div className="space-y-3">
               {items.map((item, idx) => (
-                <div key={idx} className="space-y-2 sm:space-y-0 sm:flex sm:gap-2 sm:items-start bg-dark-700/30 sm:bg-transparent rounded-lg p-3 sm:p-0">
+                <div key={idx} className="space-y-2 sm:space-y-0 sm:flex sm:gap-2 sm:items-start bg-white/30 sm:bg-transparent rounded-lg p-3 sm:p-0">
                   <input placeholder="Description" value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)}
-                    className="w-full sm:flex-1 bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50" />
+                    className="w-full sm:flex-1 bg-white/40 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50" />
                   <div className="flex gap-2 items-center">
                     <input type="number" placeholder="Qty" min="1" value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', Number(e.target.value))}
-                      className="w-20 bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-accent/50" />
+                      className="w-20 bg-white/40 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 focus:outline-none focus:ring-2 focus:ring-accent/50" />
                     <input type="number" placeholder="Price" min="0" step="0.01" value={item.unit_price} onChange={(e) => updateItem(idx, 'unit_price', Number(e.target.value))}
-                      className="flex-1 sm:w-28 sm:flex-none bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-accent/50" />
+                      className="flex-1 sm:w-28 sm:flex-none bg-white/40 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 focus:outline-none focus:ring-2 focus:ring-accent/50" />
                     <span className="w-24 py-2 text-sm text-dark-200 text-right flex-shrink-0">{formatCurrency(item.quantity * item.unit_price)}</span>
-                    {items.length > 1 && <button type="button" onClick={() => removeItem(idx)} className="p-2 text-dark-400 hover:text-red-400 cursor-pointer flex-shrink-0"><X size={16} /></button>}
+                    {items.length > 1 && <button type="button" onClick={() => removeItem(idx)} className="p-2 text-dark-400 hover:text-red-500 cursor-pointer flex-shrink-0"><X size={16} /></button>}
                   </div>
                 </div>
               ))}
@@ -219,10 +219,10 @@ export default function InvoicesPage() {
             <Button type="button" variant="ghost" size="sm" onClick={addItem} className="mt-2"><Plus size={14} /> Add Item</Button>
           </div>
 
-          <div className="bg-dark-700/50 rounded-lg p-4 space-y-2 text-sm">
+          <div className="bg-white/40 rounded-lg p-4 space-y-2 text-sm">
             <div className="flex justify-between text-dark-300"><span>Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
             <div className="flex justify-between text-dark-300"><span>Tax ({form.tax_rate}%)</span><span>{formatCurrency(taxAmount)}</span></div>
-            <div className="flex justify-between font-bold text-white text-lg border-t border-dark-600 pt-2"><span>Total</span><span>{formatCurrency(total)}</span></div>
+            <div className="flex justify-between font-bold text-dark-100 text-lg border-t border-white/30 pt-2"><span>Total</span><span>{formatCurrency(total)}</span></div>
           </div>
 
           <Textarea label="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Payment terms, additional info..." />

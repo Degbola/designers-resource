@@ -33,11 +33,18 @@ async function getStats() {
   return { clientCount, activeProjects, pendingInvoices, totalRevenue, totalExpenses, recentProjects, recentInvoices }
 }
 
+const STAT_TINTS = [
+  'bg-stat-mint',
+  'bg-stat-lavender',
+  'bg-stat-peach',
+  'bg-stat-sky',
+]
+
 function StatBlock({ value, label, href, index }: { value: string | number; label: string; href: string; index: number }) {
   return (
     <Link href={href} className={`group stagger-${index}`}>
-      <div className="p-5 rounded-xl bg-dark-800 border border-dark-600/70 hover:border-dark-500 transition-all duration-200">
-        <p className="font-display font-bold text-white text-3xl tracking-tight tabular-nums leading-none mb-2 group-hover:text-accent transition-colors">
+      <div className={`p-5 rounded-xl glass hover:shadow-lg hover:shadow-black/5 transition-all duration-200 ${STAT_TINTS[index - 1] || ''}`}>
+        <p className="font-display font-bold text-dark-100 text-3xl tracking-tight tabular-nums leading-none mb-2 group-hover:text-accent transition-colors">
           {value}
         </p>
         <p className="text-[10px] text-dark-400 uppercase tracking-widest font-medium">{label}</p>
@@ -74,25 +81,25 @@ export default async function DashboardPage() {
               <div className="flex gap-6">
                 <div>
                   <p className="text-[10px] text-dark-400 uppercase tracking-widest mb-0.5">Revenue</p>
-                  <p className="font-display font-bold text-white tabular-nums">{formatCurrency(stats.totalRevenue)}</p>
+                  <p className="font-display font-bold text-dark-100 tabular-nums">{formatCurrency(stats.totalRevenue)}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-dark-400 uppercase tracking-widest mb-0.5">Expenses</p>
-                  <p className="font-display font-bold text-white tabular-nums">{formatCurrency(stats.totalExpenses)}</p>
+                  <p className="font-display font-bold text-dark-100 tabular-nums">{formatCurrency(stats.totalExpenses)}</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-dark-400 uppercase tracking-widest mb-0.5">Net Profit</p>
-                  <p className={`font-display font-bold tabular-nums ${profitPositive ? 'text-emerald-400' : 'text-red-400'}`}>{formatCurrency(profit)}</p>
+                  <p className={`font-display font-bold tabular-nums ${profitPositive ? 'text-emerald-600' : 'text-red-500'}`}>{formatCurrency(profit)}</p>
                 </div>
               </div>
               <div className="flex-1 min-w-[120px]">
-                <div className="h-1 bg-dark-600 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-white/40 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-accent rounded-full transition-all duration-1000"
                     style={{ width: `${revenueBarWidth}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-[9px] text-dark-600 mt-1 tracking-wider uppercase">
+                <div className="flex justify-between text-[9px] text-dark-400 mt-1 tracking-wider uppercase">
                   <span>Revenue</span>
                   <span>Expenses</span>
                 </div>
@@ -105,7 +112,7 @@ export default async function DashboardPage() {
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 stagger-6">
         <Card className="!p-0 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-dark-600/60">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/40">
             <p className="text-[10px] font-display font-bold tracking-[0.15em] uppercase text-dark-400">Recent Projects</p>
             <Link href="/projects" className="text-[10px] text-accent hover:text-accent-hover flex items-center gap-1 transition-colors">
               View all <ArrowRight size={10} />
@@ -113,16 +120,16 @@ export default async function DashboardPage() {
           </div>
           {stats.recentProjects.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 px-5">
-              <FolderKanban size={24} className="text-dark-600 mb-2" />
-              <p className="text-dark-500 text-xs">No projects yet</p>
-              <Link href="/projects" className="text-xs text-accent mt-2 hover:text-accent-hover transition-colors">Create your first →</Link>
+              <FolderKanban size={24} className="text-dark-400 mb-2" />
+              <p className="text-dark-400 text-xs">No projects yet</p>
+              <Link href="/projects" className="text-xs text-accent mt-2 hover:text-accent-hover transition-colors">Create your first &rarr;</Link>
             </div>
           ) : (
-            <div className="divide-y divide-dark-600/40">
+            <div className="divide-y divide-white/30">
               {stats.recentProjects.map((project) => (
-                <div key={project.id as number} className="flex items-center justify-between px-5 py-3 hover:bg-dark-700/30 transition-colors">
+                <div key={project.id as number} className="flex items-center justify-between px-5 py-3 hover:bg-white/30 transition-colors">
                   <div className="min-w-0 mr-3">
-                    <p className="text-sm font-medium text-white truncate">{project.name as string}</p>
+                    <p className="text-sm font-medium text-dark-100 truncate">{project.name as string}</p>
                     <p className="text-[11px] text-dark-400 truncate">{project.client_name as string}</p>
                   </div>
                   <Badge variant={project.status as string}>{(project.status as string).replace('_', ' ')}</Badge>
@@ -133,7 +140,7 @@ export default async function DashboardPage() {
         </Card>
 
         <Card className="!p-0 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-dark-600/60">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/40">
             <p className="text-[10px] font-display font-bold tracking-[0.15em] uppercase text-dark-400">Recent Invoices</p>
             <Link href="/invoices" className="text-[10px] text-accent hover:text-accent-hover flex items-center gap-1 transition-colors">
               View all <ArrowRight size={10} />
@@ -141,20 +148,20 @@ export default async function DashboardPage() {
           </div>
           {stats.recentInvoices.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 px-5">
-              <FileText size={24} className="text-dark-600 mb-2" />
-              <p className="text-dark-500 text-xs">No invoices yet</p>
-              <Link href="/invoices" className="text-xs text-accent mt-2 hover:text-accent-hover transition-colors">Create your first →</Link>
+              <FileText size={24} className="text-dark-400 mb-2" />
+              <p className="text-dark-400 text-xs">No invoices yet</p>
+              <Link href="/invoices" className="text-xs text-accent mt-2 hover:text-accent-hover transition-colors">Create your first &rarr;</Link>
             </div>
           ) : (
-            <div className="divide-y divide-dark-600/40">
+            <div className="divide-y divide-white/30">
               {stats.recentInvoices.map((inv) => (
-                <div key={inv.id as number} className="flex items-center justify-between px-5 py-3 hover:bg-dark-700/30 transition-colors">
+                <div key={inv.id as number} className="flex items-center justify-between px-5 py-3 hover:bg-white/30 transition-colors">
                   <div className="min-w-0 mr-3">
-                    <p className="text-sm font-medium text-white tabular-nums">{inv.invoice_number as string}</p>
+                    <p className="text-sm font-medium text-dark-100 tabular-nums">{inv.invoice_number as string}</p>
                     <p className="text-[11px] text-dark-400 truncate">{inv.client_name as string}</p>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-semibold text-white tabular-nums">{formatCurrency(inv.total as number)}</p>
+                    <p className="text-sm font-semibold text-dark-100 tabular-nums">{formatCurrency(inv.total as number)}</p>
                     <Badge variant={inv.status as string}>{inv.status as string}</Badge>
                   </div>
                 </div>
@@ -166,10 +173,10 @@ export default async function DashboardPage() {
 
       {/* Quick Actions */}
       <Card className="!p-0 overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-dark-600/60">
+        <div className="px-5 py-3.5 border-b border-white/40">
           <p className="text-[10px] font-display font-bold tracking-[0.15em] uppercase text-dark-400">Quick Actions</p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 divide-dark-600/40" style={{ borderTop: 'none' }}>
+        <div className="grid grid-cols-2 md:grid-cols-4" style={{ borderTop: 'none' }}>
           {[
             { href: '/clients', label: 'Add Client', sub: 'Manage clients', icon: Users },
             { href: '/projects', label: 'New Project', sub: 'Track work', icon: FolderKanban },
@@ -179,12 +186,12 @@ export default async function DashboardPage() {
             <Link
               key={action.href}
               href={action.href}
-              className={`flex flex-col gap-2.5 p-5 hover:bg-dark-700/40 transition-colors group border-dark-600/40 ${i > 0 ? 'border-l' : ''} ${i >= 2 ? 'border-t md:border-t-0' : ''}`}
+              className={`flex flex-col gap-2.5 p-5 hover:bg-white/30 transition-colors group border-white/30 ${i > 0 ? 'border-l' : ''} ${i >= 2 ? 'border-t md:border-t-0' : ''}`}
             >
-              <action.icon size={17} className="text-dark-500 group-hover:text-accent transition-colors" />
+              <action.icon size={17} className="text-dark-400 group-hover:text-accent transition-colors" />
               <div>
-                <p className="text-sm font-medium text-white group-hover:text-accent transition-colors leading-tight">{action.label}</p>
-                <p className="text-[11px] text-dark-500 mt-0.5">{action.sub}</p>
+                <p className="text-sm font-medium text-dark-100 group-hover:text-accent transition-colors leading-tight">{action.label}</p>
+                <p className="text-[11px] text-dark-400 mt-0.5">{action.sub}</p>
               </div>
             </Link>
           ))}

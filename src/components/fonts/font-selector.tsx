@@ -49,7 +49,7 @@ export function FontSelector({ label, selectedFamily, selectedWeight, onFontChan
       <div ref={containerRef} className="relative">
         <button
           onClick={() => setOpen(!open)}
-          className="w-full flex items-center justify-between bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white hover:border-dark-400 transition-colors cursor-pointer"
+          className="w-full flex items-center justify-between bg-white/50 border border-white/60 rounded-lg px-3 py-2 text-sm text-dark-100 hover:border-white/80 transition-colors cursor-pointer"
           style={{ fontFamily: `'${selectedFamily}', sans-serif` }}
         >
           <span className="truncate">{selectedFamily}</span>
@@ -57,8 +57,8 @@ export function FontSelector({ label, selectedFamily, selectedWeight, onFontChan
         </button>
 
         {open && (
-          <div className="absolute z-50 top-full mt-1 left-0 right-0 bg-dark-800 border border-dark-600 rounded-lg shadow-xl max-h-64 overflow-hidden flex flex-col">
-            <div className="p-2 border-b border-dark-600">
+          <div className="absolute z-50 top-full mt-1 left-0 right-0 glass-strong rounded-lg shadow-xl max-h-64 overflow-hidden flex flex-col">
+            <div className="p-2 border-b border-white/40">
               <div className="relative">
                 <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-dark-400" />
                 <input
@@ -66,7 +66,7 @@ export function FontSelector({ label, selectedFamily, selectedWeight, onFontChan
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Search fonts..."
-                  className="w-full bg-dark-700 border border-dark-500 rounded pl-8 pr-3 py-1.5 text-sm text-white placeholder:text-dark-400 focus:outline-none focus:border-accent"
+                  className="w-full bg-white/50 border border-white/60 rounded pl-8 pr-3 py-1.5 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:border-accent"
                   autoFocus
                 />
               </div>
@@ -83,8 +83,8 @@ export function FontSelector({ label, selectedFamily, selectedWeight, onFontChan
                       setOpen(false)
                       setSearch('')
                     }}
-                    className={`w-full text-left px-3 py-2 text-sm hover:bg-dark-700 transition-colors cursor-pointer flex items-center justify-between ${
-                      f.family === selectedFamily ? 'text-accent bg-accent/5' : 'text-white'
+                    className={`w-full text-left px-3 py-2 text-sm hover:bg-white/40 transition-colors cursor-pointer flex items-center justify-between ${
+                      f.family === selectedFamily ? 'text-accent bg-accent/5' : 'text-dark-100'
                     }`}
                   >
                     <span style={{ fontFamily: `'${f.family}', sans-serif`, fontWeight: w }} className="truncate">
@@ -106,7 +106,7 @@ export function FontSelector({ label, selectedFamily, selectedWeight, onFontChan
       <select
         value={selectedWeight}
         onChange={e => onFontChange(selectedFamily, Number(e.target.value))}
-        className="w-full bg-dark-700 border border-dark-500 rounded-lg px-3 py-1.5 text-xs text-dark-200 focus:outline-none focus:ring-1 focus:ring-accent/50 cursor-pointer"
+        className="w-full bg-white/50 border border-white/60 rounded-lg px-3 py-1.5 text-xs text-dark-200 focus:outline-none focus:ring-1 focus:ring-accent/50 cursor-pointer"
       >
         {availableWeights.map(w => (
           <option key={w} value={w}>

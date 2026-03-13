@@ -44,9 +44,9 @@ export function FontCard({ font, onSelectAsHeading, onSelectAsBody }: FontCardPr
 
   return (
     <div ref={ref}>
-    <Card className="group relative hover:border-dark-500 transition-all">
+    <Card className="group relative hover:border-white/60 transition-all">
       <div className="flex items-center gap-1.5 mb-3">
-        <span className="text-[10px] uppercase tracking-wider text-dark-400 bg-dark-700 px-1.5 py-0.5 rounded">
+        <span className="text-[10px] uppercase tracking-wider text-dark-400 bg-white/30 px-1.5 py-0.5 rounded">
           {font.category}
         </span>
         {font.trending && (
@@ -62,7 +62,7 @@ export function FontCard({ font, onSelectAsHeading, onSelectAsBody }: FontCardPr
       </div>
 
       <p
-        className="text-xl text-white mb-1 truncate"
+        className="text-xl text-dark-100 mb-1 truncate"
         style={{
           fontFamily: visible ? `'${font.family}', ${font.category === 'serif' ? 'serif' : 'sans-serif'}` : 'inherit',
           fontWeight: previewWeight,
@@ -85,7 +85,7 @@ export function FontCard({ font, onSelectAsHeading, onSelectAsBody }: FontCardPr
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onSelectAsBody(font) }}
-          className="flex-1 text-[11px] px-2 py-1.5 rounded bg-dark-600 text-dark-200 hover:bg-dark-500 transition-colors cursor-pointer flex items-center justify-center gap-1"
+          className="flex-1 text-[11px] px-2 py-1.5 rounded bg-white/40 text-dark-300 hover:bg-white/60 transition-colors cursor-pointer flex items-center justify-center gap-1"
         >
           <Type size={11} /> Body
         </button>

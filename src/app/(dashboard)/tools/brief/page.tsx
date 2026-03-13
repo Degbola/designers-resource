@@ -134,7 +134,7 @@ function PaletteDisplay({ palettes }: { palettes: PaletteSuggestion[] }) {
     <div className="space-y-6">
       {palettes.map((palette, i) => (
         <div key={i}>
-          <h4 className="text-sm font-semibold text-white mb-1">{palette.name}</h4>
+          <h4 className="text-sm font-semibold text-dark-100 mb-1">{palette.name}</h4>
           <p className="text-xs text-dark-400 mb-3">{palette.rationale}</p>
           <div className="flex gap-2 h-20">
             {palette.colors.map((color, j) => (
@@ -157,19 +157,19 @@ function FontDisplay({ fonts }: { fonts: FontSuggestion[] }) {
   return (
     <div className="space-y-4">
       {fonts.map((font, i) => (
-        <Card key={i} className="!bg-dark-800">
+        <Card key={i} className="!glass">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs bg-dark-600 text-dark-300 px-2 py-0.5 rounded">{font.category}</span>
+            <span className="text-xs bg-white/30 text-dark-300 px-2 py-0.5 rounded">{font.category}</span>
           </div>
-          <div className="bg-dark-700 rounded-lg p-4 mb-3">
-            <h3 className="text-2xl text-white mb-2" style={{ fontFamily: `'${font.heading}', serif`, fontWeight: font.headingWeight }}>{font.heading}</h3>
+          <div className="bg-white/40 rounded-lg p-4 mb-3">
+            <h3 className="text-2xl text-dark-100 mb-2" style={{ fontFamily: `'${font.heading}', serif`, fontWeight: font.headingWeight }}>{font.heading}</h3>
             <p className="text-sm text-dark-300 leading-relaxed" style={{ fontFamily: `'${font.body}', sans-serif`, fontWeight: font.bodyWeight }}>
               Great design speaks to the heart of your audience. This pairing brings clarity and character to every touchpoint.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-4 text-xs mb-2">
-            <div><p className="text-dark-400">Heading: <span className="text-white">{font.heading}</span> ({font.headingWeight})</p></div>
-            <div><p className="text-dark-400">Body: <span className="text-white">{font.body}</span> ({font.bodyWeight})</p></div>
+            <div><p className="text-dark-400">Heading: <span className="text-dark-100">{font.heading}</span> ({font.headingWeight})</p></div>
+            <div><p className="text-dark-400">Body: <span className="text-dark-100">{font.body}</span> ({font.bodyWeight})</p></div>
           </div>
           <p className="text-xs text-dark-400">{font.rationale}</p>
         </Card>
@@ -204,11 +204,11 @@ function StrategyDisplay({ strategy, onUseInBrief }: { strategy: BrandStrategy; 
   return (
     <div className="space-y-4">
       {/* Header with brand name */}
-      <Card className="!bg-dark-750">
+      <Card className="!glass">
         <div className="flex items-center justify-between mb-2">
           <div>
             {strategy.brandName && (
-              <h3 className="text-xl font-bold text-white">{strategy.brandName}</h3>
+              <h3 className="text-xl font-bold text-dark-100">{strategy.brandName}</h3>
             )}
             {strategy.industry && (
               <p className="text-sm text-dark-400 capitalize mt-0.5">{strategy.industry}</p>
@@ -220,7 +220,7 @@ function StrategyDisplay({ strategy, onUseInBrief }: { strategy: BrandStrategy; 
           <div className="flex gap-2">
             <button
               onClick={copyAll}
-              className="flex items-center gap-1 text-xs text-dark-400 hover:text-white transition-colors cursor-pointer px-2 py-1 rounded bg-dark-700"
+              className="flex items-center gap-1 text-xs text-dark-400 hover:text-dark-100 transition-colors cursor-pointer px-2 py-1 rounded bg-white/40"
             >
               {copiedSection === 'all' ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy All</>}
             </button>
@@ -236,7 +236,7 @@ function StrategyDisplay({ strategy, onUseInBrief }: { strategy: BrandStrategy; 
           const IconComponent = ICON_MAP[section.icon]
 
           return (
-            <Card key={section.key} className="!bg-dark-800 !p-4">
+            <Card key={section.key} className="!glass !p-4">
               <div className="flex items-center gap-2 mb-2">
                 {IconComponent && <IconComponent size={14} className="text-accent" />}
                 <h4 className="text-xs font-semibold text-accent uppercase tracking-wider">{section.label}</h4>
@@ -394,12 +394,12 @@ export default function BrandBuilderPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <Link href="/tools" className="inline-flex items-center gap-2 text-sm text-dark-300 hover:text-white transition-colors">
+      <Link href="/tools" className="inline-flex items-center gap-2 text-sm text-dark-300 hover:text-dark-100 transition-colors">
         <ArrowLeft size={16} /> Back to Tools
       </Link>
 
       {/* Section Tabs */}
-      <div className="flex gap-1 bg-dark-700 p-1 rounded-lg w-fit">
+      <div className="flex gap-1 bg-white/40 p-1 rounded-lg w-fit">
         <button
           onClick={() => setActiveSection('strategy')}
           className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
@@ -423,7 +423,7 @@ export default function BrandBuilderPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Input */}
           <Card>
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2 mb-4">
+            <h3 className="text-lg font-semibold text-dark-100 flex items-center gap-2 mb-4">
               <FileText size={20} className="text-accent" /> Brand Strategy
             </h3>
             <p className="text-sm text-dark-400 mb-4">
@@ -463,13 +463,13 @@ export default function BrandBuilderPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-dark-100 flex items-center gap-2">
                 <Sparkles size={20} className="text-accent" /> Design Brief
               </h3>
               {aiAvailable && (
                 <button
                   onClick={() => setUseAi(!useAi)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${useAi ? 'bg-accent/20 text-accent border border-accent/50' : 'bg-dark-600 text-dark-400 border border-dark-600'}`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${useAi ? 'bg-accent/20 text-accent border border-accent/50' : 'bg-white/30 text-dark-400 border border-white/40'}`}
                 >
                   <Zap size={12} /> AI Enhanced
                 </button>
@@ -477,11 +477,11 @@ export default function BrandBuilderPage() {
             </div>
 
             {/* Mode toggle */}
-            <div className="flex gap-1 mb-6 bg-dark-700 p-1 rounded-lg">
+            <div className="flex gap-1 mb-6 bg-white/40 p-1 rounded-lg">
               <button
                 onClick={() => setInputMode('form')}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                  inputMode === 'form' ? 'bg-dark-600 text-white' : 'text-dark-400 hover:text-dark-200'
+                  inputMode === 'form' ? 'bg-white/30 text-dark-100' : 'text-dark-400 hover:text-dark-200'
                 }`}
               >
                 <PenLine size={13} /> Fill Form
@@ -489,7 +489,7 @@ export default function BrandBuilderPage() {
               <button
                 onClick={() => setInputMode('paste')}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                  inputMode === 'paste' ? 'bg-dark-600 text-white' : 'text-dark-400 hover:text-dark-200'
+                  inputMode === 'paste' ? 'bg-white/30 text-dark-100' : 'text-dark-400 hover:text-dark-200'
                 }`}
               >
                 <ClipboardPaste size={13} /> Paste Brief
@@ -528,7 +528,7 @@ export default function BrandBuilderPage() {
                     {MOODS.map((mood) => (
                       <button key={mood} onClick={() => toggleMood(mood)}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors cursor-pointer ${
-                          form.moods.includes(mood) ? 'bg-accent/20 text-accent border border-accent/50' : 'bg-dark-600 text-dark-300 border border-dark-600 hover:border-dark-500'
+                          form.moods.includes(mood) ? 'bg-accent/20 text-accent border border-accent/50' : 'bg-white/30 text-dark-300 border border-white/40 hover:border-white/50'
                         }`}>{mood}</button>
                     ))}
                   </div>
@@ -542,7 +542,7 @@ export default function BrandBuilderPage() {
                   <label className="block text-sm font-medium text-dark-200 mb-2">Brand Colors (optional)</label>
                   <div className="flex items-center gap-2 mb-2">
                     <input type="color" value={colorInput} onChange={(e) => setColorInput(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-                    <input type="text" value={colorInput} onChange={(e) => setColorInput(e.target.value)} className="bg-dark-700 border border-dark-600 rounded px-2 py-1.5 text-sm text-white font-mono w-24 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+                    <input type="text" value={colorInput} onChange={(e) => setColorInput(e.target.value)} className="bg-white/40 border border-white/40 rounded px-2 py-1.5 text-sm text-dark-100 font-mono w-24 focus:outline-none focus:ring-1 focus:ring-accent/50" />
                     <Button variant="secondary" size="sm" onClick={addBrandColor}>Add</Button>
                   </div>
                   {form.brandColors && form.brandColors.length > 0 && (
@@ -571,7 +571,7 @@ export default function BrandBuilderPage() {
               <div className="space-y-6">
                 <Card>
                   <div className="flex items-center gap-2 mb-3">
-                    <h3 className="text-lg font-semibold text-white">Results</h3>
+                    <h3 className="text-lg font-semibold text-dark-100">Results</h3>
                     {aiUsed && (
                       <span className="text-xs bg-accent/20 text-accent px-2 py-0.5 rounded-full flex items-center gap-1">
                         <Zap size={10} /> AI Generated

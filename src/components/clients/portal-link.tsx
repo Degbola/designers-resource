@@ -48,14 +48,14 @@ export function PortalLink({ token, clientName, clientEmail }: { token: string; 
   return (
     <div className="mt-3 space-y-2">
       <span className="text-xs text-dark-400">Portal Link</span>
+      <code className="block w-full text-xs text-accent bg-white/40 px-3 py-2 rounded-lg overflow-hidden text-ellipsis whitespace-nowrap">{portalUrl}</code>
       <div className="flex items-center gap-2">
-        <code className="flex-1 text-xs text-accent bg-white/40 px-3 py-2 rounded-lg truncate">{portalUrl}</code>
-        <Button size="sm" variant="secondary" onClick={handleCopy}>
-          {copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
+        <Button size="sm" variant="secondary" onClick={handleCopy} className="flex-1 justify-center">
+          {copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy Link</>}
         </Button>
         {clientEmail && (
-          <Button size="sm" variant="secondary" onClick={handleSendEmail} disabled={sending}>
-            {sent ? <><Check size={14} /> Sent</> : sending ? <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Send size={14} /> Email</>}
+          <Button size="sm" variant="secondary" onClick={handleSendEmail} disabled={sending} className="flex-1 justify-center">
+            {sent ? <><Check size={14} /> Sent</> : sending ? <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Send size={14} /> Send Email</>}
           </Button>
         )}
       </div>

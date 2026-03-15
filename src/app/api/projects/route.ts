@@ -25,12 +25,12 @@ export async function POST(req: NextRequest) {
   if (error) return validationError(error)
 
   const result = await db.execute({
-    sql: `INSERT INTO projects (client_id, name, description, status, priority, start_date, due_date, budget, progress)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO projects (client_id, name, description, status, priority, start_date, due_date, budget, progress, drive_folder_url)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       body.client_id, body.name, body.description || '', body.status || 'not_started',
       body.priority || 'medium', body.start_date || '', body.due_date || '',
-      body.budget || 0, body.progress || 0,
+      body.budget || 0, body.progress || 0, body.drive_folder_url || '',
     ],
   })
 
@@ -47,9 +47,9 @@ export async function PUT(req: NextRequest) {
   const body = await req.json()
 
   await db.execute({
-    sql: `UPDATE projects SET client_id=?, name=?, description=?, status=?, priority=?, start_date=?, due_date=?, budget=?, progress=?, updated_at=datetime('now')
+    sql: `UPDATE projects SET client_id=?, name=?, description=?, status=?, priority=?, start_date=?, due_date=?, budget=?, progress=?, drive_folder_url=?, updated_at=datetime('now')
     WHERE id=?`,
-    args: [body.client_id, body.name, body.description, body.status, body.priority, body.start_date, body.due_date, body.budget, body.progress, body.id],
+    args: [body.client_id, body.name, body.description, body.status, body.priority, body.start_date, body.due_date, body.budget, body.progress, body.drive_folder_url || '', body.id],
   })
 
   const projectResult = await db.execute({

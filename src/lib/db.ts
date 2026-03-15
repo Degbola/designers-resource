@@ -193,7 +193,23 @@ export async function initDb() {
       posts_json TEXT NOT NULL,
       created_at TEXT DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS portal_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      client_id INTEGER NOT NULL,
+      sender TEXT NOT NULL CHECK(sender IN ('designer', 'client')),
+      content TEXT NOT NULL,
+      read_by_designer INTEGER DEFAULT 0,
+      read_by_client INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
+    );
   `)
+
+  // Column migrations — safe to run multiple times (errors ignored if already exists)
+  try {
+    await db.execute({ sql: "ALTER TABLE projects ADD COLUMN drive_folder_url TEXT DEFAULT ''", args: [] })
+  } catch { /* column already exists */ }
 
   initialized = true
 }

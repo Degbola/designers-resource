@@ -13,7 +13,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ token: 
   }
 
   const projectsResult = await db.execute({
-    sql: 'SELECT id, name, status, progress, due_date FROM projects WHERE client_id = ? ORDER BY updated_at DESC',
+    sql: 'SELECT id, name, status, progress, due_date, description, drive_folder_url FROM projects WHERE client_id = ? ORDER BY updated_at DESC',
     args: [client.id],
   })
 
@@ -29,5 +29,22 @@ export async function GET(_req: Request, { params }: { params: Promise<{ token: 
     args: [client.id],
   })
 
-  return NextResponse.json({ client, projects: projectsResult.rows, invoices: invoicesResult.rows, approvals: approvalsResult.rows })
+  const messagesResult = await db.execute({
+    sql: 'SELECT id, sender, content, created_at FROM portal_messages WHERE client_id = ? ORDER BY created_at ASC',
+    args: [client.id],
+  })
+
+  // Mark designer messages as read by client
+  await db.execute({
+    sql: `UPDATE portal_messages SET read_by_client = 1 WHERE client_id = ? AND sender = 'designer'`,
+    args: [client.id],
+  })
+
+  return NextResponse.json({
+    client,
+    projects: projectsResult.rows,
+    invoices: invoicesResult.rows,
+    approvals: approvalsResult.rows,
+    messages: messagesResult.rows,
+  })
 }

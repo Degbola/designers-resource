@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { Mail, Phone, Building2, MapPin, ArrowLeft, FolderKanban, FileText } from 'lucide-react'
 import { PortalLink } from '@/components/clients/portal-link'
+import { PortalMessages } from '@/components/clients/portal-messages'
 import type { Client, Project, Invoice } from '@/types'
 
 export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -49,6 +50,8 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           <PortalLink token={client.portal_token} clientName={client.name} clientEmail={client.email} />
         </div>
       </div>
+
+      <PortalMessages clientId={client.id} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>

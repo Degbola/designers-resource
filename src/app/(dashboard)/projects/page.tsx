@@ -26,7 +26,7 @@ export default function ProjectsPage() {
   const [search, setSearch] = useState('')
   const [form, setForm] = useState({
     client_id: '', name: '', description: '', status: 'not_started', priority: 'medium',
-    start_date: '', due_date: '', budget: '', progress: '0',
+    start_date: '', due_date: '', budget: '', progress: '0', drive_folder_url: '',
   })
 
   const load = useCallback(async () => {
@@ -54,7 +54,7 @@ export default function ProjectsPage() {
 
   const openEdit = (p: Project) => {
     setEditing(p)
-    setForm({ client_id: String(p.client_id), name: p.name, description: p.description, status: p.status, priority: p.priority, start_date: p.start_date, due_date: p.due_date, budget: String(p.budget), progress: String(p.progress) })
+    setForm({ client_id: String(p.client_id), name: p.name, description: p.description, status: p.status, priority: p.priority, start_date: p.start_date, due_date: p.due_date, budget: String(p.budget), progress: String(p.progress), drive_folder_url: (p as Project & { drive_folder_url?: string }).drive_folder_url || '' })
     setShowModal(true)
   }
 
@@ -80,7 +80,7 @@ export default function ProjectsPage() {
           <input type="text" placeholder="Search projects..." value={search} onChange={(e) => setSearch(e.target.value)}
             className="bg-white/40 border border-white/30 rounded-lg pl-9 pr-4 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64" />
         </div>
-        <Button onClick={() => { setEditing(null); setForm({ client_id: clients[0]?.id?.toString() || '', name: '', description: '', status: 'not_started', priority: 'medium', start_date: '', due_date: '', budget: '', progress: '0' }); setShowModal(true) }} className="w-full sm:w-auto">
+        <Button onClick={() => { setEditing(null); setForm({ client_id: clients[0]?.id?.toString() || '', name: '', description: '', status: 'not_started', priority: 'medium', start_date: '', due_date: '', budget: '', progress: '0', drive_folder_url: '' }); setShowModal(true) }} className="w-full sm:w-auto">
           <Plus size={16} /> New Project
         </Button>
       </div>
@@ -153,6 +153,7 @@ export default function ProjectsPage() {
             <Input label="Budget ($)" type="number" value={form.budget} onChange={(e) => setForm({ ...form, budget: e.target.value })} />
             <Input label="Progress (%)" type="number" min="0" max="100" value={form.progress} onChange={(e) => setForm({ ...form, progress: e.target.value })} />
           </div>
+          <Input label="Google Drive Folder URL" type="url" placeholder="https://drive.google.com/drive/folders/..." value={form.drive_folder_url} onChange={(e) => setForm({ ...form, drive_folder_url: e.target.value })} />
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>
             <Button type="submit">{editing ? 'Update' : 'Create'} Project</Button>

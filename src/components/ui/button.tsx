@@ -8,11 +8,11 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export function Button({ variant = 'primary', size = 'md', className, children, ...props }: ButtonProps) {
-  const base = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'
+  const base = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-[0.98]'
 
   const variants = {
-    primary: 'bg-accent hover:bg-accent-hover text-white shadow-lg shadow-accent/20',
-    secondary: 'glass hover:bg-white/70 text-dark-200',
+    primary: 'bg-accent hover:bg-accent-hover text-white shadow-lg shadow-accent/20 hover:scale-[1.02] btn-glow',
+    secondary: 'glass hover:bg-white/70 text-dark-200 hover:scale-[1.01]',
     ghost: 'hover:bg-white/40 text-dark-300 hover:text-dark-200',
     danger: 'bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20',
   }

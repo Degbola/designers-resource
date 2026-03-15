@@ -126,11 +126,11 @@ export default function FontPairingPage() {
                       return (
                         <Card
                           key={i}
-                          className={`cursor-pointer transition-all ${isActive ? 'ring-2 ring-accent border-accent' : 'hover:border-white/60'}`}
+                          className={`cursor-pointer transition-all ${isActive ? 'ring-2 ring-accent border-accent' : 'hover:border-black/[0.12] dark:hover:border-white/[0.15]'}`}
                           onClick={() => applyPairing(pairing)}
                         >
                           <div className="flex items-start justify-between mb-2">
-                            <span className="text-xs bg-white/30 text-dark-300 px-2 py-0.5 rounded">{pairing.category}</span>
+                            <span className="text-xs bg-black/[0.04] dark:bg-white/[0.04] text-dark-300 px-2 py-0.5 rounded">{pairing.category}</span>
                             {isActive && <Eye size={16} className="text-accent" />}
                           </div>
                           <h4
@@ -174,7 +174,7 @@ export default function FontPairingPage() {
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                         placeholder="Search fonts..."
-                        className="w-full bg-white/40 border border-white/30 rounded-lg pl-10 pr-3 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all"
+                        className="w-full bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.07] rounded-lg pl-10 pr-3 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all"
                       />
                     </div>
 
@@ -187,7 +187,7 @@ export default function FontPairingPage() {
                           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                             categoryFilter === cat.id
                               ? 'bg-accent text-white'
-                              : 'bg-white/40 text-dark-300 hover:bg-white/50 hover:text-dark-100'
+                              : 'bg-black/[0.05] dark:bg-white/[0.05] text-dark-300 hover:bg-white/60 dark:hover:bg-white/[0.06] hover:text-dark-100'
                           }`}
                         >
                           {cat.label}
@@ -203,7 +203,7 @@ export default function FontPairingPage() {
                           onClick={() => setSortBy(sort.id)}
                           className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1 ${
                             sortBy === sort.id
-                              ? 'bg-white/30 text-dark-100'
+                              ? 'bg-black/[0.04] dark:bg-white/[0.04] text-dark-100'
                               : 'text-dark-400 hover:text-dark-200'
                           }`}
                         >

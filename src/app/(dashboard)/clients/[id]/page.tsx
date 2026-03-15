@@ -46,7 +46,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             {client.phone && <span className="flex items-center gap-1.5"><Phone size={14} /> {client.phone}</span>}
             {client.address && <span className="flex items-center gap-1.5"><MapPin size={14} /> {client.address}</span>}
           </div>
-          {client.notes && <p className="mt-3 text-sm text-dark-300 bg-white/40 p-3 rounded-lg">{client.notes}</p>}
+          {client.notes && <p className="mt-3 text-sm text-dark-300 bg-black/[0.05] dark:bg-white/[0.05] p-3 rounded-lg">{client.notes}</p>}
           <PortalLink token={client.portal_token} clientName={client.name} clientEmail={client.email} />
         </div>
       </div>
@@ -64,7 +64,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           ) : (
             <div className="space-y-3">
               {projects.map((p) => (
-                <Link key={p.id} href={`/projects/${p.id}`} className="flex items-center justify-between p-3 rounded-lg bg-white/30 hover:bg-white/40 transition-colors">
+                <Link key={p.id} href={`/projects/${p.id}`} className="flex items-center justify-between p-3 rounded-lg bg-black/[0.04] dark:bg-white/[0.04] hover:bg-black/[0.05] dark:hover:bg-white/[0.05] transition-colors">
                   <div>
                     <p className="font-medium text-dark-100 text-sm">{p.name}</p>
                     <p className="text-xs text-dark-400">{p.due_date ? `Due ${formatDate(p.due_date)}` : 'No due date'}</p>
@@ -89,7 +89,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
           ) : (
             <div className="space-y-3">
               {invoices.map((inv) => (
-                <Link key={inv.id} href={`/invoices/${inv.id}`} className="flex items-center justify-between p-3 rounded-lg bg-white/30 hover:bg-white/40 transition-colors">
+                <Link key={inv.id} href={`/invoices/${inv.id}`} className="flex items-center justify-between p-3 rounded-lg bg-black/[0.04] dark:bg-white/[0.04] hover:bg-black/[0.05] dark:hover:bg-white/[0.05] transition-colors">
                   <div>
                     <p className="font-medium text-dark-100 text-sm">{inv.invoice_number}</p>
                     <p className="text-xs text-dark-400">{formatDate(inv.issue_date)}</p>

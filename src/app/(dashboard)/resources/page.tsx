@@ -89,7 +89,7 @@ export default function ResourcesPage() {
               placeholder="Search resources..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-white/40 border border-white/30 rounded-lg pl-9 pr-4 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64"
+              className="bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.07] rounded-lg pl-9 pr-4 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64"
             />
           </div>
           <Select
@@ -103,7 +103,7 @@ export default function ResourcesPage() {
           />
           <button
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-            className={`p-2 rounded-lg border transition-colors cursor-pointer ${showFavoritesOnly ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400' : 'bg-white/40 border-white/30 text-dark-400 hover:text-dark-100'}`}
+            className={`p-2 rounded-lg border transition-colors cursor-pointer ${showFavoritesOnly ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400' : 'bg-black/[0.05] dark:bg-white/[0.05] border-black/[0.06] dark:border-white/[0.07] text-dark-400 hover:text-dark-100'}`}
             title="Show favorites only"
           >
             <Star size={16} fill={showFavoritesOnly ? 'currentColor' : 'none'} />
@@ -124,7 +124,7 @@ export default function ResourcesPage() {
             const config = CATEGORY_CONFIG[resource.category] || CATEGORY_CONFIG.tools
             const Icon = config.icon
             return (
-              <Card key={resource.id} className="hover:border-white/40 transition-colors flex flex-col">
+              <Card key={resource.id} className="hover:border-black/[0.07] dark:hover:border-white/[0.08] transition-colors flex flex-col">
                 <div className="flex items-start justify-between mb-3">
                   <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${config.bg} ${config.color}`}>
                     <Icon size={12} /> {config.label}
@@ -143,11 +143,11 @@ export default function ResourcesPage() {
                 {resource.tags && (
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {resource.tags.split(',').map((tag, i) => (
-                      <span key={i} className="text-xs bg-white/30 text-dark-200 px-2 py-0.5 rounded">{tag.trim()}</span>
+                      <span key={i} className="text-xs bg-black/[0.04] dark:bg-white/[0.04] text-dark-200 px-2 py-0.5 rounded">{tag.trim()}</span>
                     ))}
                   </div>
                 )}
-                <div className="mt-auto pt-3 border-t border-white/30 flex items-center justify-between">
+                <div className="mt-auto pt-3 border-t border-black/[0.06] dark:border-white/[0.07] flex items-center justify-between">
                   {resource.url ? (
                     <a href={resource.url} target="_blank" rel="noopener noreferrer" className="text-sm text-accent hover:text-accent-hover flex items-center gap-1 transition-colors">
                       <ExternalLink size={14} /> Visit
@@ -156,8 +156,8 @@ export default function ResourcesPage() {
                     <span />
                   )}
                   <div className="flex gap-1">
-                    <button onClick={() => openEdit(resource)} className="p-1.5 rounded-lg hover:bg-white/40 text-dark-400 hover:text-dark-100 transition-colors cursor-pointer"><Edit2 size={14} /></button>
-                    <button onClick={() => handleDelete(resource.id)} className="p-1.5 rounded-lg hover:bg-white/40 text-dark-400 hover:text-red-500 transition-colors cursor-pointer"><Trash2 size={14} /></button>
+                    <button onClick={() => openEdit(resource)} className="p-1.5 rounded-lg hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-dark-100 transition-colors cursor-pointer"><Edit2 size={14} /></button>
+                    <button onClick={() => handleDelete(resource.id)} className="p-1.5 rounded-lg hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-red-500 transition-colors cursor-pointer"><Trash2 size={14} /></button>
                   </div>
                 </div>
               </Card>

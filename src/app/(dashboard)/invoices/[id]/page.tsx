@@ -80,7 +80,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
         <div className="overflow-x-auto -mx-4 sm:-mx-8 px-4 sm:px-8">
         <table className="w-full mb-8 min-w-[400px]">
           <thead>
-            <tr className="border-b border-white/40">
+            <tr className="border-b border-black/[0.07] dark:border-white/[0.08]">
               <th className="text-left py-3 text-xs uppercase tracking-wider text-dark-400">Description</th>
               <th className="text-right py-3 text-xs uppercase tracking-wider text-dark-400">Qty</th>
               <th className="text-right py-3 text-xs uppercase tracking-wider text-dark-400">Price</th>
@@ -89,7 +89,7 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
           </thead>
           <tbody>
             {items.map((item) => (
-              <tr key={item.id} className="border-b border-white/40">
+              <tr key={item.id} className="border-b border-black/[0.07] dark:border-white/[0.08]">
                 <td className="py-3 text-dark-100">{item.description}</td>
                 <td className="py-3 text-dark-200 text-right">{item.quantity}</td>
                 <td className="py-3 text-dark-200 text-right">{formatCurrency(item.unit_price)}</td>
@@ -107,12 +107,12 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
           <div className="w-full sm:w-72 space-y-2">
             <div className="flex justify-between text-sm text-dark-300"><span>Subtotal</span><span>{formatCurrency(invoice.subtotal)}</span></div>
             <div className="flex justify-between text-sm text-dark-300"><span>Tax ({invoice.tax_rate}%)</span><span>{formatCurrency(invoice.tax_amount)}</span></div>
-            <div className="flex justify-between font-bold text-xl text-dark-100 border-t border-white/40 pt-3"><span>Total</span><span>{formatCurrency(invoice.total)}</span></div>
+            <div className="flex justify-between font-bold text-xl text-dark-100 border-t border-black/[0.07] dark:border-white/[0.08] pt-3"><span>Total</span><span>{formatCurrency(invoice.total)}</span></div>
           </div>
         </div>
 
         {invoice.notes && (
-          <div className="mt-8 pt-6 border-t border-white/40">
+          <div className="mt-8 pt-6 border-t border-black/[0.07] dark:border-white/[0.08]">
             <h4 className="text-xs uppercase tracking-wider text-dark-400 mb-2">Notes</h4>
             <p className="text-sm text-dark-300">{invoice.notes}</p>
           </div>

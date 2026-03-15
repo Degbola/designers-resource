@@ -68,7 +68,7 @@ function AspectRatioCalculator() {
       <div className="space-y-1">
         {commonRatios.map((r) => (
           <button key={r.label} onClick={() => { setWidth(r.w * 100); setHeight(r.h * 100) }}
-            className="text-xs bg-white/30 hover:bg-white/40 text-dark-200 px-2.5 py-1 rounded mr-2 transition-colors cursor-pointer">
+            className="text-xs bg-black/[0.04] dark:bg-white/[0.04] hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-200 px-2.5 py-1 rounded mr-2 transition-colors cursor-pointer">
             {r.label}
           </button>
         ))}
@@ -101,12 +101,12 @@ function LoremIpsumGenerator() {
         <label className="text-sm text-dark-300">Paragraphs:</label>
         {[1, 2, 3, 4, 5].map((n) => (
           <button key={n} onClick={() => setParagraphs(n)}
-            className={`w-7 h-7 rounded text-xs font-medium cursor-pointer transition-colors ${n === paragraphs ? 'bg-accent text-white' : 'bg-white/30 text-dark-300 hover:bg-white/40'}`}>
+            className={`w-7 h-7 rounded text-xs font-medium cursor-pointer transition-colors ${n === paragraphs ? 'bg-accent text-white' : 'bg-black/[0.04] dark:bg-white/[0.04] text-dark-300 hover:bg-black/[0.05] dark:hover:bg-white/[0.05]'}`}>
             {n}
           </button>
         ))}
       </div>
-      <div className="bg-white/30 rounded-lg p-3 max-h-40 overflow-y-auto text-sm text-dark-300 leading-relaxed whitespace-pre-line">{text}</div>
+      <div className="bg-black/[0.04] dark:bg-white/[0.04] rounded-lg p-3 max-h-40 overflow-y-auto text-sm text-dark-300 leading-relaxed whitespace-pre-line">{text}</div>
     </Card>
   )
 }
@@ -129,14 +129,14 @@ function ContrastChecker() {
           <label className="block text-xs text-dark-400 mb-1">Foreground</label>
           <div className="flex items-center gap-2">
             <input type="color" value={fg} onChange={(e) => setFg(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-            <input type="text" value={fg} onChange={(e) => setFg(e.target.value)} className="bg-white/40 border border-white/30 rounded px-2 py-1 text-sm text-dark-100 w-24 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+            <input type="text" value={fg} onChange={(e) => setFg(e.target.value)} className="bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.07] rounded px-2 py-1 text-sm text-dark-100 w-24 focus:outline-none focus:ring-1 focus:ring-accent/50" />
           </div>
         </div>
         <div>
           <label className="block text-xs text-dark-400 mb-1">Background</label>
           <div className="flex items-center gap-2">
             <input type="color" value={bg} onChange={(e) => setBg(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-            <input type="text" value={bg} onChange={(e) => setBg(e.target.value)} className="bg-white/40 border border-white/30 rounded px-2 py-1 text-sm text-dark-100 w-24 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+            <input type="text" value={bg} onChange={(e) => setBg(e.target.value)} className="bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.07] rounded px-2 py-1 text-sm text-dark-100 w-24 focus:outline-none focus:ring-1 focus:ring-accent/50" />
           </div>
         </div>
       </div>
@@ -168,7 +168,7 @@ export default function ToolsPage() {
             const Icon = tool.icon
             return (
               <Link key={tool.href} href={tool.href}>
-                <Card className="hover:border-white/60 transition-colors group h-full">
+                <Card className="hover:border-black/[0.10] dark:hover:border-white/[0.15] transition-colors group h-full">
                   <div className={`w-10 h-10 rounded-lg ${tool.bg} flex items-center justify-center mb-3`}>
                     <Icon size={20} className={tool.color} />
                   </div>

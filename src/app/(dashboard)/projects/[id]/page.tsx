@@ -43,7 +43,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         {project.description && <p className="mt-4 text-dark-200 text-sm">{project.description}</p>}
         <div className="mt-4">
           <div className="flex justify-between text-sm text-dark-300 mb-2"><span>Progress</span><span>{project.progress}%</span></div>
-          <div className="h-2 bg-white/30 rounded-full overflow-hidden">
+          <div className="h-2 bg-black/[0.04] dark:bg-white/[0.04] rounded-full overflow-hidden">
             <div className="h-full bg-accent rounded-full transition-all" style={{ width: `${project.progress}%` }} />
           </div>
         </div>
@@ -56,14 +56,14 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         ) : (
           <div className="space-y-3">
             {approvals.map((a) => (
-              <div key={a.id} className="p-4 rounded-lg bg-white/30 border border-white/30">
+              <div key={a.id} className="p-4 rounded-lg bg-black/[0.04] dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.07]">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-medium text-dark-100">{a.title}</h4>
                   <Badge variant={a.status}>{a.status}</Badge>
                 </div>
                 <p className="text-sm text-dark-300">{a.description}</p>
                 {a.client_feedback && (
-                  <p className="text-sm text-dark-200 mt-2 bg-white/40 p-2 rounded">Feedback: {a.client_feedback}</p>
+                  <p className="text-sm text-dark-200 mt-2 bg-black/[0.05] dark:bg-white/[0.05] p-2 rounded">Feedback: {a.client_feedback}</p>
                 )}
                 <p className="text-xs text-dark-400 mt-2">{formatDate(a.created_at)}</p>
               </div>

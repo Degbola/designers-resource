@@ -78,7 +78,7 @@ export default function ProjectsPage() {
         <div className="relative w-full sm:w-auto">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400" />
           <input type="text" placeholder="Search projects..." value={search} onChange={(e) => setSearch(e.target.value)}
-            className="bg-white/40 border border-white/30 rounded-lg pl-9 pr-4 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64" />
+            className="bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.07] rounded-lg pl-9 pr-4 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64" />
         </div>
         <Button onClick={() => { setEditing(null); setForm({ client_id: clients[0]?.id?.toString() || '', name: '', description: '', status: 'not_started', priority: 'medium', start_date: '', due_date: '', budget: '', progress: '0', drive_folder_url: '' }); setShowModal(true) }} className="w-full sm:w-auto">
           <Plus size={16} /> New Project
@@ -92,16 +92,16 @@ export default function ProjectsPage() {
             <div key={col.id}>
               <div className={`flex items-center gap-2 mb-3 pb-2 border-b-2 ${col.color}`}>
                 <h3 className="font-semibold text-sm text-dark-200">{col.label}</h3>
-                <span className="text-xs text-dark-400 bg-white/40 px-2 py-0.5 rounded-full">{colProjects.length}</span>
+                <span className="text-xs text-dark-400 bg-black/[0.05] dark:bg-white/[0.05] px-2 py-0.5 rounded-full">{colProjects.length}</span>
               </div>
               <div className="space-y-3">
                 {colProjects.map((project) => (
-                  <Card key={project.id} className="!p-4 hover:border-white/60 transition-colors">
+                  <Card key={project.id} className="!p-4 hover:border-black/[0.10] dark:hover:border-white/[0.15] transition-colors">
                     <div className="flex items-start justify-between mb-2">
                       <Link href={`/projects/${project.id}`} className="font-medium text-dark-100 text-sm hover:text-accent transition-colors">{project.name}</Link>
                       <div className="flex gap-1">
-                        <button onClick={() => openEdit(project)} className="p-1 rounded hover:bg-white/40 text-dark-400 hover:text-dark-100 cursor-pointer"><Edit2 size={12} /></button>
-                        <button onClick={() => handleDelete(project.id)} className="p-1 rounded hover:bg-white/40 text-dark-400 hover:text-red-500 cursor-pointer"><Trash2 size={12} /></button>
+                        <button onClick={() => openEdit(project)} className="p-1 rounded hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-dark-100 cursor-pointer"><Edit2 size={12} /></button>
+                        <button onClick={() => handleDelete(project.id)} className="p-1 rounded hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-red-500 cursor-pointer"><Trash2 size={12} /></button>
                       </div>
                     </div>
                     <p className="text-xs text-dark-400 mb-2">{project.client_name}</p>
@@ -114,7 +114,7 @@ export default function ProjectsPage() {
                     )}
                     <div className="mt-3">
                       <div className="flex justify-between text-xs text-dark-400 mb-1"><span>Progress</span><span>{project.progress}%</span></div>
-                      <div className="h-1.5 bg-white/30 rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-black/[0.04] dark:bg-white/[0.04] rounded-full overflow-hidden">
                         <div className="h-full bg-accent rounded-full transition-all" style={{ width: `${project.progress}%` }} />
                       </div>
                     </div>
@@ -122,7 +122,7 @@ export default function ProjectsPage() {
                       <div className="flex gap-1 mt-3">
                         {statusColumns.filter((s) => s.id !== project.status).map((s) => (
                           <button key={s.id} onClick={() => updateStatus(project, s.id)}
-                            className="text-[10px] px-2 py-1 rounded bg-white/30 text-dark-300 hover:bg-white/50 hover:text-dark-100 transition-colors cursor-pointer">
+                            className="text-[10px] px-2 py-1 rounded bg-black/[0.04] dark:bg-white/[0.04] text-dark-300 hover:bg-black/[0.06] dark:hover:bg-white/[0.06] hover:text-dark-100 transition-colors cursor-pointer">
                             {s.label}
                           </button>
                         ))}

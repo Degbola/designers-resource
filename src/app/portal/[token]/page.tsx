@@ -44,7 +44,7 @@ function StatusPill({ status }: { status: string }) {
 
 function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`glass rounded-2xl p-5 border border-white/40 dark:border-white/8 ${className}`}>
+    <div className={`glass rounded-2xl p-5 border border-black/[0.07] dark:border-white/[0.08] ${className}`}>
       {children}
     </div>
   )
@@ -167,7 +167,7 @@ export default function PortalPage() {
       </Card>
 
       {/* Tabs */}
-      <div className="flex gap-1 glass rounded-xl p-1 border border-white/40 dark:border-white/8 overflow-x-auto">
+      <div className="flex gap-1 glass rounded-xl p-1 border border-black/[0.07] dark:border-white/[0.08] overflow-x-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
@@ -178,7 +178,7 @@ export default function PortalPage() {
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex-1 justify-center cursor-pointer ${
                 isActive
                   ? 'bg-white dark:bg-white/10 text-dark-100 shadow-sm'
-                  : 'text-dark-400 hover:text-dark-200 hover:bg-white/40 dark:hover:bg-white/5'
+                  : 'text-dark-400 hover:text-dark-200 hover:bg-black/[0.05] dark:hover:bg-white/[0.05]'
               }`}
             >
               <Icon size={14} />
@@ -218,7 +218,7 @@ export default function PortalPage() {
               <div className="flex justify-between text-xs text-dark-400 mb-1.5">
                 <span>Progress</span><span className="font-medium text-dark-200">{p.progress}%</span>
               </div>
-              <div className="h-2 bg-white/30 dark:bg-white/10 rounded-full overflow-hidden">
+              <div className="h-2 bg-black/[0.04] dark:bg-white/[0.04] rounded-full overflow-hidden">
                 <div
                   className="h-full bg-accent rounded-full transition-all duration-700"
                   style={{ width: `${p.progress}%` }}
@@ -284,7 +284,7 @@ export default function PortalPage() {
               </div>
               {a.description && <p className="text-sm text-dark-300 mb-3">{a.description}</p>}
               {a.client_feedback && (
-                <div className="text-sm text-dark-200 bg-white/30 dark:bg-white/5 border border-white/40 dark:border-white/10 p-3 rounded-xl mb-3">
+                <div className="text-sm text-dark-200 bg-black/[0.04] dark:bg-white/[0.04] border border-black/[0.07] dark:border-white/[0.08] p-3 rounded-xl mb-3">
                   <p className="text-xs text-dark-400 mb-1 font-medium">Your feedback</p>
                   {a.client_feedback}
                 </div>
@@ -297,7 +297,7 @@ export default function PortalPage() {
                         placeholder="Add feedback (optional)..."
                         value={feedbackForm.feedback}
                         onChange={(e) => setFeedbackForm({ ...feedbackForm, feedback: e.target.value })}
-                        className="w-full bg-white/40 dark:bg-white/5 border border-white/40 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/40 resize-none"
+                        className="w-full bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.07] dark:border-white/[0.08] rounded-xl px-4 py-3 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/40 resize-none"
                         rows={3}
                       />
                       <div className="flex gap-2 flex-wrap">
@@ -375,7 +375,7 @@ export default function PortalPage() {
       {activeTab === 'messages' && (
         <div className="space-y-4">
           <Card className="!p-0 overflow-hidden">
-            <div className="px-5 py-3 border-b border-white/30 dark:border-white/8">
+            <div className="px-5 py-3 border-b border-black/[0.06] dark:border-white/[0.07]">
               <h3 className="font-semibold text-dark-100 text-sm">Conversation with your designer</h3>
             </div>
             <div className="p-4 space-y-3 min-h-[280px] max-h-[480px] overflow-y-auto">
@@ -390,7 +390,7 @@ export default function PortalPage() {
                   <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
                     msg.sender === 'client'
                       ? 'bg-accent text-white rounded-br-sm'
-                      : 'bg-white/50 dark:bg-white/10 text-dark-100 rounded-bl-sm'
+                      : 'bg-white/60 dark:bg-white/[0.06] text-dark-100 rounded-bl-sm'
                   }`}>
                     <p className="text-sm leading-relaxed">{msg.content}</p>
                     <p className={`text-[10px] mt-1 ${msg.sender === 'client' ? 'text-white/70' : 'text-dark-400'}`}>
@@ -401,14 +401,14 @@ export default function PortalPage() {
               ))}
               <div ref={messagesEndRef} />
             </div>
-            <div className="px-4 py-3 border-t border-white/30 dark:border-white/8 flex gap-2">
+            <div className="px-4 py-3 border-t border-black/[0.06] dark:border-white/[0.07] flex gap-2">
               <input
                 type="text"
                 placeholder="Type a message..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-                className="flex-1 bg-white/40 dark:bg-white/5 border border-white/40 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/40"
+                className="flex-1 bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.07] dark:border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/40"
               />
               <button
                 onClick={sendMessage}

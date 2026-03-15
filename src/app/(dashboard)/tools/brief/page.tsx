@@ -159,9 +159,9 @@ function FontDisplay({ fonts }: { fonts: FontSuggestion[] }) {
       {fonts.map((font, i) => (
         <Card key={i} className="!glass">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs bg-white/30 text-dark-300 px-2 py-0.5 rounded">{font.category}</span>
+            <span className="text-xs bg-black/[0.04] dark:bg-white/[0.04] text-dark-300 px-2 py-0.5 rounded">{font.category}</span>
           </div>
-          <div className="bg-white/40 rounded-lg p-4 mb-3">
+          <div className="bg-black/[0.05] dark:bg-white/[0.05] rounded-lg p-4 mb-3">
             <h3 className="text-2xl text-dark-100 mb-2" style={{ fontFamily: `'${font.heading}', serif`, fontWeight: font.headingWeight }}>{font.heading}</h3>
             <p className="text-sm text-dark-300 leading-relaxed" style={{ fontFamily: `'${font.body}', sans-serif`, fontWeight: font.bodyWeight }}>
               Great design speaks to the heart of your audience. This pairing brings clarity and character to every touchpoint.
@@ -220,7 +220,7 @@ function StrategyDisplay({ strategy, onUseInBrief }: { strategy: BrandStrategy; 
           <div className="flex gap-2">
             <button
               onClick={copyAll}
-              className="flex items-center gap-1 text-xs text-dark-400 hover:text-dark-100 transition-colors cursor-pointer px-2 py-1 rounded bg-white/40"
+              className="flex items-center gap-1 text-xs text-dark-400 hover:text-dark-100 transition-colors cursor-pointer px-2 py-1 rounded bg-black/[0.05] dark:bg-white/[0.05]"
             >
               {copiedSection === 'all' ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy All</>}
             </button>
@@ -430,7 +430,7 @@ export default function BrandBuilderPage() {
       </Link>
 
       {/* Section Tabs */}
-      <div className="flex gap-1 bg-white/40 p-1 rounded-lg w-fit">
+      <div className="flex gap-1 bg-black/[0.05] dark:bg-white/[0.05] p-1 rounded-lg w-fit">
         <button
           onClick={() => setActiveSection('strategy')}
           className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
@@ -461,7 +461,7 @@ export default function BrandBuilderPage() {
               {aiAvailable && (
                 <button
                   onClick={() => setUseAi(!useAi)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${useAi ? 'bg-accent/20 text-accent border border-accent/50' : 'bg-white/30 text-dark-400 border border-white/40'}`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${useAi ? 'bg-accent/20 text-accent border border-accent/50' : 'bg-black/[0.04] dark:bg-white/[0.04] text-dark-400 border border-black/[0.07] dark:border-white/[0.08]'}`}
                 >
                   <Zap size={12} /> AI Enhanced
                 </button>
@@ -510,7 +510,7 @@ export default function BrandBuilderPage() {
               {aiAvailable && (
                 <button
                   onClick={() => setUseAi(!useAi)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${useAi ? 'bg-accent/20 text-accent border border-accent/50' : 'bg-white/30 text-dark-400 border border-white/40'}`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${useAi ? 'bg-accent/20 text-accent border border-accent/50' : 'bg-black/[0.04] dark:bg-white/[0.04] text-dark-400 border border-black/[0.07] dark:border-white/[0.08]'}`}
                 >
                   <Zap size={12} /> AI Enhanced
                 </button>
@@ -518,11 +518,11 @@ export default function BrandBuilderPage() {
             </div>
 
             {/* Mode toggle */}
-            <div className="flex gap-1 mb-6 bg-white/40 p-1 rounded-lg">
+            <div className="flex gap-1 mb-6 bg-black/[0.05] dark:bg-white/[0.05] p-1 rounded-lg">
               <button
                 onClick={() => setInputMode('form')}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                  inputMode === 'form' ? 'bg-white/30 text-dark-100' : 'text-dark-400 hover:text-dark-200'
+                  inputMode === 'form' ? 'bg-black/[0.04] dark:bg-white/[0.04] text-dark-100' : 'text-dark-400 hover:text-dark-200'
                 }`}
               >
                 <PenLine size={13} /> Fill Form
@@ -530,7 +530,7 @@ export default function BrandBuilderPage() {
               <button
                 onClick={() => setInputMode('paste')}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                  inputMode === 'paste' ? 'bg-white/30 text-dark-100' : 'text-dark-400 hover:text-dark-200'
+                  inputMode === 'paste' ? 'bg-black/[0.04] dark:bg-white/[0.04] text-dark-100' : 'text-dark-400 hover:text-dark-200'
                 }`}
               >
                 <ClipboardPaste size={13} /> Paste Brief
@@ -569,7 +569,7 @@ export default function BrandBuilderPage() {
                     {MOODS.map((mood) => (
                       <button key={mood} onClick={() => toggleMood(mood)}
                         className={`px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors cursor-pointer ${
-                          form.moods.includes(mood) ? 'bg-accent/20 text-accent border border-accent/50' : 'bg-white/30 text-dark-300 border border-white/40 hover:border-white/50'
+                          form.moods.includes(mood) ? 'bg-accent/20 text-accent border border-accent/50' : 'bg-black/[0.04] dark:bg-white/[0.04] text-dark-300 border border-black/[0.07] dark:border-white/[0.08] hover:border-black/[0.10] dark:hover:border-white/[0.12]'
                         }`}>{mood}</button>
                     ))}
                   </div>
@@ -583,7 +583,7 @@ export default function BrandBuilderPage() {
                   <label className="block text-sm font-medium text-dark-200 mb-2">Brand Colors (optional)</label>
                   <div className="flex items-center gap-2 mb-2">
                     <input type="color" value={colorInput} onChange={(e) => setColorInput(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-                    <input type="text" value={colorInput} onChange={(e) => setColorInput(e.target.value)} className="bg-white/40 border border-white/40 rounded px-2 py-1.5 text-sm text-dark-100 font-mono w-24 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+                    <input type="text" value={colorInput} onChange={(e) => setColorInput(e.target.value)} className="bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.07] dark:border-white/[0.08] rounded px-2 py-1.5 text-sm text-dark-100 font-mono w-24 focus:outline-none focus:ring-1 focus:ring-accent/50" />
                     <Button variant="secondary" size="sm" onClick={addBrandColor}>Add</Button>
                   </div>
                   {form.brandColors && form.brandColors.length > 0 && (

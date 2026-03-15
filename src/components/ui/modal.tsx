@@ -52,11 +52,11 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
         'max-h-[85vh] flex flex-col',
         sizes[size]
       )}>
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-white/40">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-black/[0.07] dark:border-white/[0.08]">
           <h2 className="text-lg font-semibold text-dark-100">{title}</h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-white/40 text-dark-400 hover:text-dark-200 transition-colors cursor-pointer"
+            className="p-1 rounded-lg hover:bg-black/[0.06] dark:hover:bg-white/[0.08] text-dark-400 hover:text-dark-200 transition-colors cursor-pointer"
           >
             <X size={20} />
           </button>

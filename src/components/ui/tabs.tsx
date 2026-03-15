@@ -19,7 +19,7 @@ export function Tabs({ tabs, defaultTab }: TabsProps) {
 
   return (
     <div>
-      <div className="flex gap-1 border-b border-white/40 mb-6">
+      <div className="flex gap-1 border-b border-black/[0.07] dark:border-white/[0.08] mb-6">
         {tabs.map((tab) => (
           <button
             key={tab.id}

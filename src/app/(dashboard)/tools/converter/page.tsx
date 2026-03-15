@@ -44,7 +44,7 @@ function TypographyConverter() {
             <button
               key={u}
               onClick={() => setUnit(u)}
-              className={`px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors ${u === unit ? 'bg-accent text-white' : 'bg-white/40 text-dark-300 hover:bg-white/50'}`}
+              className={`px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors ${u === unit ? 'bg-accent text-white' : 'bg-black/[0.05] dark:bg-white/[0.05] text-dark-300 hover:bg-white/60 dark:hover:bg-white/[0.06]'}`}
             >
               {u}
             </button>
@@ -57,13 +57,13 @@ function TypographyConverter() {
           type="number"
           value={baseFontSize}
           onChange={(e) => setBaseFontSize(Number(e.target.value) || 16)}
-          className="bg-white/50 border border-white/40 rounded px-2 py-1 text-sm text-dark-100 w-16 focus:outline-none focus:ring-1 focus:ring-accent/50"
+          className="bg-white/60 dark:bg-white/[0.06] border border-black/[0.07] dark:border-white/[0.08] rounded px-2 py-1 text-sm text-dark-100 w-16 focus:outline-none focus:ring-1 focus:ring-accent/50"
         />
         <span className="text-xs text-dark-400">px</span>
       </div>
       <div className="grid grid-cols-2 gap-3">
         {conversions.map((c) => (
-          <div key={c.unit} className={`bg-white/50 rounded-lg p-3 ${c.unit === unit ? 'ring-2 ring-accent/50' : ''}`}>
+          <div key={c.unit} className={`bg-white/60 dark:bg-white/[0.06] rounded-lg p-3 ${c.unit === unit ? 'ring-2 ring-accent/50' : ''}`}>
             <p className="text-xs text-dark-400 mb-1">{c.label}</p>
             <p className="text-lg font-mono text-dark-100">{Number(c.value.toFixed(4))}<span className="text-dark-400 text-sm ml-1">{c.unit}</span></p>
           </div>
@@ -119,7 +119,7 @@ function ViewportConverter() {
             <button
               key={u}
               onClick={() => setUnit(u)}
-              className={`px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors ${u === unit ? 'bg-accent text-white' : 'bg-white/40 text-dark-300 hover:bg-white/50'}`}
+              className={`px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors ${u === unit ? 'bg-accent text-white' : 'bg-black/[0.05] dark:bg-white/[0.05] text-dark-300 hover:bg-white/60 dark:hover:bg-white/[0.06]'}`}
             >
               {u}
             </button>
@@ -129,16 +129,16 @@ function ViewportConverter() {
       <div className="flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <span className="text-xs text-dark-400">Viewport:</span>
-          <input type="number" value={viewportWidth} onChange={(e) => setViewportWidth(Number(e.target.value))} className="bg-white/50 border border-white/40 rounded px-2 py-1 text-sm text-dark-100 w-20 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+          <input type="number" value={viewportWidth} onChange={(e) => setViewportWidth(Number(e.target.value))} className="bg-white/60 dark:bg-white/[0.06] border border-black/[0.07] dark:border-white/[0.08] rounded px-2 py-1 text-sm text-dark-100 w-20 focus:outline-none focus:ring-1 focus:ring-accent/50" />
           <span className="text-xs text-dark-400">x</span>
-          <input type="number" value={viewportHeight} onChange={(e) => setViewportHeight(Number(e.target.value))} className="bg-white/50 border border-white/40 rounded px-2 py-1 text-sm text-dark-100 w-20 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+          <input type="number" value={viewportHeight} onChange={(e) => setViewportHeight(Number(e.target.value))} className="bg-white/60 dark:bg-white/[0.06] border border-black/[0.07] dark:border-white/[0.08] rounded px-2 py-1 text-sm text-dark-100 w-20 focus:outline-none focus:ring-1 focus:ring-accent/50" />
         </div>
         <div className="flex gap-1">
           {presets.map((p) => (
             <button
               key={p.label}
               onClick={() => { setViewportWidth(p.w); setViewportHeight(p.h) }}
-              className="text-xs bg-white/40 hover:bg-white/50 text-dark-300 px-2 py-1 rounded transition-colors cursor-pointer"
+              className="text-xs bg-black/[0.05] dark:bg-white/[0.05] hover:bg-white/60 dark:hover:bg-white/[0.06] text-dark-300 px-2 py-1 rounded transition-colors cursor-pointer"
             >
               {p.label}
             </button>
@@ -147,7 +147,7 @@ function ViewportConverter() {
       </div>
       <div className="grid grid-cols-2 gap-3">
         {conversions.map((c) => (
-          <div key={c.unit} className={`bg-white/50 rounded-lg p-3 ${c.unit === unit ? 'ring-2 ring-accent/50' : ''}`}>
+          <div key={c.unit} className={`bg-white/60 dark:bg-white/[0.06] rounded-lg p-3 ${c.unit === unit ? 'ring-2 ring-accent/50' : ''}`}>
             <p className="text-xs text-dark-400 mb-1">{c.label}</p>
             <p className="text-lg font-mono text-dark-100">{Number(c.value.toFixed(4))}<span className="text-dark-400 text-sm ml-1">{c.unit}</span></p>
           </div>
@@ -193,7 +193,7 @@ function SpacingConverter() {
             <button
               key={u}
               onClick={() => setUnit(u)}
-              className={`px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors ${u === unit ? 'bg-accent text-white' : 'bg-white/40 text-dark-300 hover:bg-white/50'}`}
+              className={`px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors ${u === unit ? 'bg-accent text-white' : 'bg-black/[0.05] dark:bg-white/[0.05] text-dark-300 hover:bg-white/60 dark:hover:bg-white/[0.06]'}`}
             >
               {u}
             </button>
@@ -203,18 +203,18 @@ function SpacingConverter() {
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <span className="text-xs text-dark-400 whitespace-nowrap">Base font:</span>
-          <input type="number" value={baseFontSize} onChange={(e) => setBaseFontSize(Number(e.target.value) || 16)} className="bg-white/50 border border-white/40 rounded px-2 py-1 text-sm text-dark-100 w-16 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+          <input type="number" value={baseFontSize} onChange={(e) => setBaseFontSize(Number(e.target.value) || 16)} className="bg-white/60 dark:bg-white/[0.06] border border-black/[0.07] dark:border-white/[0.08] rounded px-2 py-1 text-sm text-dark-100 w-16 focus:outline-none focus:ring-1 focus:ring-accent/50" />
           <span className="text-xs text-dark-400">px</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-dark-400 whitespace-nowrap">Parent:</span>
-          <input type="number" value={parentSize} onChange={(e) => setParentSize(Number(e.target.value) || 1200)} className="bg-white/50 border border-white/40 rounded px-2 py-1 text-sm text-dark-100 w-20 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+          <input type="number" value={parentSize} onChange={(e) => setParentSize(Number(e.target.value) || 1200)} className="bg-white/60 dark:bg-white/[0.06] border border-black/[0.07] dark:border-white/[0.08] rounded px-2 py-1 text-sm text-dark-100 w-20 focus:outline-none focus:ring-1 focus:ring-accent/50" />
           <span className="text-xs text-dark-400">px</span>
         </div>
       </div>
       <div className="grid grid-cols-3 gap-3">
         {conversions.map((c) => (
-          <div key={c.unit} className={`bg-white/50 rounded-lg p-3 ${c.unit === unit ? 'ring-2 ring-accent/50' : ''}`}>
+          <div key={c.unit} className={`bg-white/60 dark:bg-white/[0.06] rounded-lg p-3 ${c.unit === unit ? 'ring-2 ring-accent/50' : ''}`}>
             <p className="text-xs text-dark-400 mb-1">{c.label}</p>
             <p className="text-lg font-mono text-dark-100">{Number(c.value.toFixed(4))}<span className="text-dark-400 text-sm ml-1">{c.unit}</span></p>
           </div>

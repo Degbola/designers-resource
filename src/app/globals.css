@@ -2,13 +2,13 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── Light Mode: Neumorphic Clay ───────────────────── */
-  --color-dark-900: #EAF0EB;
-  --color-dark-800: #EAF0EB;
-  --color-dark-700: #E0E8E2;
-  --color-dark-600: rgba(160, 180, 165, 0.35);
-  --color-dark-500: rgba(140, 165, 148, 0.30);
-  --color-dark-400: #8aA090;
+  /* ── Light Mode: Emerald Glass ─────────────────────── */
+  --color-dark-900: #F4F8F5;
+  --color-dark-800: rgba(255, 255, 255, 0.72);
+  --color-dark-700: rgba(255, 255, 255, 0.55);
+  --color-dark-600: rgba(210, 230, 215, 0.50);
+  --color-dark-500: rgba(175, 205, 185, 0.45);
+  --color-dark-400: #7a9c84;
   --color-dark-300: #4e7056;
   --color-dark-200: #2d5235;
   --color-dark-100: #0f2d18;
@@ -16,9 +16,9 @@
   --color-accent-hover: #047857;
   --color-accent-dark: #065f46;
 
-  --color-glass: #EAF0EB;
-  --color-glass-strong: #F2F6F3;
-  --color-glass-border: rgba(255, 255, 255, 0.0);
+  --color-glass: rgba(255, 255, 255, 0.65);
+  --color-glass-strong: rgba(255, 255, 255, 0.82);
+  --color-glass-border: rgba(255, 255, 255, 0.75);
 
   --color-stat-mint:     rgba(5,  150, 105, 0.10);
   --color-stat-lavender: rgba(99,  102, 241, 0.10);
@@ -27,7 +27,7 @@
 }
 
 body {
-  background-color: #EAF0EB;
+  background-color: #F4F8F5;
   min-height: 100vh;
   color: #0f2d18;
   font-family: 'Inter', system-ui, sans-serif;
@@ -37,45 +37,45 @@ body {
   font-family: 'Outfit', system-ui, sans-serif;
 }
 
-/* ── Neumorphic Clay Cards (light mode) ─────────────── */
+/* ── Glassmorphism (light mode) ─────────────────────── */
 .glass {
-  background: #EAF0EB;
-  backdrop-filter: none;
-  border: 1px solid rgba(255, 255, 255, 0.70);
-  box-shadow:
-    6px 6px 18px rgba(148, 168, 155, 0.55),
-    -5px -5px 14px rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
 .glass-strong {
-  background: #F2F6F3;
-  border: 1px solid rgba(255, 255, 255, 0.80);
-  box-shadow:
-    8px 8px 22px rgba(148, 168, 155, 0.60),
-    -6px -6px 16px rgba(255, 255, 255, 0.90);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), 0 1px 6px rgba(0, 0, 0, 0.04);
 }
 
 .glass-sidebar {
-  background: #EAF0EB;
-  border-right: 1px solid rgba(148, 168, 155, 0.25);
-  box-shadow: 4px 0 20px rgba(148, 168, 155, 0.15);
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.70);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
 }
 
 .glass-header {
-  background: rgba(234, 240, 235, 0.92);
+  background: rgba(255, 255, 255, 0.68);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(148, 168, 155, 0.22);
-  box-shadow: 0 2px 12px rgba(148, 168, 155, 0.18);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
-/* ── Neumorphic inset (pressed state) ───────────────── */
+/* ── Progress bar track (replaces neuro-inset) ────── */
 .neuro-inset {
-  background: #E0E8E2;
-  box-shadow:
-    inset 4px 4px 10px rgba(140, 165, 148, 0.55),
-    inset -3px -3px 8px rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.06);
   border-radius: 12px;
+  overflow: hidden;
+  padding: 2px;
 }
 
 /* ── Scrollbar ─────────────────────────────────────── */

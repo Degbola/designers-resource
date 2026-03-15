@@ -149,14 +149,14 @@ export default function ColorPalettePage() {
               type="color"
               value={baseColor}
               onChange={(e) => { setBaseColor(e.target.value); setHexInput(e.target.value) }}
-              className="w-16 h-16 rounded-lg cursor-pointer border-2 border-white/30 bg-transparent"
+              className="w-16 h-16 rounded-lg cursor-pointer border-2 border-black/[0.06] dark:border-white/[0.07] bg-transparent"
             />
             <div className="flex-1">
               <input
                 type="text"
                 value={hexInput}
                 onChange={(e) => handleHexInput(e.target.value)}
-                className="bg-white/40 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 font-mono w-full mb-2 focus:outline-none focus:ring-2 focus:ring-accent/50"
+                className="bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.07] rounded-lg px-3 py-2 text-sm text-dark-100 font-mono w-full mb-2 focus:outline-none focus:ring-2 focus:ring-accent/50"
               />
               <div className="text-xs text-dark-400 space-y-0.5">
                 <p>RGB: {r}, {g}, {b}</p>
@@ -185,7 +185,7 @@ export default function ColorPalettePage() {
               <button
                 key={t.value}
                 onClick={() => setHarmonyType(t.value)}
-                className={`px-3 py-1.5 rounded-lg text-sm cursor-pointer transition-colors ${harmonyType === t.value ? 'bg-accent text-white' : 'bg-white/30 text-dark-300 hover:bg-white/40'}`}
+                className={`px-3 py-1.5 rounded-lg text-sm cursor-pointer transition-colors ${harmonyType === t.value ? 'bg-accent text-white' : 'bg-black/[0.04] dark:bg-white/[0.04] text-dark-300 hover:bg-black/[0.05] dark:hover:bg-white/[0.05]'}`}
               >
                 {t.label}
               </button>
@@ -246,7 +246,7 @@ export default function ColorPalettePage() {
                 </div>
                 <button
                   onClick={() => savePalettes(savedPalettes.filter((_, idx) => idx !== i))}
-                  className="p-1.5 rounded hover:bg-white/40 text-dark-400 hover:text-red-500 transition-colors cursor-pointer"
+                  className="p-1.5 rounded hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-red-500 transition-colors cursor-pointer"
                 >
                   <Trash2 size={14} />
                 </button>

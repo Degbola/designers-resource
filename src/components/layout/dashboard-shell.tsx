@@ -2,15 +2,15 @@
 
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, type Variants } from 'framer-motion'
 import { Sidebar, MobileMenuButton } from '@/components/layout/sidebar'
 import { Header } from '@/components/layout/Header'
 import type { SafeUser } from '@/types'
 
-const pageVariants = {
+const pageVariants: Variants = {
   initial: { opacity: 0, y: 12 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] } },
-  exit:    { opacity: 0, y: -6,  transition: { duration: 0.18, ease: 'easeIn' } },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } },
+  exit:    { opacity: 0, y: -6,  transition: { duration: 0.18, ease: 'easeIn' as const } },
 }
 
 export function DashboardShell({ user, children }: { user: SafeUser; children: React.ReactNode }) {

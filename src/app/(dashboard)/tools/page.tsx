@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Palette, Ruler, Type, Sparkles, ArrowRight, Copy, Check, Wand2 } from 'lucide-react'
+import { Palette, Ruler, Type, Sparkles, ArrowRight, Copy, Check, Wand2, LayoutGrid } from 'lucide-react'
 import Link from 'next/link'
 
 const TOOLS = [
@@ -13,6 +13,7 @@ const TOOLS = [
   { name: 'Font Pairing', description: 'Explore curated font pairings with live preview for your design projects.', href: '/tools/fonts', icon: Type, color: 'text-pink-400', bg: 'bg-pink-500/20' },
   { name: 'Visual Identity', description: 'Build brand strategy from questionnaires and get AI-powered color palette and typography suggestions.', href: '/tools/brief', icon: Sparkles, color: 'text-amber-400', bg: 'bg-amber-500/20' },
   { name: 'Brand Generator', description: 'Generate complete fictional brands with strategy and visual identity — perfect for passion projects.', href: '/tools/brand-generator', icon: Wand2, color: 'text-purple-400', bg: 'bg-purple-500/20' },
+  { name: 'Social Content', description: 'Generate on-brand captions and detailed visual direction for social media designs across any platform.', href: '/tools/social-content', icon: LayoutGrid, color: 'text-cyan-400', bg: 'bg-cyan-500/20' },
 ]
 
 const LOREM = [

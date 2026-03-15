@@ -14,8 +14,10 @@ import {
   Wrench,
   Sparkles,
   Wand2,
+  LayoutGrid,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   LogOut,
   User as UserIcon,
   Menu,
@@ -53,6 +55,7 @@ const NAV_GROUPS = [
       { href: '/tools/colors', label: 'Color Palette', icon: Palette },
       { href: '/tools/brief', label: 'Visual Identity', icon: Sparkles },
       { href: '/tools/brand-generator', label: 'Brand Generator', icon: Wand2 },
+      { href: '/tools/social-content', label: 'Social Content', icon: LayoutGrid },
     ],
   },
 ]
@@ -73,9 +76,19 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
   const pathname = usePathname()
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    Workspace: true, Finance: false, Library: false, Tools: false,
+  })
+
+  const toggleGroup = (label: string) => setOpenGroups(prev => ({ ...prev, [label]: !prev[label] }))
 
   useEffect(() => {
     onMobileClose?.()
+    // Auto-open the group containing the newly active page
+    const activeGroup = NAV_GROUPS.find(g =>
+      g.items.some(item => item.href === '/' ? pathname === '/' : pathname === item.href || (item.href !== '/tools' && pathname.startsWith(item.href)))
+    )
+    if (activeGroup) setOpenGroups(prev => ({ ...prev, [activeGroup.label]: true }))
   }, [pathname]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -126,46 +139,59 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
 
       {/* Navigation */}
       <nav className="flex-1 py-4 overflow-y-auto">
-        {NAV_GROUPS.map((group) => (
-          <div key={group.label} className={cn('mb-1', collapsed && !mobileOpen ? 'px-2' : 'px-3')}>
-            {/* Group label */}
-            {(!collapsed || mobileOpen) && (
-              <p className="text-[9px] font-display font-bold tracking-[0.15em] uppercase text-dark-400 px-2 mb-1.5 mt-2">
-                {group.label}
-              </p>
-            )}
-            {collapsed && !mobileOpen && (
-              <div className="border-t border-white/30 my-2" />
-            )}
+        {NAV_GROUPS.map((group) => {
+          const isOpen = openGroups[group.label] ?? true
+          const isCollapsedDesktop = collapsed && !mobileOpen
+          return (
+            <div key={group.label} className={cn('mb-1', isCollapsedDesktop ? 'px-2' : 'px-3')}>
 
-            {/* Group items */}
-            {group.items.map((item) => {
-              const active = isActive(item.href)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-150 group relative mb-0.5',
-                    active
-                      ? 'text-white bg-accent shadow-sm shadow-accent/20'
-                      : 'text-dark-300 hover:text-dark-100 hover:bg-white/40',
-                    collapsed && !mobileOpen && 'justify-center px-2'
-                  )}
-                  title={collapsed && !mobileOpen ? item.label : undefined}
+              {/* Group header — clickable in expanded mode, divider in collapsed mode */}
+              {(!collapsed || mobileOpen) ? (
+                <button
+                  onClick={() => toggleGroup(group.label)}
+                  className="flex items-center justify-between w-full px-2 py-1 mt-2 mb-0.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer group/grp"
                 >
-                  <item.icon
-                    size={16}
-                    className={cn('flex-shrink-0 transition-colors', active ? 'text-white' : 'text-dark-400 group-hover:text-dark-200')}
+                  <span className="text-[9px] font-display font-bold tracking-[0.15em] uppercase text-dark-400 group-hover/grp:text-dark-300 transition-colors">
+                    {group.label}
+                  </span>
+                  <ChevronDown
+                    size={10}
+                    className={cn('text-dark-400 transition-transform duration-200', isOpen ? 'rotate-0' : '-rotate-90')}
                   />
-                  {(!collapsed || mobileOpen) && (
-                    <span className="font-medium text-[13px]">{item.label}</span>
-                  )}
-                </Link>
-              )
-            })}
-          </div>
-        ))}
+                </button>
+              ) : (
+                <div className="border-t border-white/30 my-2" />
+              )}
+
+              {/* Group items */}
+              {(isOpen || isCollapsedDesktop) && group.items.map((item) => {
+                const active = isActive(item.href)
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-150 group relative mb-0.5',
+                      active
+                        ? 'text-white bg-accent shadow-sm shadow-accent/20'
+                        : 'text-dark-300 hover:text-dark-100 hover:bg-white/40',
+                      isCollapsedDesktop && 'justify-center px-2'
+                    )}
+                    title={isCollapsedDesktop ? item.label : undefined}
+                  >
+                    <item.icon
+                      size={16}
+                      className={cn('flex-shrink-0 transition-colors', active ? 'text-white' : 'text-dark-400 group-hover:text-dark-200')}
+                    />
+                    {(!collapsed || mobileOpen) && (
+                      <span className="font-medium text-[13px]">{item.label}</span>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
+          )
+        })}
       </nav>
 
       {/* Footer */}

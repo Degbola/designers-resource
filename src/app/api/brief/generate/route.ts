@@ -80,14 +80,15 @@ Rules:
 
   try {
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2500,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     })
 
     const raw = message.content[0].type === 'text' ? message.content[0].text : ''
-    const result = JSON.parse(raw)
+    const cleaned = raw.replace(/^```(?:json)?\s*/m, '').replace(/\s*```\s*$/m, '').trim()
+    const result = JSON.parse(cleaned)
     return NextResponse.json({ available: true, result })
   } catch (e) {
     console.error('Brand generation failed:', e)

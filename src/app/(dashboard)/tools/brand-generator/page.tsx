@@ -8,6 +8,7 @@ import {
   ArrowLeft, Wand2, Loader2, ChevronDown, ChevronUp, Copy, Check,
   Target, Eye, Heart, Crosshair, Smile, MessageCircle, Users, Swords,
   Star, BookOpen, RefreshCw, Sparkles, Palette, Type, ImageIcon, Layers,
+  Download, History, Trash2, Clock, LayoutGrid,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -44,6 +45,14 @@ interface GeneratedBrand {
   }
 }
 
+interface BrandHistoryItem {
+  id: number
+  brand_name: string
+  tagline: string
+  industry: string
+  created_at: string
+}
+
 // ---- Constants ----
 const INDUSTRIES = [
   { value: '', label: 'Auto-detect' },
@@ -78,6 +87,11 @@ function getLuminance(hex: string): number {
   return 0.2126 * vals[0] + 0.7152 * vals[1] + 0.0722 * vals[2]
 }
 
+function getLuminanceRGB(r: number, g: number, b: number): number {
+  const vals = [r, g, b].map((v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4) })
+  return 0.2126 * vals[0] + 0.7152 * vals[1] + 0.0722 * vals[2]
+}
+
 function textColorForBg(hex: string): string {
   return getLuminance(hex) > 0.4 ? '#000000' : '#ffffff'
 }
@@ -89,6 +103,190 @@ function loadGoogleFont(fontName: string, weight: number) {
   link.id = id; link.rel = 'stylesheet'
   link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@${weight}&display=swap`
   document.head.appendChild(link)
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso)
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+// ---- PDF Generator ----
+async function generateBrandPDF(result: GeneratedBrand) {
+  const { jsPDF } = await import('jspdf')
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+
+  const pageW = 210
+  const pageH = 297
+  const margin = 20
+  const contentW = pageW - margin * 2
+  let y = margin
+
+  const checkPage = (needed = 10) => {
+    if (y + needed > pageH - margin - 10) {
+      doc.addPage()
+      y = margin
+    }
+  }
+
+  const drawDivider = () => {
+    checkPage(8)
+    doc.setDrawColor(220, 220, 230)
+    doc.line(margin, y, pageW - margin, y)
+    y += 8
+  }
+
+  const drawSectionLabel = (text: string) => {
+    checkPage(8)
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(99, 102, 241)
+    doc.text(text.toUpperCase(), margin, y)
+    y += 5
+  }
+
+  const drawBody = (text: string, size = 10, color: [number, number, number] = [55, 55, 65]) => {
+    if (!text) return
+    doc.setFontSize(size)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...color)
+    const lines = doc.splitTextToSize(text, contentW) as string[]
+    lines.forEach((line) => {
+      checkPage(size * 0.45 + 1.5)
+      doc.text(line, margin, y)
+      y += size * 0.45 + 1.5
+    })
+    y += 2
+  }
+
+  const drawSwatches = (colors: string[]) => {
+    checkPage(22)
+    const gap = 3
+    const swW = (contentW - gap * (colors.length - 1)) / colors.length
+    colors.forEach((color, i) => {
+      const hex = color.replace('#', '')
+      const r = parseInt(hex.slice(0, 2), 16)
+      const g = parseInt(hex.slice(2, 4), 16)
+      const b = parseInt(hex.slice(4, 6), 16)
+      const x = margin + i * (swW + gap)
+      doc.setFillColor(r, g, b)
+      doc.roundedRect(x, y, swW, 14, 2, 2, 'F')
+      doc.setFontSize(7)
+      doc.setFont('helvetica', 'bold')
+      const lum = getLuminanceRGB(r, g, b)
+      doc.setTextColor(lum > 0.4 ? 30 : 240, lum > 0.4 ? 30 : 240, lum > 0.4 ? 30 : 240)
+      doc.text(color.toUpperCase(), x + swW / 2, y + 8.5, { align: 'center' })
+    })
+    y += 18
+  }
+
+  // === HEADER BAR ===
+  doc.setFillColor(99, 102, 241)
+  doc.rect(0, 0, pageW, 6, 'F')
+  y = 18
+
+  // Brand Name
+  doc.setFontSize(28)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(20, 20, 30)
+  doc.text(result.brand.name, margin, y)
+  y += 10
+
+  // Tagline
+  doc.setFontSize(12)
+  doc.setFont('helvetica', 'italic')
+  doc.setTextColor(99, 102, 241)
+  doc.text(`"${result.brand.tagline}"`, margin, y)
+  y += 8
+
+  // Industry pill
+  doc.setFillColor(238, 240, 255)
+  doc.roundedRect(margin, y, 50, 7, 2, 2, 'F')
+  doc.setFontSize(8)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(99, 102, 241)
+  doc.text(result.brand.industry.toUpperCase(), margin + 4, y + 4.8)
+  y += 13
+
+  drawSectionLabel('Concept')
+  drawBody(result.brand.concept)
+  drawDivider()
+
+  // === BRAND STRATEGY ===
+  doc.setFontSize(15)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(20, 20, 30)
+  doc.text('Brand Strategy', margin, y)
+  y += 8
+
+  const strategyFields: { label: string; value: string | string[]; isList?: boolean }[] = [
+    { label: 'Mission', value: result.strategy.mission },
+    { label: 'Vision', value: result.strategy.vision },
+    { label: 'Positioning', value: result.strategy.positioning },
+    { label: 'Brand Personality', value: result.strategy.personality },
+    { label: 'Tone of Voice', value: result.strategy.toneOfVoice },
+    { label: 'Target Audience', value: result.strategy.targetAudience },
+    { label: 'Brand Story', value: result.strategy.brandStory },
+    { label: 'Core Values', value: result.strategy.values, isList: true },
+    { label: 'Differentiators', value: result.strategy.differentiators, isList: true },
+    { label: 'Competitors', value: result.strategy.competitors, isList: true },
+  ]
+
+  strategyFields.forEach(({ label, value, isList }) => {
+    if (!value || (Array.isArray(value) && value.length === 0)) return
+    drawSectionLabel(label)
+    if (isList && Array.isArray(value)) {
+      value.forEach((item) => drawBody(`• ${item}`))
+    } else {
+      drawBody(value as string)
+    }
+  })
+
+  drawDivider()
+
+  // === VISUAL IDENTITY ===
+  doc.setFontSize(15)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(20, 20, 30)
+  doc.text('Visual Identity Guide', margin, y)
+  y += 8
+
+  drawSectionLabel(`Primary Palette — ${result.visualIdentity.primaryPalette.name}`)
+  drawBody(result.visualIdentity.primaryPalette.rationale)
+  drawSwatches(result.visualIdentity.primaryPalette.colors)
+
+  drawSectionLabel(`Secondary Palette — ${result.visualIdentity.secondaryPalette.name}`)
+  drawBody(result.visualIdentity.secondaryPalette.rationale)
+  drawSwatches(result.visualIdentity.secondaryPalette.colors)
+
+  drawSectionLabel('Typography')
+  drawBody(`Heading: ${result.visualIdentity.typography.heading} · Weight ${result.visualIdentity.typography.headingWeight}`)
+  drawBody(`Body: ${result.visualIdentity.typography.body} · Weight ${result.visualIdentity.typography.bodyWeight}`)
+  drawBody(result.visualIdentity.typography.rationale)
+
+  drawSectionLabel('Logo Direction')
+  drawBody(result.visualIdentity.logoDirection)
+
+  drawSectionLabel('Imagery Style')
+  drawBody(result.visualIdentity.imageryStyle)
+
+  drawSectionLabel('Design Principles')
+  result.visualIdentity.designPrinciples.forEach((p) => drawBody(`• ${p}`))
+
+  drawSectionLabel('Moodboard Keywords')
+  drawBody(result.visualIdentity.moodboardKeywords.join('  ·  '))
+
+  // === FOOTER on every page ===
+  const totalPages = (doc as unknown as { getNumberOfPages: () => number }).getNumberOfPages()
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i)
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(160, 160, 170)
+    doc.text(`${result.brand.name} Brand Guide  ·  Generated by Seysey Studios`, margin, pageH - 8)
+    doc.text(`${i} / ${totalPages}`, pageW - margin, pageH - 8, { align: 'right' })
+  }
+
+  doc.save(`${result.brand.name.replace(/\s+/g, '-').toLowerCase()}-brand-guide.pdf`)
 }
 
 // ---- Sub-components ----
@@ -157,10 +355,62 @@ export default function BrandGeneratorPage() {
   const [error, setError] = useState('')
   const [result, setResult] = useState<GeneratedBrand | null>(null)
   const [copied, setCopied] = useState(false)
+  const [pdfLoading, setPdfLoading] = useState(false)
+  const [savedBrandId, setSavedBrandId] = useState<number | null>(null)
+
+  // History
+  const [history, setHistory] = useState<BrandHistoryItem[]>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   useEffect(() => {
     fetch('/api/brief/generate').then(r => r.json()).then(d => setAiAvailable(d.available)).catch(() => {})
+    loadHistory()
   }, [])
+
+  const loadHistory = async () => {
+    setHistoryLoading(true)
+    try {
+      const res = await fetch('/api/brands')
+      const data = await res.json()
+      setHistory(data.brands ?? [])
+    } catch {}
+    setHistoryLoading(false)
+  }
+
+  const saveBrand = async (brandResult: GeneratedBrand, brandPrompt: string) => {
+    try {
+      const res = await fetch('/api/brands', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ result: brandResult, prompt: brandPrompt }),
+      })
+      const data = await res.json()
+      if (data.id) setSavedBrandId(data.id)
+      loadHistory()
+    } catch {}
+  }
+
+  const loadFromHistory = async (id: number) => {
+    try {
+      const res = await fetch(`/api/brands/${id}`)
+      const data = await res.json()
+      setResult(data.result)
+      setShowHistory(false)
+      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+    } catch {}
+  }
+
+  const deleteFromHistory = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation()
+    setDeletingId(id)
+    try {
+      await fetch(`/api/brands/${id}`, { method: 'DELETE' })
+      setHistory(prev => prev.filter(b => b.id !== id))
+    } catch {}
+    setDeletingId(null)
+  }
 
   const toggleMood = (mood: string) => {
     setMoods(prev => prev.includes(mood) ? prev.filter(m => m !== mood) : [...prev, mood])
@@ -181,6 +431,7 @@ export default function BrandGeneratorPage() {
       if (!data.available) { setError('AI is not configured. Please add your Anthropic API key.'); return }
       if (data.error) { setError(data.error); return }
       setResult(data.result)
+      saveBrand(data.result, prompt)
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     } catch {
       setError('Something went wrong. Please try again.')
@@ -196,6 +447,7 @@ export default function BrandGeneratorPage() {
     setMoods([])
     setIndustry('')
     setTargetAudience('')
+    setSavedBrandId(null)
   }
 
   const handleUseInBrief = () => {
@@ -242,11 +494,73 @@ export default function BrandGeneratorPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const handleDownloadPDF = async () => {
+    if (!result) return
+    setPdfLoading(true)
+    try {
+      await generateBrandPDF(result)
+    } catch (e) {
+      console.error('PDF generation failed:', e)
+    } finally {
+      setPdfLoading(false)
+    }
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       <Link href="/tools" className="inline-flex items-center gap-2 text-sm text-dark-300 hover:text-dark-100 transition-colors">
         <ArrowLeft size={16} /> Back to Tools
       </Link>
+
+      {/* History Panel */}
+      {(history.length > 0 || historyLoading) && (
+        <Card className="!p-0 overflow-hidden">
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <span className="flex items-center gap-2 text-sm font-medium text-dark-200">
+              <History size={15} className="text-accent" />
+              Brand History
+              <span className="text-xs text-dark-400 font-normal">({history.length} saved)</span>
+            </span>
+            {showHistory ? <ChevronUp size={15} className="text-dark-400" /> : <ChevronDown size={15} className="text-dark-400" />}
+          </button>
+
+          {showHistory && (
+            <div className="border-t border-white/20 px-5 py-3 space-y-1.5 max-h-72 overflow-y-auto">
+              {historyLoading ? (
+                <p className="text-xs text-dark-400 py-2">Loading...</p>
+              ) : (
+                history.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => loadFromHistory(item.id)}
+                    className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer text-left group"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-dark-100 truncate">{item.brand_name}</p>
+                      <p className="text-xs text-dark-400 truncate italic">&ldquo;{item.tagline}&rdquo;</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-dark-400 hidden sm:flex items-center gap-1">
+                        <Clock size={10} />{formatDate(item.created_at)}
+                      </span>
+                      <span
+                        role="button"
+                        onClick={(e) => deleteFromHistory(e, item.id)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-red-500/20 text-dark-400 hover:text-red-400"
+                      >
+                        {deletingId === item.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                      </span>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Input Card */}
       <Card>
@@ -321,9 +635,27 @@ export default function BrandGeneratorPage() {
 
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium text-dark-300">Generated Brand</h3>
-            <button onClick={handleCopyAll} className="flex items-center gap-1.5 text-xs text-dark-400 hover:text-dark-100 transition-colors cursor-pointer px-3 py-1.5 rounded-lg bg-white/30 border border-white/40">
-              {copied ? <><Check size={13} /> Copied!</> : <><Copy size={13} /> Copy All</>}
-            </button>
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              {savedBrandId && (
+                <Link
+                  href={`/tools/social-content?brandId=${savedBrandId}`}
+                  className="flex items-center gap-1.5 text-xs font-medium text-accent hover:text-accent-hover transition-colors cursor-pointer px-3 py-1.5 rounded-lg bg-accent/15 border border-accent/40 hover:bg-accent/25"
+                >
+                  <LayoutGrid size={13} /> Generate Social Content
+                </Link>
+              )}
+              <button
+                onClick={handleDownloadPDF}
+                disabled={pdfLoading}
+                className="flex items-center gap-1.5 text-xs text-dark-400 hover:text-dark-100 transition-colors cursor-pointer px-3 py-1.5 rounded-lg bg-white/30 border border-white/40 disabled:opacity-50"
+              >
+                {pdfLoading ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />}
+                {pdfLoading ? 'Generating...' : 'Download PDF'}
+              </button>
+              <button onClick={handleCopyAll} className="flex items-center gap-1.5 text-xs text-dark-400 hover:text-dark-100 transition-colors cursor-pointer px-3 py-1.5 rounded-lg bg-white/30 border border-white/40">
+                {copied ? <><Check size={13} /> Copied!</> : <><Copy size={13} /> Copy All</>}
+              </button>
+            </div>
           </div>
 
           {/* 1. Brand Identity */}

@@ -172,6 +172,27 @@ export async function initDb() {
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS brand_generations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      brand_name TEXT NOT NULL,
+      tagline TEXT DEFAULT '',
+      industry TEXT DEFAULT '',
+      prompt TEXT DEFAULT '',
+      result_json TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS social_content_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      brand_name TEXT NOT NULL,
+      platforms TEXT DEFAULT '',
+      content_types TEXT DEFAULT '',
+      format_preference TEXT DEFAULT '',
+      post_count INTEGER DEFAULT 0,
+      posts_json TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
   `)
 
   initialized = true

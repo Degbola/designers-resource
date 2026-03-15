@@ -1,9 +1,10 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import { Search, ChevronRight, Bell, Plus } from 'lucide-react'
+import { Search, ChevronRight, Bell, Plus, Sun, Moon } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
+import { useTheme } from '@/lib/theme'
 
 // ── Route metadata ────────────────────────────────────
 const ROUTE_META: Record<string, { label: string; parent?: string }> = {
@@ -64,6 +65,7 @@ const QUICK_ADD_OPTIONS = [
 export function Header({ mobileMenuButton }: { mobileMenuButton?: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
+  const { theme, toggleTheme } = useTheme()
   const breadcrumbs = buildBreadcrumbs(pathname)
   const [quickAddOpen, setQuickAddOpen] = useState(false)
 
@@ -106,6 +108,20 @@ export function Header({ mobileMenuButton }: { mobileMenuButton?: React.ReactNod
             className="bg-white/50 dark:bg-white/5 border border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.10)] rounded-lg pl-8 pr-4 py-1.5 text-xs text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-1 focus:ring-accent/40 focus:border-accent/40 w-36 lg:w-52 transition-all backdrop-blur-sm font-display"
           />
         </div>
+
+        {/* Theme toggle pill */}
+        <button
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="relative flex items-center bg-black/8 dark:bg-white/8 border border-[rgba(0,0,0,0.10)] dark:border-[rgba(255,255,255,0.12)] rounded-full p-[3px] w-[52px] h-[26px] transition-all duration-300 cursor-pointer hover:border-accent/40 shrink-0"
+        >
+          <span
+            className="absolute w-[20px] h-[20px] rounded-full bg-accent shadow-sm transition-all duration-300 ease-in-out"
+            style={{ transform: theme === 'dark' ? 'translateX(26px)' : 'translateX(0px)' }}
+          />
+          <Sun size={11} className="relative z-10 ml-[3px] transition-colors duration-300" style={{ color: theme === 'light' ? '#fff' : 'rgba(255,255,255,0.35)' }} />
+          <Moon size={11} className="relative z-10 ml-auto mr-[3px] transition-colors duration-300" style={{ color: theme === 'dark' ? (theme === 'dark' ? '#020402' : '#fff') : 'rgba(0,0,0,0.25)' }} />
+        </button>
 
         {/* Notifications */}
         <button

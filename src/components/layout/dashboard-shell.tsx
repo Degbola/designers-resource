@@ -13,7 +13,7 @@ export function DashboardShell({ user, children }: { user: SafeUser; children: R
       <Sidebar user={user} mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0">
         <Header mobileMenuButton={<MobileMenuButton onClick={() => setMobileOpen(true)} />} />
-        <main className="flex-1 p-4 md:p-6">
+        <main className="flex-1 p-4 md:p-6 overflow-x-hidden">
           {children}
         </main>
       </div>

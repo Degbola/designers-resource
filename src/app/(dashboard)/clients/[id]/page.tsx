@@ -23,21 +23,21 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
   const invoices = invoicesResult.rows as unknown as Invoice[]
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in overflow-x-hidden">
       <Link href="/clients" className="inline-flex items-center gap-2 text-sm text-dark-300 hover:text-dark-100 transition-colors">
         <ArrowLeft size={16} /> Back to Clients
       </Link>
 
-      <div className="flex items-start gap-6">
+      <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
         <div
-          className="w-16 h-16 rounded-xl flex items-center justify-center text-white font-bold text-2xl flex-shrink-0 shadow-sm"
+          className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center text-white font-bold text-2xl flex-shrink-0 shadow-sm"
           style={{ backgroundColor: client.avatar_color }}
         >
           {client.name.charAt(0).toUpperCase()}
         </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-dark-100">{client.name}</h2>
+        <div className="flex-1 min-w-0 w-full">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h2 className="text-xl sm:text-2xl font-bold text-dark-100">{client.name}</h2>
             <Badge variant={client.status}>{client.status}</Badge>
           </div>
           <div className="flex flex-wrap gap-4 mt-2 text-sm text-dark-300">

@@ -48,7 +48,7 @@ export function PortalLink({ token, clientName, clientEmail }: { token: string; 
   return (
     <div className="mt-3 space-y-2">
       <span className="text-xs text-dark-400">Portal Link</span>
-      <code className="block w-full text-xs text-accent bg-white/40 px-3 py-2 rounded-lg overflow-hidden text-ellipsis whitespace-nowrap">{portalUrl}</code>
+      <code className="block w-full text-xs text-accent bg-white/40 px-3 py-2 rounded-lg break-all">{portalUrl}</code>
       <div className="flex items-center gap-2">
         <Button size="sm" variant="secondary" onClick={handleCopy} className="flex-1 justify-center">
           {copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy Link</>}

@@ -157,9 +157,9 @@ body {
   --color-dark-700: rgba(0, 155, 85,  0.18);
   --color-dark-800: rgba(5,  10,  7,  0.60);
   --color-dark-900: #080c09;
-  --color-accent: #00FF9D;
-  --color-accent-hover: #00e88d;
-  --color-accent-dark: #00cc7d;
+  --color-accent: #00cc82;
+  --color-accent-hover: #00b874;
+  --color-accent-dark: #009a62;
   --color-glass: rgba(255, 255, 255, 0.035);
   --color-glass-strong: rgba(255, 255, 255, 0.065);
   --color-glass-border: rgba(255, 255, 255, 0.09);
@@ -206,22 +206,22 @@ body {
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.35);
 }
 
-.dark ::-webkit-scrollbar-thumb { background: rgba(0, 255, 157, 0.16); }
-.dark ::-webkit-scrollbar-thumb:hover { background: rgba(0, 255, 157, 0.32); }
+.dark ::-webkit-scrollbar-thumb { background: rgba(0, 204, 130, 0.14); }
+.dark ::-webkit-scrollbar-thumb:hover { background: rgba(0, 204, 130, 0.28); }
 
 .dark .laser-line {
-  background: linear-gradient(90deg, #00FF9D 0%, #00e8b0 55%, #6ee7b7 100%);
-  box-shadow: 0 0 12px rgba(0, 255, 157, 0.85), 0 0 28px rgba(0, 255, 157, 0.40);
+  background: linear-gradient(90deg, #00cc82 0%, #00b874 55%, #6ee7b7 100%);
+  box-shadow: 0 0 10px rgba(0, 204, 130, 0.65), 0 0 22px rgba(0, 204, 130, 0.28);
 }
 
 .dark .badge-pulse { animation-name: statusPulseDark; }
 @keyframes statusPulseDark {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.5); }
-  50%       { box-shadow: 0 0 0 4px rgba(0, 255, 157, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 204, 130, 0.35); }
+  50%       { box-shadow: 0 0 0 4px rgba(0, 204, 130, 0); }
 }
 
 .dark .btn-glow:hover {
-  box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.18), 0 4px 20px rgba(0, 255, 157, 0.35);
+  box-shadow: 0 0 0 3px rgba(0, 204, 130, 0.15), 0 4px 20px rgba(0, 204, 130, 0.28);
 }
 
 /* ── 3D decorative float elements ──────────────────── */
@@ -271,8 +271,27 @@ body {
   box-shadow: 0 0 12px rgba(0,255,157,0.25), inset 0 0 8px rgba(0,255,157,0.10);
 }
 
+/* ── 3D Icon Treatment ──────────────────────────────── */
+svg.lucide {
+  filter: drop-shadow(0 1px 0.5px rgba(0,0,0,0.28)) drop-shadow(0 2px 3px rgba(0,0,0,0.12));
+}
+.dark svg.lucide {
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.55)) drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+}
+
+/* ── Icon sphere (colored circle containers) ────────── */
+/* Light mode: outer depth + inset top-highlight for glossy sphere look */
+.icon-sphere {
+  box-shadow:
+    0 4px 14px rgba(0,0,0,0.18),
+    0 2px 4px rgba(0,0,0,0.10),
+    inset 0 1.5px 0 rgba(255,255,255,0.52),
+    inset 0 -1px 0 rgba(0,0,0,0.08);
+}
+
 /* ── Stat icon circle glow (dark mode) ──────────────── */
-.dark .icon-glow-green  { box-shadow: 0 0 18px rgba(52,  211, 153, 0.55), 0 0 40px rgba(52,  211, 153, 0.20); }
-.dark .icon-glow-cyan   { box-shadow: 0 0 18px rgba(34,  211, 238, 0.55), 0 0 40px rgba(34,  211, 238, 0.20); }
-.dark .icon-glow-amber  { box-shadow: 0 0 18px rgba(251, 191, 36,  0.55), 0 0 40px rgba(251, 191, 36,  0.20); }
-.dark .icon-glow-teal   { box-shadow: 0 0 18px rgba(20,  184, 166, 0.55), 0 0 40px rgba(20,  184, 166, 0.20); }
+/* Dark: reduced colored glow + inset highlight */
+.dark .icon-glow-green  { box-shadow: 0 0 14px rgba(52,  211, 153, 0.28), 0 0 26px rgba(52,  211, 153, 0.10), inset 0 1.5px 0 rgba(255,255,255,0.20), inset 0 -1px 0 rgba(0,0,0,0.15); }
+.dark .icon-glow-cyan   { box-shadow: 0 0 14px rgba(34,  211, 238, 0.28), 0 0 26px rgba(34,  211, 238, 0.10), inset 0 1.5px 0 rgba(255,255,255,0.20), inset 0 -1px 0 rgba(0,0,0,0.15); }
+.dark .icon-glow-amber  { box-shadow: 0 0 14px rgba(251, 191, 36,  0.28), 0 0 26px rgba(251, 191, 36,  0.10), inset 0 1.5px 0 rgba(255,255,255,0.20), inset 0 -1px 0 rgba(0,0,0,0.15); }
+.dark .icon-glow-teal   { box-shadow: 0 0 14px rgba(20,  184, 166, 0.28), 0 0 26px rgba(20,  184, 166, 0.10), inset 0 1.5px 0 rgba(255,255,255,0.20), inset 0 -1px 0 rgba(0,0,0,0.15); }

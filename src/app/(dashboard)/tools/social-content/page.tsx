@@ -142,6 +142,7 @@ function formatDate(iso: string) {
 // ---- PDF Generator ----
 async function generateSocialPDF(posts: SocialPost[], brand: GeneratedBrand, platforms: string[]) {
   const { jsPDF } = await import('jspdf')
+  const { sanitizePdfText: s } = await import('@/lib/utils')
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
   const pageW = 210, pageH = 297, margin = 20, contentW = pageW - margin * 2
   let y = margin
@@ -154,9 +155,9 @@ async function generateSocialPDF(posts: SocialPost[], brand: GeneratedBrand, pla
   doc.rect(0, 0, pageW, 6, 'F')
   y = 16
   doc.setFontSize(18); doc.setFont('helvetica', 'bold'); doc.setTextColor(20, 20, 30)
-  doc.text(`${brand.brand.name} — Social Content`, margin, y); y += 7
+  doc.text(s(`${brand.brand.name} - Social Content`), margin, y); y += 7
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 120)
-  doc.text(`${posts.length} posts  ·  ${platforms.join(', ')}  ·  Seysey Studios`, margin, y); y += 7
+  doc.text(s(`${posts.length} posts  -  ${platforms.join(', ')}  -  Seysey Studios`), margin, y); y += 7
 
   const allColors = [...brand.visualIdentity.primaryPalette.colors, ...brand.visualIdentity.secondaryPalette.colors]
   allColors.slice(0, 10).forEach((color, i) => {
@@ -172,21 +173,21 @@ async function generateSocialPDF(posts: SocialPost[], brand: GeneratedBrand, pla
     doc.setFillColor(245, 245, 255)
     doc.roundedRect(margin, y, contentW, 9, 1.5, 1.5, 'F')
     doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(99, 102, 241)
-    doc.text(`${post.contentType}  ·  ${post.format}`, margin + 3, y + 6); y += 13
+    doc.text(s(`${post.contentType}  -  ${post.format}`), margin + 3, y + 6); y += 13
 
     doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(99, 102, 241)
     doc.text('DESIGN COPY', margin, y); y += 5
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(15, 15, 25)
-    const hlLines = doc.splitTextToSize(post.designCopy.headline, contentW) as string[]
+    const hlLines = doc.splitTextToSize(s(post.designCopy.headline), contentW) as string[]
     hlLines.forEach(l => { checkPage(9); doc.text(l, margin, y); y += 7 })
     if (post.designCopy.subtext) {
       doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 75)
-      const stLines = doc.splitTextToSize(post.designCopy.subtext, contentW) as string[]
+      const stLines = doc.splitTextToSize(s(post.designCopy.subtext), contentW) as string[]
       stLines.forEach(l => { checkPage(6); doc.text(l, margin, y); y += 5 })
     }
     if (post.designCopy.cta) {
       doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(99, 102, 241)
-      doc.text(`→ ${post.designCopy.cta}`, margin, y); y += 6
+      doc.text(`> ${s(post.designCopy.cta)}`, margin, y); y += 6
     }
     y += 2
 
@@ -197,14 +198,14 @@ async function generateSocialPDF(posts: SocialPost[], brand: GeneratedBrand, pla
       if (!caption) continue
       checkPage(12)
       doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 100)
-      doc.text(platform, margin, y); y += 4
+      doc.text(s(platform), margin, y); y += 4
       doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(55, 55, 70)
-      const capLines = doc.splitTextToSize(caption, contentW) as string[]
+      const capLines = doc.splitTextToSize(s(caption), contentW) as string[]
       capLines.forEach(l => { checkPage(5); doc.text(l, margin, y); y += 4.5 })
       y += 2
     }
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(99, 102, 241)
-    const hashText = post.hashtags.map(t => `#${t}`).join('  ')
+    const hashText = s(post.hashtags.map(t => `#${t}`).join('  '))
     const hashLines = doc.splitTextToSize(hashText, contentW) as string[]
     hashLines.forEach(l => { checkPage(5); doc.text(l, margin, y); y += 4.5 })
     y += 3
@@ -221,9 +222,9 @@ async function generateSocialPDF(posts: SocialPost[], brand: GeneratedBrand, pla
     for (const { label, val } of vFields) {
       checkPage(8)
       doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 100)
-      doc.text(`${label}:`, margin, y)
+      doc.text(`${s(label)}:`, margin, y)
       doc.setFont('helvetica', 'normal'); doc.setTextColor(55, 55, 70)
-      const vLines = doc.splitTextToSize(val, contentW - 32) as string[]
+      const vLines = doc.splitTextToSize(s(val), contentW - 32) as string[]
       doc.text(vLines[0], margin + 32, y); y += 4.5
       vLines.slice(1).forEach(l => { checkPage(5); doc.text(l, margin + 32, y); y += 4.5 })
     }
@@ -235,7 +236,7 @@ async function generateSocialPDF(posts: SocialPost[], brand: GeneratedBrand, pla
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i)
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(160, 160, 170)
-    doc.text(`${brand.brand.name} Social Content  ·  Seysey Studios`, margin, pageH - 8)
+    doc.text(s(`${brand.brand.name} Social Content  -  Seysey Studios`), margin, pageH - 8)
     doc.text(`${i} / ${totalPages}`, pageW - margin, pageH - 8, { align: 'right' })
   }
   doc.save(`${brand.brand.name.replace(/\s+/g, '-').toLowerCase()}-social-content.pdf`)
@@ -415,7 +416,10 @@ export default function SocialContentPage() {
   const [strategy, setStrategy] = useState<ContentStrategyInput>({ goals: [], keyMessage: '', ctas: [], theme: '', emotions: [] })
   const [notes, setNotes] = useState('')
 
+  const [mode, setMode] = useState<'fast' | 'quality'>('quality')
   const [loading, setLoading] = useState(false)
+  const [elapsed, setElapsed] = useState(0)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [error, setError] = useState('')
   const [posts, setPosts] = useState<SocialPost[]>([])
   const [allVisualOpen, setAllVisualOpen] = useState(false)
@@ -491,13 +495,17 @@ export default function SocialContentPage() {
 
   const handleGenerate = async () => {
     if (!brand || platforms.length === 0 || contentTypes.length === 0) return
-    setLoading(true); setError(''); setPosts([]); setCurrentHistoryId(null)
+    setLoading(true); setElapsed(0); setError(''); setPosts([]); setCurrentHistoryId(null)
+    timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000)
+    const abortController = new AbortController()
+    const abortTimeout = setTimeout(() => abortController.abort(), 110_000)
     try {
       const res = await fetch('/api/social-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: abortController.signal,
         body: JSON.stringify({
-          brand, count: postCount, platforms, contentTypes, formatPreference, notes: notes || undefined,
+          brand, count: postCount, platforms, contentTypes, formatPreference, notes: notes || undefined, mode,
           strategy: (strategy.goals.length || strategy.keyMessage || strategy.ctas.length || strategy.theme || strategy.emotions.length) ? strategy : undefined,
         }),
       })
@@ -517,8 +525,13 @@ export default function SocialContentPage() {
         loadContentHistory()
       } catch {}
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
-    } catch { setError('Something went wrong. Please try again.') }
-    finally { setLoading(false) }
+    } catch (e: unknown) {
+      const isAbort = e instanceof Error && e.name === 'AbortError'
+      setError(isAbort
+        ? `Generation timed out after 110s. Try reducing the post count (currently ${postCount}) and regenerating.`
+        : 'Something went wrong. Please try again.')
+    }
+    finally { clearTimeout(abortTimeout); if (timerRef.current) clearInterval(timerRef.current); setLoading(false) }
   }
 
   const handleDownloadPDF = async () => {
@@ -789,6 +802,46 @@ export default function SocialContentPage() {
             className="!min-h-[64px]" />
         </div>
 
+        {/* Mode toggle */}
+        <div>
+          <label className="block text-xs font-semibold text-accent uppercase tracking-wider mb-2">
+            8 — Generation Mode
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setMode('fast')}
+              className={`flex flex-col gap-1 rounded-xl border px-4 py-3 text-left transition-all cursor-pointer ${mode === 'fast' ? 'border-accent bg-accent/15 text-dark-100' : 'border-white/10 bg-white/5 text-dark-400 hover:border-white/20 hover:text-dark-200'}`}
+            >
+              <span className="flex items-center gap-1.5 text-xs font-semibold"><Zap size={12} /> Fast</span>
+              <span className="text-[11px] leading-snug opacity-70">Haiku · ~15s per batch · Great for drafts</span>
+            </button>
+            <button
+              onClick={() => setMode('quality')}
+              className={`flex flex-col gap-1 rounded-xl border px-4 py-3 text-left transition-all cursor-pointer ${mode === 'quality' ? 'border-accent bg-accent/15 text-dark-100' : 'border-white/10 bg-white/5 text-dark-400 hover:border-white/20 hover:text-dark-200'}`}
+            >
+              <span className="flex items-center gap-1.5 text-xs font-semibold"><Sparkles size={12} /> Quality</span>
+              <span className="text-[11px] leading-snug opacity-70">Sonnet · ~35s per batch · Best output</span>
+            </button>
+          </div>
+          {(() => {
+            const batchCount = Math.ceil(postCount / 5)
+            const batchSize = batchCount > 1 ? 5 : postCount
+            const estSecs = mode === 'fast' ? 15 : 35
+            return (
+              <p className="text-[11px] text-dark-400 mt-2">
+                <span className="text-dark-300 font-medium">{postCount} post{postCount !== 1 ? 's' : ''}</span>
+                {' = '}
+                {batchCount > 1
+                  ? <>{batchCount} batches of {batchSize} running in parallel</>
+                  : <>1 batch of {batchSize}</>
+                }
+                {' · est. '}
+                <span className="text-dark-300 font-medium">~{estSecs}s</span>
+              </p>
+            )
+          })()}
+        </div>
+
         {!aiAvailable && (
           <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
             AI not configured. Add your Anthropic API key to use this tool.
@@ -806,6 +859,29 @@ export default function SocialContentPage() {
             </Button>
           )}
         </div>
+
+        {loading && (
+          <div className="mt-3 space-y-2">
+            <div className="flex items-center justify-between text-xs text-dark-400">
+              <span className="text-dark-300">
+                {elapsed < 5 ? `Running ${Math.ceil(postCount / 5)} batch${Math.ceil(postCount / 5) > 1 ? 'es' : ''} in parallel...` : elapsed < 20 ? `Writing ${postCount} posts across ${platforms.length} platform${platforms.length > 1 ? 's' : ''}...` : elapsed < 32 ? 'Crafting visual directions...' : 'Almost there...'}
+              </span>
+              <span className={`tabular-nums text-xs font-medium ${mode === 'fast' ? 'text-emerald-400' : 'text-accent'}`}>
+                {mode === 'fast' ? <Zap size={10} className="inline mr-0.5" /> : <Sparkles size={10} className="inline mr-0.5" />}
+                {elapsed}s
+              </span>
+            </div>
+            <div className="h-1 w-full rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-1000 ease-linear"
+                style={{
+                  width: `${Math.min((elapsed / (mode === 'fast' ? 18 : 38)) * 100, 95)}%`,
+                  background: mode === 'fast' ? '#10b981' : '#6366f1',
+                }}
+              />
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Results */}

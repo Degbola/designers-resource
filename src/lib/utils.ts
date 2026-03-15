@@ -56,6 +56,25 @@ export function getStatusColor(status: string): string {
   return colors[status] || 'bg-zinc-100/70 text-zinc-600'
 }
 
+// Normalize Unicode characters that jsPDF's WinAnsi encoding can't render
+export function sanitizePdfText(text: string): string {
+  if (!text) return ''
+  return text
+    .replace(/[\u2018\u2019\u02BC]/g, "'")   // curly/smart single quotes
+    .replace(/[\u201C\u201D\u201E]/g, '"')    // curly/smart double quotes
+    .replace(/\u2014/g, '--')                  // em dash
+    .replace(/\u2013/g, '-')                   // en dash
+    .replace(/\u2026/g, '...')                 // ellipsis
+    .replace(/\u00A0/g, ' ')                   // non-breaking space
+    .replace(/\u2019/g, "'")                   // right single quotation
+    .replace(/[\u2000-\u200F\u2028-\u202F]/g, ' ') // various spaces/separators
+    .replace(/[^\x00-\xFF]/g, (c) => {
+      // Try NFD decomposition to strip diacritics, else replace with ?
+      const decomposed = c.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      return decomposed && /^[\x00-\xFF]+$/.test(decomposed) ? decomposed : '?'
+    })
+}
+
 export const AVATAR_COLORS = [
   '#6366f1', '#8b5cf6', '#a855f7', '#d946ef',
   '#ec4899', '#f43f5e', '#ef4444', '#f97316',

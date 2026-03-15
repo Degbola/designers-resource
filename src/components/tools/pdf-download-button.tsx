@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Download, Loader2 } from 'lucide-react'
 import jsPDF from 'jspdf'
+import { sanitizePdfText } from '@/lib/utils'
 
 interface PdfDownloadButtonProps {
   invoice: {
@@ -46,6 +47,7 @@ export function PdfDownloadButton({ invoice, items }: PdfDownloadButtonProps) {
   const handleDownload = async () => {
     setLoading(true)
     try {
+      const s = sanitizePdfText
       const doc = new jsPDF('p', 'mm', 'a4')
       const pageWidth = doc.internal.pageSize.getWidth()
       const margin = 20
@@ -61,7 +63,7 @@ export function PdfDownloadButton({ invoice, items }: PdfDownloadButtonProps) {
       doc.text('INVOICE', margin, 28)
       doc.setFontSize(12)
       doc.setFont('helvetica', 'normal')
-      doc.text(invoice.invoice_number, pageWidth - margin, 28, { align: 'right' })
+      doc.text(s(invoice.invoice_number), pageWidth - margin, 28, { align: 'right' })
 
       y = 55
 
@@ -89,14 +91,14 @@ export function PdfDownloadButton({ invoice, items }: PdfDownloadButtonProps) {
       doc.setTextColor(30, 30, 50)
       doc.setFontSize(11)
       doc.setFont('helvetica', 'bold')
-      doc.text(invoice.client_name, margin, y)
+      doc.text(s(invoice.client_name), margin, y)
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(9)
       y += 5
-      if (invoice.company) { doc.text(invoice.company, margin, y); y += 4 }
-      if (invoice.client_email) { doc.text(invoice.client_email, margin, y); y += 4 }
-      if (invoice.phone) { doc.text(invoice.phone, margin, y); y += 4 }
-      if (invoice.address) { doc.text(invoice.address, margin, y); y += 4 }
+      if (invoice.company) { doc.text(s(invoice.company), margin, y); y += 4 }
+      if (invoice.client_email) { doc.text(s(invoice.client_email), margin, y); y += 4 }
+      if (invoice.phone) { doc.text(s(invoice.phone), margin, y); y += 4 }
+      if (invoice.address) { doc.text(s(invoice.address), margin, y); y += 4 }
 
       // Dates - right side
       const datesX = pageWidth - margin
@@ -138,7 +140,7 @@ export function PdfDownloadButton({ invoice, items }: PdfDownloadButtonProps) {
       doc.setFontSize(9)
       items.forEach((item) => {
         doc.setTextColor(30, 30, 50)
-        const descLines = doc.splitTextToSize(item.description, contentWidth * 0.5)
+        const descLines = doc.splitTextToSize(s(item.description), contentWidth * 0.5)
         doc.text(descLines, margin + 3, y + 2)
         doc.setTextColor(80, 80, 100)
         doc.text(String(item.quantity), margin + contentWidth * 0.55, y + 2, { align: 'center' })
@@ -192,7 +194,7 @@ export function PdfDownloadButton({ invoice, items }: PdfDownloadButtonProps) {
         doc.setFont('helvetica', 'normal')
         doc.setFontSize(9)
         doc.setTextColor(80, 80, 100)
-        const noteLines = doc.splitTextToSize(invoice.notes, contentWidth)
+        const noteLines = doc.splitTextToSize(s(invoice.notes), contentWidth)
         doc.text(noteLines, margin, y)
       }
 

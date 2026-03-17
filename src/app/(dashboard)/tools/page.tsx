@@ -8,12 +8,12 @@ import { Palette, Ruler, Type, Sparkles, ArrowRight, Copy, Check, Wand2, LayoutG
 import Link from 'next/link'
 
 const TOOLS = [
-  { name: 'Color Palette', description: 'Generate harmonious color palettes, explore shades and tints, and export CSS variables.', href: '/tools/colors', icon: Palette, color: 'text-green-400', bg: 'bg-green-500/20' },
-  { name: 'Unit Converter', description: 'Convert between px, rem, em, pt, and viewport units for responsive design.', href: '/tools/converter', icon: Ruler, color: 'text-blue-400', bg: 'bg-blue-500/20' },
-  { name: 'Font Pairing', description: 'Explore curated font pairings with live preview for your design projects.', href: '/tools/fonts', icon: Type, color: 'text-pink-400', bg: 'bg-pink-500/20' },
-  { name: 'Visual Identity', description: 'Build brand strategy from questionnaires and get AI-powered color palette and typography suggestions.', href: '/tools/brief', icon: Sparkles, color: 'text-amber-400', bg: 'bg-amber-500/20' },
-  { name: 'Brand Generator', description: 'Generate complete fictional brands with strategy and visual identity — perfect for passion projects.', href: '/tools/brand-generator', icon: Wand2, color: 'text-purple-400', bg: 'bg-purple-500/20' },
-  { name: 'Social Content', description: 'Generate on-brand captions and detailed visual direction for social media designs across any platform.', href: '/tools/social-content', icon: LayoutGrid, color: 'text-cyan-400', bg: 'bg-cyan-500/20' },
+  { name: 'Color Palette', description: 'Generate harmonious color palettes, explore shades and tints, and export CSS variables.', href: '/tools/colors', icon: Palette },
+  { name: 'Unit Converter', description: 'Convert between px, rem, em, pt, and viewport units for responsive design.', href: '/tools/converter', icon: Ruler },
+  { name: 'Font Pairing', description: 'Explore curated font pairings with live preview for your design projects.', href: '/tools/fonts', icon: Type },
+  { name: 'Visual Identity', description: 'Build brand strategy from questionnaires and get AI-powered color palette and typography suggestions.', href: '/tools/brief', icon: Sparkles },
+  { name: 'Brand Generator', description: 'Generate complete fictional brands with strategy and visual identity — perfect for passion projects.', href: '/tools/brand-generator', icon: Wand2 },
+  { name: 'Social Content', description: 'Generate on-brand captions and detailed visual direction for social media designs across any platform.', href: '/tools/social-content', icon: LayoutGrid },
 ]
 
 const LOREM = [
@@ -59,16 +59,19 @@ function AspectRatioCalculator() {
 
   return (
     <Card>
-      <h3 className="font-semibold text-dark-100 mb-4">Aspect Ratio Calculator</h3>
+      <h3 className="font-serif text-base font-normal text-dark-100 mb-4">Aspect Ratio Calculator</h3>
       <div className="grid grid-cols-2 gap-3 mb-4">
         <Input label="Width" type="number" value={width} onChange={(e) => setWidth(Number(e.target.value))} />
         <Input label="Height" type="number" value={height} onChange={(e) => setHeight(Number(e.target.value))} />
       </div>
       <p className="text-sm text-dark-300 mb-3">Ratio: <span className="text-dark-100 font-semibold">{ratioW}:{ratioH}</span></p>
-      <div className="space-y-1">
+      <div className="flex flex-wrap gap-1.5">
         {commonRatios.map((r) => (
-          <button key={r.label} onClick={() => { setWidth(r.w * 100); setHeight(r.h * 100) }}
-            className="text-xs bg-black/[0.04] dark:bg-white/[0.04] hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-200 px-2.5 py-1 rounded mr-2 transition-colors cursor-pointer">
+          <button
+            key={r.label}
+            onClick={() => { setWidth(r.w * 100); setHeight(r.h * 100) }}
+            className="text-[10px] font-display border border-dark-600 dark:border-[rgba(255,255,255,0.08)] text-dark-300 hover:border-accent/50 hover:text-accent px-2.5 py-1 transition-colors cursor-pointer"
+          >
             {r.label}
           </button>
         ))}
@@ -92,21 +95,24 @@ function LoremIpsumGenerator() {
   return (
     <Card>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-dark-100">Lorem Ipsum Generator</h3>
-        <button onClick={handleCopy} className="flex items-center gap-1 text-xs text-accent hover:text-accent-hover transition-colors cursor-pointer">
-          {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy</>}
+        <h3 className="font-serif text-base font-normal text-dark-100">Lorem Ipsum</h3>
+        <button onClick={handleCopy} className="flex items-center gap-1 text-[10px] font-display font-semibold uppercase tracking-[0.08em] text-accent hover:text-accent-hover transition-colors cursor-pointer">
+          {copied ? <><Check size={13} /> Copied</> : <><Copy size={13} /> Copy</>}
         </button>
       </div>
-      <div className="flex items-center gap-2 mb-3">
-        <label className="text-sm text-dark-300">Paragraphs:</label>
+      <div className="flex items-center gap-1.5 mb-3">
+        <span className="text-[10px] font-display text-dark-400 uppercase tracking-[0.06em] mr-1">Paragraphs</span>
         {[1, 2, 3, 4, 5].map((n) => (
-          <button key={n} onClick={() => setParagraphs(n)}
-            className={`w-7 h-7 rounded text-xs font-medium cursor-pointer transition-colors ${n === paragraphs ? 'bg-accent text-white' : 'bg-black/[0.04] dark:bg-white/[0.04] text-dark-300 hover:bg-black/[0.05] dark:hover:bg-white/[0.05]'}`}>
+          <button
+            key={n}
+            onClick={() => setParagraphs(n)}
+            className={`w-7 h-7 text-[11px] font-display font-semibold cursor-pointer transition-colors ${n === paragraphs ? 'bg-accent text-white' : 'border border-dark-600 dark:border-[rgba(255,255,255,0.08)] text-dark-300 hover:border-accent/50 hover:text-accent'}`}
+          >
             {n}
           </button>
         ))}
       </div>
-      <div className="bg-black/[0.04] dark:bg-white/[0.04] rounded-lg p-3 max-h-40 overflow-y-auto text-sm text-dark-300 leading-relaxed whitespace-pre-line">{text}</div>
+      <div className="border border-dark-600 dark:border-[rgba(255,255,255,0.08)] p-3 max-h-40 overflow-y-auto text-sm text-dark-300 leading-relaxed whitespace-pre-line">{text}</div>
     </Card>
   )
 }
@@ -123,36 +129,46 @@ function ContrastChecker() {
 
   return (
     <Card>
-      <h3 className="font-semibold text-dark-100 mb-4">Contrast Checker</h3>
+      <h3 className="font-serif text-base font-normal text-dark-100 mb-4">Contrast Checker</h3>
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div>
-          <label className="block text-xs text-dark-400 mb-1">Foreground</label>
+          <label className="block text-[10px] font-display font-semibold uppercase tracking-[0.08em] text-dark-300 mb-1.5">Foreground</label>
           <div className="flex items-center gap-2">
-            <input type="color" value={fg} onChange={(e) => setFg(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-            <input type="text" value={fg} onChange={(e) => setFg(e.target.value)} className="bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.07] rounded px-2 py-1 text-sm text-dark-100 w-24 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+            <input type="color" value={fg} onChange={(e) => setFg(e.target.value)} className="w-8 h-8 cursor-pointer border-0 bg-transparent" />
+            <input
+              type="text"
+              value={fg}
+              onChange={(e) => setFg(e.target.value)}
+              className="bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-2 py-[7px] text-[13px] font-display text-dark-100 w-24 focus:outline-none focus:border-accent/50 transition-colors"
+            />
           </div>
         </div>
         <div>
-          <label className="block text-xs text-dark-400 mb-1">Background</label>
+          <label className="block text-[10px] font-display font-semibold uppercase tracking-[0.08em] text-dark-300 mb-1.5">Background</label>
           <div className="flex items-center gap-2">
-            <input type="color" value={bg} onChange={(e) => setBg(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-            <input type="text" value={bg} onChange={(e) => setBg(e.target.value)} className="bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.07] rounded px-2 py-1 text-sm text-dark-100 w-24 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+            <input type="color" value={bg} onChange={(e) => setBg(e.target.value)} className="w-8 h-8 cursor-pointer border-0 bg-transparent" />
+            <input
+              type="text"
+              value={bg}
+              onChange={(e) => setBg(e.target.value)}
+              className="bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-2 py-[7px] text-[13px] font-display text-dark-100 w-24 focus:outline-none focus:border-accent/50 transition-colors"
+            />
           </div>
         </div>
       </div>
-      <div className="rounded-lg p-4 mb-4 text-center" style={{ backgroundColor: bg, color: fg }}>
+      <div className="p-4 mb-4 text-center border border-dark-600 dark:border-[rgba(255,255,255,0.08)]" style={{ backgroundColor: bg, color: fg }}>
         <p className="text-lg font-bold">Sample Text</p>
         <p className="text-sm">The quick brown fox jumps over the lazy dog</p>
       </div>
       <div className="text-center mb-3">
-        <span className="text-2xl font-bold text-dark-100">{ratio.toFixed(2)}</span>
+        <span className="font-serif text-2xl text-dark-100">{ratio.toFixed(2)}</span>
         <span className="text-sm text-dark-400 ml-1">: 1</span>
       </div>
-      <div className="grid grid-cols-2 gap-2 text-xs">
-        <div className={`rounded p-2 text-center ${aaNormal ? 'bg-green-500/20 text-green-400' : 'bg-red-50/80 text-red-500'}`}>AA Normal: {aaNormal ? 'Pass' : 'Fail'}</div>
-        <div className={`rounded p-2 text-center ${aaLarge ? 'bg-green-500/20 text-green-400' : 'bg-red-50/80 text-red-500'}`}>AA Large: {aaLarge ? 'Pass' : 'Fail'}</div>
-        <div className={`rounded p-2 text-center ${aaaNormal ? 'bg-green-500/20 text-green-400' : 'bg-red-50/80 text-red-500'}`}>AAA Normal: {aaaNormal ? 'Pass' : 'Fail'}</div>
-        <div className={`rounded p-2 text-center ${aaaLarge ? 'bg-green-500/20 text-green-400' : 'bg-red-50/80 text-red-500'}`}>AAA Large: {aaaLarge ? 'Pass' : 'Fail'}</div>
+      <div className="grid grid-cols-2 gap-2 text-[10px] font-display font-semibold uppercase tracking-[0.06em]">
+        <div className={`p-2 text-center border ${aaNormal ? 'border-accent/40 text-accent bg-dark-700' : 'border-red-300/40 text-red-500 bg-red-50/40 dark:bg-transparent dark:border-red-500/20'}`}>AA Normal: {aaNormal ? 'Pass' : 'Fail'}</div>
+        <div className={`p-2 text-center border ${aaLarge ? 'border-accent/40 text-accent bg-dark-700' : 'border-red-300/40 text-red-500 bg-red-50/40 dark:bg-transparent dark:border-red-500/20'}`}>AA Large: {aaLarge ? 'Pass' : 'Fail'}</div>
+        <div className={`p-2 text-center border ${aaaNormal ? 'border-accent/40 text-accent bg-dark-700' : 'border-red-300/40 text-red-500 bg-red-50/40 dark:bg-transparent dark:border-red-500/20'}`}>AAA Normal: {aaaNormal ? 'Pass' : 'Fail'}</div>
+        <div className={`p-2 text-center border ${aaaLarge ? 'border-accent/40 text-accent bg-dark-700' : 'border-red-300/40 text-red-500 bg-red-50/40 dark:bg-transparent dark:border-red-500/20'}`}>AAA Large: {aaaLarge ? 'Pass' : 'Fail'}</div>
       </div>
     </Card>
   )
@@ -162,21 +178,19 @@ export default function ToolsPage() {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h2 className="text-lg font-semibold text-dark-100 mb-4">Design Tools</h2>
+        <h2 className="font-serif text-lg font-normal text-dark-100 mb-4">Design Tools</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {TOOLS.map((tool) => {
             const Icon = tool.icon
             return (
               <Link key={tool.href} href={tool.href}>
-                <Card className="hover:border-black/[0.10] dark:hover:border-white/[0.15] transition-colors group h-full">
-                  <div className={`w-10 h-10 rounded-lg ${tool.bg} flex items-center justify-center mb-3`}>
-                    <Icon size={20} className={tool.color} />
+                <Card className="hover:border-accent/40 hover:bg-dark-700 transition-all duration-200 group h-full">
+                  <div className="flex items-start justify-between mb-3">
+                    <Icon size={16} className="text-dark-400 group-hover:text-accent transition-colors mt-0.5" />
+                    <ArrowRight size={14} className="text-dark-500 group-hover:text-accent transition-all duration-200 group-hover:translate-x-0.5" />
                   </div>
-                  <h3 className="font-semibold text-dark-100 mb-1 group-hover:text-accent transition-colors">{tool.name}</h3>
-                  <p className="text-sm text-dark-300 mb-3">{tool.description}</p>
-                  <span className="text-sm text-accent flex items-center gap-1 group-hover:gap-2 transition-all">
-                    Open <ArrowRight size={14} />
-                  </span>
+                  <h3 className="font-medium text-dark-100 mb-1.5 text-sm group-hover:text-accent transition-colors">{tool.name}</h3>
+                  <p className="text-sm text-dark-300 leading-relaxed">{tool.description}</p>
                 </Card>
               </Link>
             )
@@ -185,7 +199,7 @@ export default function ToolsPage() {
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold text-dark-100 mb-4">Quick Utilities</h2>
+        <h2 className="font-serif text-lg font-normal text-dark-100 mb-4">Quick Utilities</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <AspectRatioCalculator />
           <LoremIpsumGenerator />

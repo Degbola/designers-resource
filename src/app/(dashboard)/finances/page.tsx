@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
 import { Input, Select } from '@/components/ui/input'
 import { Tabs } from '@/components/ui/tabs'
-import { Plus, TrendingUp, TrendingDown, DollarSign, Trash2 } from 'lucide-react'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { Plus, Trash2 } from 'lucide-react'
+import { formatCurrencyWith, formatDate, CURRENCIES } from '@/lib/utils'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 import type { Income, Expense, FinanceSummary, Client } from '@/types'
 
@@ -21,6 +21,7 @@ export default function FinancesPage() {
   const [incomeList, setIncomeList] = useState<Income[]>([])
   const [expenseList, setExpenseList] = useState<Expense[]>([])
   const [clients, setClients] = useState<Client[]>([])
+  const [currency, setCurrency] = useState('USD')
   const [showIncomeModal, setShowIncomeModal] = useState(false)
   const [showExpenseModal, setShowExpenseModal] = useState(false)
   const [incomeForm, setIncomeForm] = useState({ client_id: '', amount: '', category: 'design', description: '', date: new Date().toISOString().split('T')[0] })
@@ -38,6 +39,18 @@ export default function FinancesPage() {
   }, [])
 
   useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    const saved = localStorage.getItem('finance_currency')
+    if (saved) setCurrency(saved)
+  }, [])
+
+  const handleCurrencyChange = (c: string) => {
+    setCurrency(c)
+    localStorage.setItem('finance_currency', c)
+  }
+
+  const fmt = (amount: number) => formatCurrencyWith(amount, currency)
 
   const addIncome = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,46 +71,59 @@ export default function FinancesPage() {
   const deleteIncome = async (id: number) => { await fetch(`/api/finances/income?id=${id}`, { method: 'DELETE' }); load() }
   const deleteExpense = async (id: number) => { await fetch(`/api/finances/expenses?id=${id}`, { method: 'DELETE' }); load() }
 
-  const tooltipStyle = { contentStyle: { background: 'rgba(255,255,255,0.9)', border: '1px solid rgba(200,210,230,0.5)', borderRadius: '8px', color: '#1a1a27' } }
+  const tooltipStyle = { contentStyle: { background: '#FDFCFA', border: '0.5px solid #E2DDD8', borderRadius: '0', color: '#111008', fontFamily: 'var(--font-inter)' } }
+
+  const netProfit = summary?.net_profit || 0
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <div className="flex justify-end">
+        <select
+          value={currency}
+          onChange={(e) => handleCurrencyChange(e.target.value)}
+          className="bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-3 py-[7px] text-[12px] font-display text-dark-100 focus:outline-none focus:border-accent/50 transition-colors cursor-pointer"
+        >
+          {CURRENCIES.map((c) => (
+            <option key={c.code} value={c.code}>{c.label}</option>
+          ))}
+        </select>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { label: 'Total Income', value: summary?.total_income || 0, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50/80' },
-          { label: 'Total Expenses', value: summary?.total_expenses || 0, icon: TrendingDown, color: 'text-red-500', bg: 'bg-red-50/80' },
-          { label: 'Net Profit', value: summary?.net_profit || 0, icon: DollarSign, color: (summary?.net_profit || 0) >= 0 ? 'text-emerald-600' : 'text-red-500', bg: (summary?.net_profit || 0) >= 0 ? 'bg-emerald-50/80' : 'bg-red-50/80' },
+          { label: 'Total Income', value: summary?.total_income || 0, color: 'text-accent' },
+          { label: 'Total Expenses', value: summary?.total_expenses || 0, color: 'text-red-500' },
+          { label: 'Net Profit', value: netProfit, color: netProfit >= 0 ? 'text-accent' : 'text-red-500' },
         ].map((s) => (
-          <Card key={s.label} className="flex items-center gap-4">
-            <div className={`p-3 rounded-xl ${s.bg}`}><s.icon size={24} className={s.color} /></div>
-            <div>
-              <p className="text-sm text-dark-300">{s.label}</p>
-              <p className={`text-2xl font-bold ${s.color}`}>{formatCurrency(s.value)}</p>
-            </div>
+          <Card key={s.label}>
+            <p className="text-[10px] font-display font-semibold uppercase tracking-[0.08em] text-dark-400 mb-1">{s.label}</p>
+            <p className={`font-serif text-2xl font-normal ${s.color}`}>{fmt(s.value)}</p>
           </Card>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <h3 className="font-semibold text-dark-100 mb-4">Income vs Expenses</h3>
+          <h3 className="font-serif text-base font-normal text-dark-100 mb-4">Income vs Expenses</h3>
           {summary && summary.monthly_data.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={summary.monthly_data}>
-                <XAxis dataKey="month" stroke="#8494a7" tick={{ fontSize: 12, fill: '#8494a7' }} />
-                <YAxis stroke="#8494a7" tick={{ fontSize: 12, fill: '#8494a7' }} />
+                <XAxis dataKey="month" stroke="#8494a7" tick={{ fontSize: 11, fill: '#8494a7', fontFamily: 'var(--font-inter)' }} />
+                <YAxis stroke="#8494a7" tick={{ fontSize: 11, fill: '#8494a7', fontFamily: 'var(--font-inter)' }} />
                 <Tooltip {...tooltipStyle} />
-                <Bar dataKey="income" fill="#22c55e" radius={[4, 4, 0, 0]} name="Income" />
-                <Bar dataKey="expenses" fill="#ef4444" radius={[4, 4, 0, 0]} name="Expenses" />
+                <Bar dataKey="income" fill="#1A4332" radius={[0, 0, 0, 0]} name="Income" />
+                <Bar dataKey="expenses" fill="#ef4444" radius={[0, 0, 0, 0]} name="Expenses" />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-dark-400 text-sm text-center py-12">Add income or expenses to see the chart</p>
+            <div className="py-10 text-center">
+              <p className="font-serif text-sm italic text-dark-400">Add income or expenses to see the chart.</p>
+            </div>
           )}
         </Card>
 
         <Card>
-          <h3 className="font-semibold text-dark-100 mb-4">Expense Breakdown</h3>
+          <h3 className="font-serif text-base font-normal text-dark-100 mb-4">Expense Breakdown</h3>
           {summary && summary.expense_categories.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -111,7 +137,9 @@ export default function FinancesPage() {
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-dark-400 text-sm text-center py-12">Add expenses to see the breakdown</p>
+            <div className="py-10 text-center">
+              <p className="font-serif text-sm italic text-dark-400">Add expenses to see the breakdown.</p>
+            </div>
           )}
         </Card>
       </div>
@@ -121,8 +149,20 @@ export default function FinancesPage() {
           id: 'income', label: 'Income',
           content: (
             <div className="space-y-4">
-              <div className="flex justify-end"><Button onClick={() => setShowIncomeModal(true)}><Plus size={16} /> Add Income</Button></div>
-              {incomeList.length === 0 ? <Card className="text-center py-8"><p className="text-dark-400">No income records</p></Card> : (
+              <div className="flex justify-end">
+                <Button onClick={() => setShowIncomeModal(true)}><Plus size={16} /> Add Income</Button>
+              </div>
+              {incomeList.length === 0 ? (
+                <button type="button" onClick={() => setShowIncomeModal(true)} className="w-full text-left group cursor-pointer">
+                  <div className="flex items-end justify-between px-6 py-8 rounded-md bg-accent group-hover:bg-accent-hover transition-all duration-300 group-hover:-translate-y-0.5">
+                    <div>
+                      <span className="text-[9px] font-display font-semibold uppercase tracking-[0.14em] text-white/50 block mb-3">Get Started</span>
+                      <span className="font-serif text-[1.2rem] font-normal text-white leading-snug">Record your first income.</span>
+                    </div>
+                    <Plus size={22} className="text-white/30 group-hover:text-white/60 transition-colors flex-shrink-0 ml-4" />
+                  </div>
+                </button>
+              ) : (
                 <div className="space-y-2">
                   {incomeList.map((inc) => (
                     <Card key={inc.id} className="!p-3 flex items-center justify-between">
@@ -131,7 +171,7 @@ export default function FinancesPage() {
                         <p className="text-xs text-dark-400">{inc.client_name ? `${inc.client_name} · ` : ''}{formatDate(inc.date)}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-emerald-600 font-semibold">+{formatCurrency(inc.amount)}</span>
+                        <span className="font-serif text-accent">+{fmt(inc.amount)}</span>
                         <button onClick={() => deleteIncome(inc.id)} className="p-1 text-dark-400 hover:text-red-500 cursor-pointer"><Trash2 size={14} /></button>
                       </div>
                     </Card>
@@ -145,8 +185,20 @@ export default function FinancesPage() {
           id: 'expenses', label: 'Expenses',
           content: (
             <div className="space-y-4">
-              <div className="flex justify-end"><Button onClick={() => setShowExpenseModal(true)}><Plus size={16} /> Add Expense</Button></div>
-              {expenseList.length === 0 ? <Card className="text-center py-8"><p className="text-dark-400">No expense records</p></Card> : (
+              <div className="flex justify-end">
+                <Button onClick={() => setShowExpenseModal(true)}><Plus size={16} /> Add Expense</Button>
+              </div>
+              {expenseList.length === 0 ? (
+                <button type="button" onClick={() => setShowExpenseModal(true)} className="w-full text-left group cursor-pointer">
+                  <div className="flex items-end justify-between px-6 py-8 rounded-md bg-accent group-hover:bg-accent-hover transition-all duration-300 group-hover:-translate-y-0.5">
+                    <div>
+                      <span className="text-[9px] font-display font-semibold uppercase tracking-[0.14em] text-white/50 block mb-3">Get Started</span>
+                      <span className="font-serif text-[1.2rem] font-normal text-white leading-snug">Log your first expense.</span>
+                    </div>
+                    <Plus size={22} className="text-white/30 group-hover:text-white/60 transition-colors flex-shrink-0 ml-4" />
+                  </div>
+                </button>
+              ) : (
                 <div className="space-y-2">
                   {expenseList.map((exp) => (
                     <Card key={exp.id} className="!p-3 flex items-center justify-between">
@@ -155,7 +207,7 @@ export default function FinancesPage() {
                         <p className="text-xs text-dark-400">{exp.vendor ? `${exp.vendor} · ` : ''}{formatDate(exp.date)}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-red-500 font-semibold">-{formatCurrency(exp.amount)}</span>
+                        <span className="font-serif text-red-500">-{fmt(exp.amount)}</span>
                         <button onClick={() => deleteExpense(exp.id)} className="p-1 text-dark-400 hover:text-red-500 cursor-pointer"><Trash2 size={14} /></button>
                       </div>
                     </Card>
@@ -174,7 +226,10 @@ export default function FinancesPage() {
           <Input label="Description" value={incomeForm.description} onChange={(e) => setIncomeForm({ ...incomeForm, description: e.target.value })} />
           <Select label="Client" value={incomeForm.client_id} onChange={(e) => setIncomeForm({ ...incomeForm, client_id: e.target.value })} options={[{ value: '', label: 'None' }, ...clients.map((c) => ({ value: String(c.id), label: c.name }))]} />
           <Input label="Date *" type="date" value={incomeForm.date} onChange={(e) => setIncomeForm({ ...incomeForm, date: e.target.value })} required />
-          <div className="flex justify-end gap-3"><Button type="button" variant="secondary" onClick={() => setShowIncomeModal(false)}>Cancel</Button><Button type="submit">Add Income</Button></div>
+          <div className="flex justify-end gap-3">
+            <Button type="button" variant="secondary" onClick={() => setShowIncomeModal(false)}>Cancel</Button>
+            <Button type="submit">Add Income</Button>
+          </div>
         </form>
       </Modal>
 
@@ -185,7 +240,10 @@ export default function FinancesPage() {
           <Input label="Description" value={expenseForm.description} onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })} />
           <Input label="Vendor" value={expenseForm.vendor} onChange={(e) => setExpenseForm({ ...expenseForm, vendor: e.target.value })} />
           <Input label="Date *" type="date" value={expenseForm.date} onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })} required />
-          <div className="flex justify-end gap-3"><Button type="button" variant="secondary" onClick={() => setShowExpenseModal(false)}>Cancel</Button><Button type="submit">Add Expense</Button></div>
+          <div className="flex justify-end gap-3">
+            <Button type="button" variant="secondary" onClick={() => setShowExpenseModal(false)}>Cancel</Button>
+            <Button type="submit">Add Expense</Button>
+          </div>
         </form>
       </Modal>
     </div>

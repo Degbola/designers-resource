@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Modal } from '@/components/ui/modal'
 import { Input, Textarea, Select } from '@/components/ui/input'
 import {
@@ -13,14 +12,14 @@ import {
 import type { Resource } from '@/types'
 import type { LucideIcon } from 'lucide-react'
 
-const CATEGORY_CONFIG: Record<string, { icon: LucideIcon; color: string; bg: string; label: string }> = {
-  tools: { icon: Wrench, color: 'text-blue-400', bg: 'bg-blue-500/20', label: 'Tools' },
-  inspiration: { icon: Sparkles, color: 'text-purple-400', bg: 'bg-purple-500/20', label: 'Inspiration' },
-  fonts: { icon: Type, color: 'text-pink-400', bg: 'bg-pink-500/20', label: 'Fonts' },
-  colors: { icon: Palette, color: 'text-green-400', bg: 'bg-green-500/20', label: 'Colors' },
-  icons: { icon: Shapes, color: 'text-amber-400', bg: 'bg-amber-500/20', label: 'Icons' },
-  stock: { icon: Image, color: 'text-cyan-400', bg: 'bg-cyan-500/20', label: 'Stock' },
-  learning: { icon: GraduationCap, color: 'text-orange-400', bg: 'bg-orange-500/20', label: 'Learning' },
+const CATEGORY_CONFIG: Record<string, { icon: LucideIcon; label: string }> = {
+  tools: { icon: Wrench, label: 'Tools' },
+  inspiration: { icon: Sparkles, label: 'Inspiration' },
+  fonts: { icon: Type, label: 'Fonts' },
+  colors: { icon: Palette, label: 'Colors' },
+  icons: { icon: Shapes, label: 'Icons' },
+  stock: { icon: Image, label: 'Stock' },
+  learning: { icon: GraduationCap, label: 'Learning' },
 }
 
 export default function ResourcesPage() {
@@ -69,6 +68,12 @@ export default function ResourcesPage() {
     setShowModal(true)
   }
 
+  const openNew = () => {
+    setEditingResource(null)
+    setForm({ title: '', description: '', url: '', category: 'tools', tags: '' })
+    setShowModal(true)
+  }
+
   const filtered = resources.filter((r) => {
     const matchSearch = r.title.toLowerCase().includes(search.toLowerCase()) ||
       r.description.toLowerCase().includes(search.toLowerCase()) ||
@@ -89,7 +94,7 @@ export default function ResourcesPage() {
               placeholder="Search resources..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.07] rounded-lg pl-9 pr-4 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64"
+              className="bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded pl-9 pr-4 py-[7px] text-[13px] font-display text-dark-100 placeholder:text-dark-400 focus:outline-none focus:border-accent/50 transition-colors duration-200 w-full sm:w-64"
             />
           </div>
           <Select
@@ -103,21 +108,33 @@ export default function ResourcesPage() {
           />
           <button
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-            className={`p-2 rounded-lg border transition-colors cursor-pointer ${showFavoritesOnly ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400' : 'bg-black/[0.05] dark:bg-white/[0.05] border-black/[0.06] dark:border-white/[0.07] text-dark-400 hover:text-dark-100'}`}
+            className={`p-[7px] border transition-colors cursor-pointer ${showFavoritesOnly ? 'border-accent/50 text-accent bg-dark-700' : 'border-dark-600 dark:border-[rgba(255,255,255,0.08)] text-dark-400 hover:text-dark-100 bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)]'}`}
             title="Show favorites only"
           >
             <Star size={16} fill={showFavoritesOnly ? 'currentColor' : 'none'} />
           </button>
         </div>
-        <Button onClick={() => { setEditingResource(null); setForm({ title: '', description: '', url: '', category: 'tools', tags: '' }); setShowModal(true) }}>
+        <Button onClick={openNew}>
           <Plus size={16} /> Add Resource
         </Button>
       </div>
 
       {filtered.length === 0 ? (
-        <Card className="text-center py-12">
-          <p className="text-dark-400">No resources found. Add your first resource to build your library!</p>
-        </Card>
+        <button type="button" onClick={openNew} className="w-full text-left group cursor-pointer">
+          <div className="flex items-end justify-between px-6 py-8 rounded-md bg-accent group-hover:bg-accent-hover transition-all duration-300 group-hover:-translate-y-0.5">
+            <div>
+              <span className="text-[9px] font-display font-semibold uppercase tracking-[0.14em] text-white/50 block mb-3">
+                {search || filterCategory !== 'all' || showFavoritesOnly ? 'No Matches' : 'Get Started'}
+              </span>
+              <span className="font-serif text-[1.25rem] font-normal text-white leading-snug">
+                {search || filterCategory !== 'all' || showFavoritesOnly ? 'No resources match your filters.' : 'Build your design library.'}
+              </span>
+            </div>
+            {!search && filterCategory === 'all' && !showFavoritesOnly && (
+              <Plus size={22} className="text-white/30 group-hover:text-white/60 transition-colors flex-shrink-0 ml-4" />
+            )}
+          </div>
+        </button>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((resource) => {
@@ -126,28 +143,28 @@ export default function ResourcesPage() {
             return (
               <Card key={resource.id} className="hover:border-black/[0.07] dark:hover:border-white/[0.08] transition-colors flex flex-col">
                 <div className="flex items-start justify-between mb-3">
-                  <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${config.bg} ${config.color}`}>
-                    <Icon size={12} /> {config.label}
+                  <span className="inline-flex items-center gap-1.5 text-[9px] font-display font-semibold uppercase tracking-[0.08em] text-dark-400">
+                    <Icon size={11} /> {config.label}
                   </span>
                   <button
                     onClick={() => toggleFavorite(resource.id)}
-                    className={`p-1 rounded cursor-pointer transition-colors ${resource.is_favorite ? 'text-yellow-400' : 'text-dark-500 hover:text-yellow-400'}`}
+                    className={`p-1 cursor-pointer transition-colors ${resource.is_favorite ? 'text-yellow-500' : 'text-dark-500 hover:text-yellow-500'}`}
                   >
-                    <Star size={16} fill={resource.is_favorite ? 'currentColor' : 'none'} />
+                    <Star size={15} fill={resource.is_favorite ? 'currentColor' : 'none'} />
                   </button>
                 </div>
-                <h3 className="font-semibold text-dark-100 mb-1">{resource.title}</h3>
+                <h3 className="font-medium text-dark-100 mb-1 text-sm">{resource.title}</h3>
                 {resource.description && (
                   <p className="text-sm text-dark-300 mb-3 line-clamp-2">{resource.description}</p>
                 )}
                 {resource.tags && (
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {resource.tags.split(',').map((tag, i) => (
-                      <span key={i} className="text-xs bg-black/[0.04] dark:bg-white/[0.04] text-dark-200 px-2 py-0.5 rounded">{tag.trim()}</span>
+                      <span key={i} className="text-[10px] font-display border border-dark-600 dark:border-[rgba(255,255,255,0.08)] text-dark-400 px-1.5 py-0.5">{tag.trim()}</span>
                     ))}
                   </div>
                 )}
-                <div className="mt-auto pt-3 border-t border-black/[0.06] dark:border-white/[0.07] flex items-center justify-between">
+                <div className="mt-auto pt-3 border-t border-dark-600 dark:border-[rgba(255,255,255,0.07)] flex items-center justify-between">
                   {resource.url ? (
                     <a href={resource.url} target="_blank" rel="noopener noreferrer" className="text-sm text-accent hover:text-accent-hover flex items-center gap-1 transition-colors">
                       <ExternalLink size={14} /> Visit
@@ -156,8 +173,8 @@ export default function ResourcesPage() {
                     <span />
                   )}
                   <div className="flex gap-1">
-                    <button onClick={() => openEdit(resource)} className="p-1.5 rounded-lg hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-dark-100 transition-colors cursor-pointer"><Edit2 size={14} /></button>
-                    <button onClick={() => handleDelete(resource.id)} className="p-1.5 rounded-lg hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-red-500 transition-colors cursor-pointer"><Trash2 size={14} /></button>
+                    <button onClick={() => openEdit(resource)} className="p-1.5 hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-dark-100 transition-colors cursor-pointer"><Edit2 size={14} /></button>
+                    <button onClick={() => handleDelete(resource.id)} className="p-1.5 hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-red-500 transition-colors cursor-pointer"><Trash2 size={14} /></button>
                   </div>
                 </div>
               </Card>

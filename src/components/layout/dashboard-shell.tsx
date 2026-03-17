@@ -31,7 +31,7 @@ export function DashboardShell({ user, children }: { user: SafeUser; children: R
             initial="initial"
             animate="animate"
             exit="exit"
-            className="flex-1 p-4 md:p-6 overflow-x-hidden"
+            className="flex-1 p-6 md:p-10 overflow-x-hidden"
           >
             {children}
           </motion.main>

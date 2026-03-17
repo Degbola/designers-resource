@@ -58,6 +58,12 @@ export default function ProjectsPage() {
     setShowModal(true)
   }
 
+  const openNew = () => {
+    setEditing(null)
+    setForm({ client_id: clients[0]?.id?.toString() || '', name: '', description: '', status: 'not_started', priority: 'medium', start_date: '', due_date: '', budget: '', progress: '0', drive_folder_url: '' })
+    setShowModal(true)
+  }
+
   const updateStatus = async (project: Project, newStatus: string) => {
     await fetch('/api/projects', {
       method: 'PUT',
@@ -77,10 +83,15 @@ export default function ProjectsPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="relative w-full sm:w-auto">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400" />
-          <input type="text" placeholder="Search projects..." value={search} onChange={(e) => setSearch(e.target.value)}
-            className="bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.07] rounded-lg pl-9 pr-4 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64" />
+          <input
+            type="text"
+            placeholder="Search projects..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded pl-9 pr-4 py-[7px] text-[13px] font-display text-dark-100 placeholder:text-dark-400 focus:outline-none focus:border-accent/50 transition-colors duration-200 w-full sm:w-64"
+          />
         </div>
-        <Button onClick={() => { setEditing(null); setForm({ client_id: clients[0]?.id?.toString() || '', name: '', description: '', status: 'not_started', priority: 'medium', start_date: '', due_date: '', budget: '', progress: '0', drive_folder_url: '' }); setShowModal(true) }} className="w-full sm:w-auto">
+        <Button onClick={openNew} className="w-full sm:w-auto">
           <Plus size={16} /> New Project
         </Button>
       </div>
@@ -91,8 +102,8 @@ export default function ProjectsPage() {
           return (
             <div key={col.id}>
               <div className={`flex items-center gap-2 mb-3 pb-2 border-b-2 ${col.color}`}>
-                <h3 className="font-semibold text-sm text-dark-200">{col.label}</h3>
-                <span className="text-xs text-dark-400 bg-black/[0.05] dark:bg-white/[0.05] px-2 py-0.5 rounded-full">{colProjects.length}</span>
+                <h3 className="font-display font-semibold text-[11px] uppercase tracking-[0.06em] text-dark-200">{col.label}</h3>
+                <span className="text-[10px] font-display text-dark-400">{colProjects.length}</span>
               </div>
               <div className="space-y-3">
                 {colProjects.map((project) => (
@@ -100,8 +111,8 @@ export default function ProjectsPage() {
                     <div className="flex items-start justify-between mb-2">
                       <Link href={`/projects/${project.id}`} className="font-medium text-dark-100 text-sm hover:text-accent transition-colors">{project.name}</Link>
                       <div className="flex gap-1">
-                        <button onClick={() => openEdit(project)} className="p-1 rounded hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-dark-100 cursor-pointer"><Edit2 size={12} /></button>
-                        <button onClick={() => handleDelete(project.id)} className="p-1 rounded hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-red-500 cursor-pointer"><Trash2 size={12} /></button>
+                        <button onClick={() => openEdit(project)} className="p-1 hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-dark-100 cursor-pointer"><Edit2 size={12} /></button>
+                        <button onClick={() => handleDelete(project.id)} className="p-1 hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-red-500 cursor-pointer"><Trash2 size={12} /></button>
                       </div>
                     </div>
                     <p className="text-xs text-dark-400 mb-2">{project.client_name}</p>
@@ -114,15 +125,15 @@ export default function ProjectsPage() {
                     )}
                     <div className="mt-3">
                       <div className="flex justify-between text-xs text-dark-400 mb-1"><span>Progress</span><span>{project.progress}%</span></div>
-                      <div className="h-1.5 bg-black/[0.04] dark:bg-white/[0.04] rounded-full overflow-hidden">
-                        <div className="h-full bg-accent rounded-full transition-all" style={{ width: `${project.progress}%` }} />
+                      <div className="h-1.5 bg-black/[0.04] dark:bg-white/[0.04] overflow-hidden">
+                        <div className="h-full bg-accent transition-all" style={{ width: `${project.progress}%` }} />
                       </div>
                     </div>
                     {project.status !== 'completed' && (
                       <div className="flex gap-1 mt-3">
                         {statusColumns.filter((s) => s.id !== project.status).map((s) => (
                           <button key={s.id} onClick={() => updateStatus(project, s.id)}
-                            className="text-[10px] px-2 py-1 rounded bg-black/[0.04] dark:bg-white/[0.04] text-dark-300 hover:bg-black/[0.06] dark:hover:bg-white/[0.06] hover:text-dark-100 transition-colors cursor-pointer">
+                            className="text-[10px] px-2 py-1 bg-black/[0.04] dark:bg-white/[0.04] text-dark-300 hover:bg-black/[0.06] dark:hover:bg-white/[0.06] hover:text-dark-100 transition-colors cursor-pointer font-display">
                             {s.label}
                           </button>
                         ))}
@@ -130,6 +141,14 @@ export default function ProjectsPage() {
                     )}
                   </Card>
                 ))}
+                {colProjects.length === 0 && (
+                  <button type="button" onClick={openNew} className="w-full text-left group cursor-pointer">
+                    <div className="px-4 py-5 rounded-md border border-dashed border-dark-600 dark:border-[rgba(255,255,255,0.08)] hover:border-accent/50 hover:bg-dark-700 transition-all duration-200">
+                      <span className="text-[9px] font-display font-semibold uppercase tracking-[0.12em] text-dark-400 block mb-1.5">Empty</span>
+                      <span className="font-serif text-sm font-normal text-dark-300 italic group-hover:text-accent transition-colors">Add a project here.</span>
+                    </div>
+                  </button>
+                )}
               </div>
             </div>
           )

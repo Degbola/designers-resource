@@ -50,6 +50,12 @@ export default function ClientsPage() {
     setShowModal(true)
   }
 
+  const openNew = () => {
+    setEditingClient(null)
+    setForm({ name: '', email: '', phone: '', company: '', address: '', status: 'lead', notes: '' })
+    setShowModal(true)
+  }
+
   const filtered = clients.filter((c) => {
     const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) || c.email.toLowerCase().includes(search.toLowerCase()) || c.company.toLowerCase().includes(search.toLowerCase())
     const matchStatus = filterStatus === 'all' || c.status === filterStatus
@@ -67,7 +73,7 @@ export default function ClientsPage() {
               placeholder="Search clients..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.07] rounded-lg pl-9 pr-4 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64"
+              className="bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded pl-9 pr-4 py-[7px] text-[13px] font-display text-dark-100 placeholder:text-dark-400 focus:outline-none focus:border-accent/50 transition-colors duration-200 w-full sm:w-64"
             />
           </div>
           <Select
@@ -83,15 +89,27 @@ export default function ClientsPage() {
             className="w-40"
           />
         </div>
-        <Button onClick={() => { setEditingClient(null); setForm({ name: '', email: '', phone: '', company: '', address: '', status: 'lead', notes: '' }); setShowModal(true) }} className="w-full sm:w-auto">
+        <Button onClick={openNew} className="w-full sm:w-auto">
           <Plus size={16} /> Add Client
         </Button>
       </div>
 
       {filtered.length === 0 ? (
-        <Card className="text-center py-12">
-          <p className="text-dark-400">No clients found. Add your first client to get started!</p>
-        </Card>
+        <button type="button" onClick={openNew} className="w-full text-left group cursor-pointer">
+          <div className="flex items-end justify-between px-6 py-8 rounded-md bg-accent group-hover:bg-accent-hover transition-all duration-300 group-hover:-translate-y-0.5">
+            <div>
+              <span className="text-[9px] font-display font-semibold uppercase tracking-[0.14em] text-white/50 block mb-3">
+                {search || filterStatus !== 'all' ? 'No Matches' : 'Get Started'}
+              </span>
+              <span className="font-serif text-[1.25rem] font-normal text-white leading-snug">
+                {search || filterStatus !== 'all' ? 'No clients match your filters.' : 'Add your first client.'}
+              </span>
+            </div>
+            {!search && filterStatus === 'all' && (
+              <Plus size={22} className="text-white/30 group-hover:text-white/60 transition-colors flex-shrink-0 ml-4" />
+            )}
+          </div>
+        </button>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((client) => (
@@ -99,7 +117,7 @@ export default function ClientsPage() {
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm"
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm flex-shrink-0"
                     style={{ backgroundColor: client.avatar_color }}
                   >
                     {client.name.charAt(0).toUpperCase()}
@@ -112,14 +130,14 @@ export default function ClientsPage() {
                   </div>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => openEdit(client)} className="p-1.5 rounded-lg hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-dark-100 transition-colors cursor-pointer"><Edit2 size={14} /></button>
-                  <button onClick={() => handleDelete(client.id)} className="p-1.5 rounded-lg hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-red-500 transition-colors cursor-pointer"><Trash2 size={14} /></button>
+                  <button onClick={() => openEdit(client)} className="p-1.5 hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-dark-100 transition-colors cursor-pointer"><Edit2 size={14} /></button>
+                  <button onClick={() => handleDelete(client.id)} className="p-1.5 hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-red-500 transition-colors cursor-pointer"><Trash2 size={14} /></button>
                 </div>
               </div>
               {client.company && <p className="text-sm text-dark-300 flex items-center gap-1.5 mb-1"><Building2 size={14} /> {client.company}</p>}
               {client.email && <p className="text-sm text-dark-300 flex items-center gap-1.5 mb-1"><Mail size={14} /> {client.email}</p>}
               {client.phone && <p className="text-sm text-dark-300 flex items-center gap-1.5 mb-1"><Phone size={14} /> {client.phone}</p>}
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-black/[0.06] dark:border-white/[0.07] text-xs text-dark-400">
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-dark-600 dark:border-[rgba(255,255,255,0.07)] text-xs text-dark-400">
                 <span>{client.project_count} project{client.project_count !== 1 ? 's' : ''}</span>
                 <span>${(client.total_paid || 0).toLocaleString()} earned</span>
                 <Link href={`/portal/${client.portal_token}`} className="flex items-center gap-1 text-accent hover:text-accent-hover" target="_blank"><ExternalLink size={12} /> Portal</Link>

@@ -13,8 +13,8 @@ export function Badge({ children, variant, className }: BadgeProps) {
   const shouldPulse = variant && PULSE_STATUSES.has(variant)
   return (
     <span className={cn(
-      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-      variant ? getStatusColor(variant) : 'bg-white/30 text-dark-300',
+      'inline-flex items-center px-2 py-0.5 text-[9px] font-display font-semibold uppercase tracking-[0.08em] border rounded-sm',
+      variant ? getStatusColor(variant) : 'border-dark-600 text-dark-400 bg-transparent',
       shouldPulse && 'badge-pulse',
       className
     )}>

@@ -3,12 +3,12 @@
 import { cn } from '@/lib/utils'
 
 const inputBase = [
-  'w-full rounded-lg px-3 py-2 text-sm text-dark-100',
-  'bg-white/55 dark:bg-white/[0.06]',
-  'border border-white/70 dark:border-white/[0.10]',
+  'w-full px-3 py-[7px] text-[13px] font-display rounded',
+  'text-dark-100 bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)]',
+  'border border-dark-600 dark:border-[rgba(255,255,255,0.08)]',
   'placeholder:text-dark-400',
-  'focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50',
-  'transition-all duration-200',
+  'focus:outline-none focus:border-accent/50 dark:focus:border-accent/50',
+  'transition-colors duration-200',
 ].join(' ')
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -20,14 +20,16 @@ export function Input({ label, error, className, id, ...props }: InputProps) {
   return (
     <div className="space-y-1.5">
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-dark-200">{label}</label>
+        <label htmlFor={id} className="block text-[10px] font-display font-semibold uppercase tracking-[0.08em] text-dark-300">
+          {label}
+        </label>
       )}
       <input
         id={id}
-        className={cn(inputBase, error && 'border-red-400 focus:ring-red-400/50', className)}
+        className={cn(inputBase, error && 'border-red-400 focus:border-red-400', className)}
         {...props}
       />
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-[11px] font-display text-red-500">{error}</p>}
     </div>
   )
 }
@@ -40,7 +42,9 @@ export function Textarea({ label, className, id, ...props }: TextareaProps) {
   return (
     <div className="space-y-1.5">
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-dark-200">{label}</label>
+        <label htmlFor={id} className="block text-[10px] font-display font-semibold uppercase tracking-[0.08em] text-dark-300">
+          {label}
+        </label>
       )}
       <textarea
         id={id}
@@ -60,7 +64,9 @@ export function Select({ label, options, className, id, ...props }: SelectProps)
   return (
     <div className="space-y-1.5">
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-dark-200">{label}</label>
+        <label htmlFor={id} className="block text-[10px] font-display font-semibold uppercase tracking-[0.08em] text-dark-300">
+          {label}
+        </label>
       )}
       <select
         id={id}

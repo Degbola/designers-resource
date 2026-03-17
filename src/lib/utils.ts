@@ -19,6 +19,34 @@ export function formatCurrency(amount: number): string {
   }).format(amount)
 }
 
+export function formatCurrencyWith(amount: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: currency === 'JPY' ? 0 : 2,
+      maximumFractionDigits: currency === 'JPY' ? 0 : 2,
+    }).format(amount)
+  } catch {
+    return `${currency} ${amount.toFixed(2)}`
+  }
+}
+
+export const CURRENCIES = [
+  { code: 'USD', label: 'USD — US Dollar' },
+  { code: 'EUR', label: 'EUR — Euro' },
+  { code: 'GBP', label: 'GBP — British Pound' },
+  { code: 'NGN', label: 'NGN — Nigerian Naira' },
+  { code: 'GHS', label: 'GHS — Ghanaian Cedi' },
+  { code: 'KES', label: 'KES — Kenyan Shilling' },
+  { code: 'ZAR', label: 'ZAR — South African Rand' },
+  { code: 'CAD', label: 'CAD — Canadian Dollar' },
+  { code: 'AUD', label: 'AUD — Australian Dollar' },
+  { code: 'JPY', label: 'JPY — Japanese Yen' },
+  { code: 'CHF', label: 'CHF — Swiss Franc' },
+  { code: 'INR', label: 'INR — Indian Rupee' },
+]
+
 export function formatDate(dateStr: string): string {
   if (!dateStr) return ''
   const date = new Date(dateStr)
@@ -35,25 +63,25 @@ export function cn(...classes: (string | boolean | undefined | null)[]): string 
 
 export function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
-    lead: 'bg-yellow-100/70 text-yellow-700',
-    active: 'bg-emerald-100/70 text-emerald-700',
-    completed: 'bg-blue-100/70 text-blue-700',
-    archived: 'bg-zinc-100/70 text-zinc-600',
-    not_started: 'bg-zinc-100/70 text-zinc-600',
-    in_progress: 'bg-blue-100/70 text-blue-700',
-    review: 'bg-purple-100/70 text-purple-700',
-    draft: 'bg-zinc-100/70 text-zinc-600',
-    sent: 'bg-blue-100/70 text-blue-700',
-    paid: 'bg-emerald-100/70 text-emerald-700',
-    overdue: 'bg-red-100/70 text-red-600',
-    pending: 'bg-yellow-100/70 text-yellow-700',
-    approved: 'bg-emerald-100/70 text-emerald-700',
-    revision: 'bg-orange-100/70 text-orange-700',
-    low: 'bg-zinc-100/70 text-zinc-600',
-    medium: 'bg-yellow-100/70 text-yellow-700',
-    high: 'bg-red-100/70 text-red-600',
+    lead:        'border-yellow-300/60 text-yellow-700 bg-yellow-50/60 dark:border-yellow-500/20 dark:text-yellow-400 dark:bg-transparent',
+    active:      'border-accent/40 text-accent bg-dark-700 dark:border-accent/30 dark:text-accent dark:bg-transparent',
+    completed:   'border-blue-300/60 text-blue-600 bg-blue-50/60 dark:border-blue-500/20 dark:text-blue-400 dark:bg-transparent',
+    archived:    'border-dark-600 text-dark-400 bg-transparent',
+    not_started: 'border-dark-600 text-dark-400 bg-transparent',
+    in_progress: 'border-blue-300/60 text-blue-600 bg-blue-50/60 dark:border-blue-500/20 dark:text-blue-400 dark:bg-transparent',
+    review:      'border-purple-300/60 text-purple-600 bg-purple-50/60 dark:border-purple-500/20 dark:text-purple-400 dark:bg-transparent',
+    draft:       'border-dark-600 text-dark-400 bg-transparent',
+    sent:        'border-blue-300/60 text-blue-600 bg-blue-50/60 dark:border-blue-500/20 dark:text-blue-400 dark:bg-transparent',
+    paid:        'border-accent/40 text-accent bg-dark-700 dark:border-accent/30 dark:text-accent dark:bg-transparent',
+    overdue:     'border-red-300/60 text-red-600 bg-red-50/60 dark:border-red-500/20 dark:text-red-400 dark:bg-transparent',
+    pending:     'border-yellow-300/60 text-yellow-700 bg-yellow-50/60 dark:border-yellow-500/20 dark:text-yellow-400 dark:bg-transparent',
+    approved:    'border-accent/40 text-accent bg-dark-700 dark:border-accent/30 dark:text-accent dark:bg-transparent',
+    revision:    'border-orange-300/60 text-orange-600 bg-orange-50/60 dark:border-orange-500/20 dark:text-orange-400 dark:bg-transparent',
+    low:         'border-dark-600 text-dark-400 bg-transparent',
+    medium:      'border-yellow-300/60 text-yellow-700 bg-yellow-50/60 dark:border-yellow-500/20 dark:text-yellow-400 dark:bg-transparent',
+    high:        'border-red-300/60 text-red-600 bg-red-50/60 dark:border-red-500/20 dark:text-red-400 dark:bg-transparent',
   }
-  return colors[status] || 'bg-zinc-100/70 text-zinc-600'
+  return colors[status] || 'border-dark-600 text-dark-400 bg-transparent'
 }
 
 // Normalize Unicode characters that jsPDF's WinAnsi encoding can't render

@@ -19,16 +19,16 @@ export function Tabs({ tabs, defaultTab }: TabsProps) {
 
   return (
     <div>
-      <div className="flex gap-1 border-b border-black/[0.07] dark:border-white/[0.08] mb-6">
+      <div className="flex gap-0 border-b border-dark-600 dark:border-[rgba(255,255,255,0.07)] mb-6">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActive(tab.id)}
             className={cn(
-              'px-4 py-2.5 text-sm font-medium transition-all duration-200 border-b-2 -mb-px cursor-pointer',
+              'px-4 py-2.5 text-[10px] font-display font-semibold uppercase tracking-[0.08em] transition-all duration-200 border-b-[1.5px] -mb-px cursor-pointer',
               active === tab.id
                 ? 'text-accent border-accent'
-                : 'text-dark-400 border-transparent hover:text-dark-100 hover:border-dark-200'
+                : 'text-dark-400 border-transparent hover:text-dark-200 hover:border-dark-600'
             )}
           >
             {tab.label}

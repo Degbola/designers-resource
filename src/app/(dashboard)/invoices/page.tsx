@@ -101,6 +101,12 @@ export default function InvoicesPage() {
     load()
   }
 
+  const openNew = () => {
+    setForm({ client_id: clients[0]?.id?.toString() || '', project_id: '', status: 'draft', issue_date: new Date().toISOString().split('T')[0], due_date: '', tax_rate: '0', notes: '' })
+    setItems([{ description: '', quantity: 1, unit_price: 0 }])
+    setShowModal(true)
+  }
+
   const addItem = () => setItems([...items, { description: '', quantity: 1, unit_price: 0 }])
   const removeItem = (idx: number) => setItems(items.filter((_, i) => i !== idx))
   const updateItem = (idx: number, field: keyof LineItem, value: string | number) => {
@@ -128,12 +134,12 @@ export default function InvoicesPage() {
         {[
           { label: 'Draft', value: statusTotals.draft, color: 'text-zinc-400' },
           { label: 'Sent', value: statusTotals.sent, color: 'text-blue-400' },
-          { label: 'Paid', value: statusTotals.paid, color: 'text-green-400' },
+          { label: 'Paid', value: statusTotals.paid, color: 'text-accent' },
           { label: 'Overdue', value: statusTotals.overdue, color: 'text-red-500' },
         ].map((s) => (
           <Card key={s.label} className="!p-4">
-            <p className="text-xs text-dark-400">{s.label}</p>
-            <p className={`text-lg font-bold ${s.color}`}>{formatCurrency(s.value)}</p>
+            <p className="text-[10px] font-display font-semibold uppercase tracking-[0.08em] text-dark-400 mb-1">{s.label}</p>
+            <p className={`font-serif text-xl font-normal ${s.color}`}>{formatCurrency(s.value)}</p>
           </Card>
         ))}
       </div>
@@ -142,43 +148,64 @@ export default function InvoicesPage() {
         <div className="flex items-center gap-3 flex-wrap w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-none">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400" />
-            <input type="text" placeholder="Search invoices..." value={search} onChange={(e) => setSearch(e.target.value)}
-              className="bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.07] rounded-lg pl-9 pr-4 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50 w-full sm:w-64" />
+            <input
+              type="text"
+              placeholder="Search invoices..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded pl-9 pr-4 py-[7px] text-[13px] font-display text-dark-100 placeholder:text-dark-400 focus:outline-none focus:border-accent/50 transition-colors duration-200 w-full sm:w-64"
+            />
           </div>
-          <Select options={[{ value: 'all', label: 'All' }, { value: 'draft', label: 'Draft' }, { value: 'sent', label: 'Sent' }, { value: 'paid', label: 'Paid' }, { value: 'overdue', label: 'Overdue' }]} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-32" />
+          <Select
+            options={[{ value: 'all', label: 'All' }, { value: 'draft', label: 'Draft' }, { value: 'sent', label: 'Sent' }, { value: 'paid', label: 'Paid' }, { value: 'overdue', label: 'Overdue' }]}
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="w-32"
+          />
         </div>
-        <Button onClick={() => { setForm({ client_id: clients[0]?.id?.toString() || '', project_id: '', status: 'draft', issue_date: new Date().toISOString().split('T')[0], due_date: '', tax_rate: '0', notes: '' }); setItems([{ description: '', quantity: 1, unit_price: 0 }]); setShowModal(true) }} className="w-full sm:w-auto">
+        <Button onClick={openNew} className="w-full sm:w-auto">
           <Plus size={16} /> Create Invoice
         </Button>
       </div>
 
       {filtered.length === 0 ? (
-        <Card className="text-center py-12"><p className="text-dark-400">No invoices found</p></Card>
+        <button type="button" onClick={openNew} className="w-full text-left group cursor-pointer">
+          <div className="flex items-end justify-between px-6 py-8 rounded-md bg-accent group-hover:bg-accent-hover transition-all duration-300 group-hover:-translate-y-0.5">
+            <div>
+              <span className="text-[9px] font-display font-semibold uppercase tracking-[0.14em] text-white/50 block mb-3">
+                {search || filterStatus !== 'all' ? 'No Matches' : 'Get Started'}
+              </span>
+              <span className="font-serif text-[1.25rem] font-normal text-white leading-snug">
+                {search || filterStatus !== 'all' ? 'No invoices match your filters.' : 'Create your first invoice.'}
+              </span>
+            </div>
+            {!search && filterStatus === 'all' && (
+              <Plus size={22} className="text-white/30 group-hover:text-white/60 transition-colors flex-shrink-0 ml-4" />
+            )}
+          </div>
+        </button>
       ) : (
         <div className="space-y-3">
           {filtered.map((inv) => (
             <Card key={inv.id} className="!p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-black/[0.10] dark:hover:border-white/[0.15] transition-colors">
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="p-2 rounded-lg bg-black/[0.04] dark:bg-white/[0.04] flex-shrink-0"><DollarSign size={20} className="text-accent" /></div>
-                <div className="min-w-0">
-                  <Link href={`/invoices/${inv.id}`} className="font-medium text-dark-100 hover:text-accent transition-colors">{inv.invoice_number}</Link>
-                  <p className="text-xs text-dark-400 truncate">{inv.client_name} &middot; {formatDate(inv.issue_date)}</p>
-                </div>
+              <div className="min-w-0">
+                <Link href={`/invoices/${inv.id}`} className="font-medium text-dark-100 hover:text-accent transition-colors">{inv.invoice_number}</Link>
+                <p className="text-xs text-dark-400 truncate mt-0.5">{inv.client_name} &middot; {formatDate(inv.issue_date)}</p>
               </div>
               <div className="flex items-center justify-between sm:justify-end gap-4">
                 <div className="text-left sm:text-right">
-                  <p className="font-semibold text-dark-100">{formatCurrency(inv.total)}</p>
+                  <p className="font-serif text-base text-dark-100">{formatCurrency(inv.total)}</p>
                   <Badge variant={inv.status}>{inv.status}</Badge>
                 </div>
                 <div className="flex gap-1">
-                  <Link href={`/invoices/${inv.id}`} className="p-2 rounded-lg hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-dark-100 transition-colors"><Eye size={16} /></Link>
+                  <Link href={`/invoices/${inv.id}`} className="p-2 hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-dark-100 transition-colors"><Eye size={16} /></Link>
                   {inv.status === 'draft' && (
-                    <button onClick={() => handleSend(inv.id)} disabled={sending === inv.id} className="p-2 rounded-lg hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-blue-400 transition-colors cursor-pointer disabled:opacity-50"><Send size={16} /></button>
+                    <button onClick={() => handleSend(inv.id)} disabled={sending === inv.id} className="p-2 hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-blue-400 transition-colors cursor-pointer disabled:opacity-50"><Send size={16} /></button>
                   )}
                   {(inv.status === 'sent' || inv.status === 'overdue') && (
-                    <button onClick={() => markPaid(inv)} className="p-2 rounded-lg hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-green-400 transition-colors cursor-pointer"><DollarSign size={16} /></button>
+                    <button onClick={() => markPaid(inv)} className="p-2 hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-accent transition-colors cursor-pointer"><DollarSign size={16} /></button>
                   )}
-                  <button onClick={() => handleDelete(inv.id)} className="p-2 rounded-lg hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-red-500 transition-colors cursor-pointer"><Trash2 size={16} /></button>
+                  <button onClick={() => handleDelete(inv.id)} className="p-2 hover:bg-black/[0.05] dark:hover:bg-white/[0.05] text-dark-400 hover:text-red-500 transition-colors cursor-pointer"><Trash2 size={16} /></button>
                 </div>
               </div>
             </Card>
@@ -199,19 +226,38 @@ export default function InvoicesPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-dark-200 mb-2">Line Items</label>
-            <div className="space-y-3">
+            <label className="block text-[10px] font-display font-semibold uppercase tracking-[0.08em] text-dark-300 mb-2">Line Items</label>
+            <div className="space-y-2">
               {items.map((item, idx) => (
-                <div key={idx} className="space-y-2 sm:space-y-0 sm:flex sm:gap-2 sm:items-start bg-black/[0.04] dark:bg-white/[0.04] sm:bg-transparent sm:dark:bg-transparent rounded-lg p-3 sm:p-0">
-                  <input placeholder="Description" value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)}
-                    className="w-full sm:flex-1 bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.07] rounded-lg px-3 py-2 text-sm text-dark-100 placeholder:text-dark-400 focus:outline-none focus:ring-2 focus:ring-accent/50" />
+                <div key={idx} className="space-y-2 sm:space-y-0 sm:flex sm:gap-2 sm:items-start border border-dark-600 dark:border-[rgba(255,255,255,0.08)] p-3 sm:p-0 sm:border-0">
+                  <input
+                    placeholder="Description"
+                    value={item.description}
+                    onChange={(e) => updateItem(idx, 'description', e.target.value)}
+                    className="w-full sm:flex-1 bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-3 py-[7px] text-[13px] font-display text-dark-100 placeholder:text-dark-400 focus:outline-none focus:border-accent/50 transition-colors"
+                  />
                   <div className="flex gap-2 items-center">
-                    <input type="number" placeholder="Qty" min="1" value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', Number(e.target.value))}
-                      className="w-20 bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.07] rounded-lg px-3 py-2 text-sm text-dark-100 focus:outline-none focus:ring-2 focus:ring-accent/50" />
-                    <input type="number" placeholder="Price" min="0" step="0.01" value={item.unit_price} onChange={(e) => updateItem(idx, 'unit_price', Number(e.target.value))}
-                      className="flex-1 sm:w-28 sm:flex-none bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.07] rounded-lg px-3 py-2 text-sm text-dark-100 focus:outline-none focus:ring-2 focus:ring-accent/50" />
+                    <input
+                      type="number"
+                      placeholder="Qty"
+                      min="1"
+                      value={item.quantity}
+                      onChange={(e) => updateItem(idx, 'quantity', Number(e.target.value))}
+                      className="w-20 bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-3 py-[7px] text-[13px] font-display text-dark-100 focus:outline-none focus:border-accent/50 transition-colors"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Price"
+                      min="0"
+                      step="0.01"
+                      value={item.unit_price}
+                      onChange={(e) => updateItem(idx, 'unit_price', Number(e.target.value))}
+                      className="flex-1 sm:w-28 sm:flex-none bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-3 py-[7px] text-[13px] font-display text-dark-100 focus:outline-none focus:border-accent/50 transition-colors"
+                    />
                     <span className="w-24 py-2 text-sm text-dark-200 text-right flex-shrink-0">{formatCurrency(item.quantity * item.unit_price)}</span>
-                    {items.length > 1 && <button type="button" onClick={() => removeItem(idx)} className="p-2 text-dark-400 hover:text-red-500 cursor-pointer flex-shrink-0"><X size={16} /></button>}
+                    {items.length > 1 && (
+                      <button type="button" onClick={() => removeItem(idx)} className="p-2 text-dark-400 hover:text-red-500 cursor-pointer flex-shrink-0"><X size={16} /></button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -219,10 +265,13 @@ export default function InvoicesPage() {
             <Button type="button" variant="ghost" size="sm" onClick={addItem} className="mt-2"><Plus size={14} /> Add Item</Button>
           </div>
 
-          <div className="bg-black/[0.05] dark:bg-white/[0.05] rounded-lg p-4 space-y-2 text-sm">
+          <div className="border border-dark-600 dark:border-[rgba(255,255,255,0.08)] p-4 space-y-2 text-sm">
             <div className="flex justify-between text-dark-300"><span>Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
             <div className="flex justify-between text-dark-300"><span>Tax ({form.tax_rate}%)</span><span>{formatCurrency(taxAmount)}</span></div>
-            <div className="flex justify-between font-bold text-dark-100 text-lg border-t border-black/[0.06] dark:border-white/[0.07] pt-2"><span>Total</span><span>{formatCurrency(total)}</span></div>
+            <div className="flex justify-between text-dark-100 pt-2 border-t border-dark-600 dark:border-[rgba(255,255,255,0.08)]">
+              <span className="font-display font-semibold uppercase tracking-[0.06em] text-[11px]">Total</span>
+              <span className="font-serif text-lg">{formatCurrency(total)}</span>
+            </div>
           </div>
 
           <Textarea label="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Payment terms, additional info..." />

@@ -1,8 +1,9 @@
+import React from 'react'
 import { cn } from '@/lib/utils'
 
-export function Skeleton({ className }: { className?: string }) {
+export function Skeleton({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <div className={cn('animate-pulse rounded bg-black/[0.06] dark:bg-white/[0.06]', className)} />
+    <div className={cn('animate-pulse rounded bg-black/[0.06] dark:bg-white/[0.06]', className)} style={style} />
   )
 }
 
@@ -32,7 +33,7 @@ export function TableRowSkeleton({ cols = 5 }: { cols?: number }) {
   return (
     <div className="flex items-center gap-4 px-4 py-3 border-b border-black/[0.04] dark:border-white/[0.04]">
       {Array.from({ length: cols }).map((_, i) => (
-        <Skeleton key={i} className="h-3 flex-1" style={{ maxWidth: i === 0 ? '140px' : '100px' }} />
+        <Skeleton key={i} className={cn('h-3 flex-1', i === 0 ? 'max-w-[140px]' : 'max-w-[100px]')} />
       ))}
     </div>
   )

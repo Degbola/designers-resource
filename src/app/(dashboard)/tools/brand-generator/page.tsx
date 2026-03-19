@@ -333,8 +333,24 @@ function TypographyBlock({ typography }: { typography: GeneratedBrand['visualIde
         </p>
       </div>
       <div className="grid grid-cols-2 gap-4 text-xs mb-2">
-        <div><p className="text-dark-400">Heading: <span className="text-dark-100">{typography.heading}</span> ({typography.headingWeight})</p></div>
-        <div><p className="text-dark-400">Body: <span className="text-dark-100">{typography.body}</span> ({typography.bodyWeight})</p></div>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-dark-400">Heading: <span className="text-dark-100">{typography.heading}</span> ({typography.headingWeight})</p>
+          <a
+            href={`https://fonts.google.com/download?family=${encodeURIComponent(typography.heading)}`}
+            target="_blank" rel="noopener noreferrer"
+            title="Download heading font"
+            className="shrink-0 text-dark-400 hover:text-accent transition-colors"
+          ><Download size={12} /></a>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-dark-400">Body: <span className="text-dark-100">{typography.body}</span> ({typography.bodyWeight})</p>
+          <a
+            href={`https://fonts.google.com/download?family=${encodeURIComponent(typography.body)}`}
+            target="_blank" rel="noopener noreferrer"
+            title="Download body font"
+            className="shrink-0 text-dark-400 hover:text-accent transition-colors"
+          ><Download size={12} /></a>
+        </div>
       </div>
       <p className="text-xs text-dark-400">{typography.rationale}</p>
     </Card>

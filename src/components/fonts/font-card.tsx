@@ -4,15 +4,17 @@ import { useEffect, useRef, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { loadGoogleFont } from '@/lib/font-loader'
 import type { GoogleFont } from '@/lib/fonts-data'
-import { Flame, Sparkles, Type } from 'lucide-react'
+import { Flame, Sparkles, Type, Download, Star, ExternalLink } from 'lucide-react'
 
 interface FontCardProps {
   font: GoogleFont
   onSelectAsHeading: (font: GoogleFont) => void
   onSelectAsBody: (font: GoogleFont) => void
+  isFavorite?: boolean
+  onToggleFavorite?: (font: GoogleFont) => void
 }
 
-export function FontCard({ font, onSelectAsHeading, onSelectAsBody }: FontCardProps) {
+export function FontCard({ font, onSelectAsHeading, onSelectAsBody, isFavorite = false, onToggleFavorite }: FontCardProps) {
   const ref = useRef<HTMLDivElement>(null)
   const [loaded, setLoaded] = useState(false)
   const [visible, setVisible] = useState(false)
@@ -59,6 +61,30 @@ export function FontCard({ font, onSelectAsHeading, onSelectAsBody }: FontCardPr
             <Sparkles size={10} />
           </span>
         )}
+        <div className="ml-auto flex items-center gap-1">
+          <a
+            href={`https://fonts.google.com/specimen/${encodeURIComponent(font.family)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            title="View on Google Fonts"
+            className="text-dark-500 hover:text-accent transition-colors"
+          >
+            <ExternalLink size={11} />
+          </a>
+          {onToggleFavorite && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggleFavorite(font) }}
+              title={isFavorite ? 'Remove from favourites' : 'Add to favourites'}
+              className="transition-colors cursor-pointer"
+            >
+              <Star
+                size={12}
+                className={isFavorite ? 'fill-amber-400 text-amber-400' : 'text-dark-500 hover:text-amber-400'}
+              />
+            </button>
+          )}
+        </div>
       </div>
 
       <p
@@ -89,6 +115,16 @@ export function FontCard({ font, onSelectAsHeading, onSelectAsBody }: FontCardPr
         >
           <Type size={11} /> Body
         </button>
+        <a
+          href={`https://fonts.google.com/download?family=${encodeURIComponent(font.family)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          title="Download from Google Fonts"
+          className="text-[11px] px-2 py-1.5 rounded bg-white/40 text-dark-300 hover:bg-white/60 transition-colors flex items-center justify-center"
+        >
+          <Download size={11} />
+        </a>
       </div>
     </Card>
     </div>

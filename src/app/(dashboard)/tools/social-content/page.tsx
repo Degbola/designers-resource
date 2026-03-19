@@ -1145,8 +1145,24 @@ export default function SocialContentPage() {
                   </div>
                 </div>
               )}
-              <span className="text-[10px] text-dark-400 ml-auto">
-                <span className="text-dark-200">{effectiveBrand.visualIdentity.typography.heading}</span> + {effectiveBrand.visualIdentity.typography.body}
+              <span className="text-[10px] text-dark-400 ml-auto flex items-center gap-1.5">
+                <a
+                  href={`https://fonts.google.com/download?family=${encodeURIComponent(effectiveBrand.visualIdentity.typography.heading)}`}
+                  target="_blank" rel="noopener noreferrer"
+                  title="Download heading font"
+                  className="flex items-center gap-0.5 text-dark-200 hover:text-accent transition-colors"
+                >
+                  {effectiveBrand.visualIdentity.typography.heading} <Download size={10} />
+                </a>
+                <span>+</span>
+                <a
+                  href={`https://fonts.google.com/download?family=${encodeURIComponent(effectiveBrand.visualIdentity.typography.body)}`}
+                  target="_blank" rel="noopener noreferrer"
+                  title="Download body font"
+                  className="flex items-center gap-0.5 hover:text-accent transition-colors"
+                >
+                  {effectiveBrand.visualIdentity.typography.body} <Download size={10} />
+                </a>
               </span>
             </Card>
           )}

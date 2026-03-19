@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ['jspdf', 'html2canvas', 'fflate'],
   headers: async () => [
     {
       source: '/(.*)',

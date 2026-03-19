@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
+import { getDb, ensureSchema } from '@/lib/db'
 import { verifyPassword, createSession, getSessionCookieOptions, cleanExpiredSessions } from '@/lib/auth'
 import { validate, validationError } from '@/lib/validate'
 import { checkRateLimit } from '@/lib/rate-limit'
@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
   ])
   if (error) return validationError(error)
 
+  await ensureSchema()
   const db = getDb()
 
   const user = await db.prepare('SELECT * FROM users WHERE email = ?')

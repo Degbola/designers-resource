@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
+import { getDb, ensureSchema } from '@/lib/db'
 import { hashPassword, createSession, getSessionCookieOptions } from '@/lib/auth'
 import { validate, validationError } from '@/lib/validate'
 import { checkRateLimit } from '@/lib/rate-limit'
@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  await ensureSchema()
   const db = getDb()
 
   const body = await req.json()

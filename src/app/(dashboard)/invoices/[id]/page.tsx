@@ -5,7 +5,8 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-import { PdfDownloadButton } from '@/components/tools/pdf-download-button'
+import dynamic from 'next/dynamic'
+const PdfDownloadButton = dynamic(() => import('@/components/tools/pdf-download-button').then(m => m.PdfDownloadButton), { ssr: false })
 import type { Invoice, InvoiceItem } from '@/types'
 
 export default async function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {

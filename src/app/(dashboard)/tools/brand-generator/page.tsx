@@ -570,9 +570,7 @@ export default function BrandGeneratorPage() {
 
       {/* Input Card */}
       <Card>
-        <h3 className="text-lg font-semibold text-dark-100 flex items-center gap-2 mb-1">
-          <Wand2 size={20} className="text-accent" /> Brand Generator
-        </h3>
+        <h3 className="font-serif text-lg font-normal text-dark-100 mb-1">Brand Generator</h3>
         <p className="text-sm text-dark-400 mb-4">Describe your brand idea and Claude will generate a complete brand — name, strategy, and visual identity.</p>
 
         <Textarea
@@ -683,9 +681,7 @@ export default function BrandGeneratorPage() {
 
           {/* 1. Brand Identity */}
           <Card>
-            <h3 className="text-lg font-semibold text-dark-100 flex items-center gap-2 mb-4">
-              <Sparkles size={20} className="text-accent" /> Brand Identity
-            </h3>
+            <h3 className="font-serif text-lg font-normal text-dark-100 mb-4">Brand Identity</h3>
             <h2 className="text-3xl font-bold text-dark-100 mb-1">{result.brand.name}</h2>
             <p className="text-base text-accent italic mb-3">&ldquo;{result.brand.tagline}&rdquo;</p>
             <span className="text-xs bg-white/30 text-dark-300 px-2.5 py-1 rounded-full capitalize">{result.brand.industry}</span>
@@ -694,9 +690,7 @@ export default function BrandGeneratorPage() {
 
           {/* 2. Brand Strategy */}
           <Card>
-            <h3 className="text-lg font-semibold text-dark-100 flex items-center gap-2 mb-4">
-              <Target size={20} className="text-accent" /> Brand Strategy
-            </h3>
+            <h3 className="font-serif text-lg font-normal text-dark-100 mb-4">Brand Strategy</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
               {STRATEGY_SECTIONS.map((section) => {
                 const value = (result.strategy as Record<string, unknown>)[section.key]
@@ -730,9 +724,7 @@ export default function BrandGeneratorPage() {
 
           {/* 3. Visual Identity Guide */}
           <Card>
-            <h3 className="text-lg font-semibold text-dark-100 flex items-center gap-2 mb-5">
-              <Palette size={20} className="text-accent" /> Visual Identity Guide
-            </h3>
+            <h3 className="font-serif text-lg font-normal text-dark-100 mb-5">Visual Identity Guide</h3>
 
             <div className="space-y-6">
               {/* Color Palettes */}

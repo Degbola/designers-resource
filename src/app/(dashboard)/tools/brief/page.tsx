@@ -455,9 +455,7 @@ export default function BrandBuilderPage() {
           {/* Input */}
           <Card>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-dark-100 flex items-center gap-2">
-                <FileText size={20} className="text-accent" /> Brand Strategy
-              </h3>
+              <h3 className="font-serif text-lg font-normal text-dark-100">Brand Strategy</h3>
               {aiAvailable && (
                 <button
                   onClick={() => setUseAi(!useAi)}
@@ -504,9 +502,7 @@ export default function BrandBuilderPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-dark-100 flex items-center gap-2">
-                <Sparkles size={20} className="text-accent" /> Visual Identity
-              </h3>
+              <h3 className="font-serif text-lg font-normal text-dark-100">Visual Identity</h3>
               {aiAvailable && (
                 <button
                   onClick={() => setUseAi(!useAi)}

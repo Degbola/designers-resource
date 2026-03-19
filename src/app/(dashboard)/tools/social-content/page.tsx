@@ -10,6 +10,7 @@ import {
   Image as ImageIcon, Film, Layers, BookOpen, Megaphone, Heart,
   Lightbulb, Users, Star, Zap, Eye, Palette, Type, AlignLeft,
   Download, History, Trash2, Clock, Target, TrendingUp, MousePointerClick,
+  PenLine, FileText,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -63,6 +64,13 @@ interface ContentStrategyInput {
   ctas: string[]
   theme: string
   emotions: string[]
+}
+
+interface CustomBrandForm {
+  name: string; industry: string; tagline: string; concept: string
+  personality: string; tone: string; targetAudience: string; values: string
+  primaryColors: string; secondaryColors: string; headingFont: string; bodyFont: string
+  imageryStyle: string; brief: string
 }
 
 // ---- Constants ----
@@ -430,6 +438,15 @@ export default function SocialContentPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [currentHistoryId, setCurrentHistoryId] = useState<number | null>(null)
 
+  const [brandSource, setBrandSource] = useState<'saved' | 'custom'>('saved')
+  const [customMode, setCustomMode] = useState<'form' | 'brief'>('form')
+  const [customBrandForm, setCustomBrandForm] = useState<CustomBrandForm>({
+    name: '', industry: '', tagline: '', concept: '',
+    personality: '', tone: '', targetAudience: '', values: '',
+    primaryColors: '', secondaryColors: '', headingFont: '', bodyFont: '',
+    imageryStyle: '', brief: '',
+  })
+
   useEffect(() => {
     fetch('/api/social-content').then(r => r.json()).then(d => setAiAvailable(d.available)).catch(() => {})
     loadContentHistory()
@@ -494,7 +511,7 @@ export default function SocialContentPage() {
   }
 
   const handleGenerate = async () => {
-    if (!brand || platforms.length === 0 || contentTypes.length === 0) return
+    if (!effectiveBrand || platforms.length === 0 || contentTypes.length === 0) return
     setLoading(true); setElapsed(0); setError(''); setPosts([]); setCurrentHistoryId(null)
     timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000)
     const abortController = new AbortController()
@@ -505,7 +522,7 @@ export default function SocialContentPage() {
         headers: { 'Content-Type': 'application/json' },
         signal: abortController.signal,
         body: JSON.stringify({
-          brand, count: postCount, platforms, contentTypes, formatPreference, notes: notes || undefined, mode,
+          brand: effectiveBrand, count: postCount, platforms, contentTypes, formatPreference, notes: notes || undefined, mode,
           strategy: (strategy.goals.length || strategy.keyMessage || strategy.ctas.length || strategy.theme || strategy.emotions.length) ? strategy : undefined,
         }),
       })
@@ -518,7 +535,7 @@ export default function SocialContentPage() {
         const saveRes = await fetch('/api/social-content-history', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ brand_name: brand.brand.name, platforms, content_types: contentTypes, format_preference: formatPreference, posts: newPosts }),
+          body: JSON.stringify({ brand_name: effectiveBrand.brand.name, platforms, content_types: contentTypes, format_preference: formatPreference, posts: newPosts }),
         })
         const saveData = await saveRes.json()
         if (saveData.id) setCurrentHistoryId(saveData.id)
@@ -535,9 +552,9 @@ export default function SocialContentPage() {
   }
 
   const handleDownloadPDF = async () => {
-    if (!posts.length || !brand) return
+    if (!posts.length || !effectiveBrand) return
     setPdfLoading(true)
-    try { await generateSocialPDF(posts, brand, platforms) } catch (e) { console.error(e) }
+    try { await generateSocialPDF(posts, effectiveBrand, platforms) } catch (e) { console.error(e) }
     setPdfLoading(false)
   }
 
@@ -564,7 +581,29 @@ export default function SocialContentPage() {
     navigator.clipboard.writeText(text)
   }
 
-  const canGenerate = !!brand && platforms.length > 0 && contentTypes.length > 0 && aiAvailable && !loading
+  const buildCustomBrand = (form: CustomBrandForm): GeneratedBrand => ({
+    brand: { name: form.name, tagline: form.tagline || '', industry: form.industry, concept: form.brief || form.concept || '' },
+    strategy: {
+      mission: '', vision: '',
+      values: form.values ? form.values.split(',').map(v => v.trim()).filter(Boolean) : [],
+      positioning: '', personality: form.personality || '',
+      toneOfVoice: form.tone || '', targetAudience: form.targetAudience || '',
+      competitors: [], differentiators: [], brandStory: '',
+    },
+    visualIdentity: {
+      primaryPalette: { name: 'Primary', colors: form.primaryColors ? form.primaryColors.split(',').map(c => c.trim()).filter(Boolean) : [], rationale: '' },
+      secondaryPalette: { name: 'Secondary', colors: form.secondaryColors ? form.secondaryColors.split(',').map(c => c.trim()).filter(Boolean) : [], rationale: '' },
+      typography: { heading: form.headingFont || 'Sans-serif', body: form.bodyFont || 'Sans-serif', headingWeight: 700, bodyWeight: 400, rationale: '' },
+      logoDirection: '', imageryStyle: form.imageryStyle || '', designPrinciples: [], moodboardKeywords: [],
+    },
+  })
+
+  const effectiveBrand: GeneratedBrand | null = brandSource === 'saved'
+    ? brand
+    : (customBrandForm.name && customBrandForm.industry ? buildCustomBrand(customBrandForm) : null)
+
+  const brandReady = brandSource === 'saved' ? !!brand : (!!customBrandForm.name && !!customBrandForm.industry)
+  const canGenerate = brandReady && platforms.length > 0 && contentTypes.length > 0 && aiAvailable && !loading
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -573,9 +612,7 @@ export default function SocialContentPage() {
       </Link>
 
       <div>
-        <h2 className="text-xl font-bold text-dark-100 flex items-center gap-2 mb-1">
-          <LayoutGrid size={22} className="text-accent" /> Social Media Content
-        </h2>
+        <h2 className="font-serif text-lg font-normal text-dark-100 mb-1">Social Media Content</h2>
         <p className="text-sm text-dark-400">Generate short design copy + per-platform captions and visual direction for social media graphics.</p>
       </div>
 
@@ -621,36 +658,165 @@ export default function SocialContentPage() {
 
         {/* Step 1: Brand */}
         <div>
-          <label className="block text-xs font-semibold text-accent uppercase tracking-wider mb-3">1 — Select Brand</label>
-          {brandHistory.length === 0 ? (
-            <p className="text-sm text-dark-400 bg-white/20 rounded-lg px-4 py-3">
-              No saved brands yet.{' '}
-              <Link href="/tools/brand-generator" className="text-accent hover:underline">Generate a brand first →</Link>
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {brandHistory.map((b) => (
-                <button key={b.id}
-                  onClick={() => { setSelectedBrandId(b.id); fetchBrand(b.id); setPosts([]); setCurrentHistoryId(null) }}
-                  className={`text-left px-3 py-2.5 rounded-lg border transition-all cursor-pointer ${
-                    selectedBrandId === b.id ? 'bg-accent/15 border-accent/50 text-dark-100' : 'bg-white/20 border-white/30 text-dark-300 hover:bg-white/30'
+          <label className="block text-xs font-semibold text-accent uppercase tracking-wider mb-3">1 — Brand</label>
+
+          {/* Source toggle */}
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <button onClick={() => setBrandSource('saved')}
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-all cursor-pointer ${
+                brandSource === 'saved' ? 'bg-accent/15 border-accent/50 text-dark-100' : 'bg-white/10 border-white/20 text-dark-400 hover:bg-white/20 hover:text-dark-200'
+              }`}>
+              <History size={14} /> Saved Brand
+            </button>
+            <button onClick={() => setBrandSource('custom')}
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-all cursor-pointer ${
+                brandSource === 'custom' ? 'bg-accent/15 border-accent/50 text-dark-100' : 'bg-white/10 border-white/20 text-dark-400 hover:bg-white/20 hover:text-dark-200'
+              }`}>
+              <PenLine size={14} /> Any Brand
+            </button>
+          </div>
+
+          {/* Saved brand picker */}
+          {brandSource === 'saved' && (
+            <>
+              {brandHistory.length === 0 ? (
+                <p className="text-sm text-dark-400 bg-white/20 rounded-lg px-4 py-3">
+                  No saved brands yet.{' '}
+                  <Link href="/tools/brand-generator" className="text-accent hover:underline">Generate a brand first →</Link>
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {brandHistory.map((b) => (
+                    <button key={b.id}
+                      onClick={() => { setSelectedBrandId(b.id); fetchBrand(b.id); setPosts([]); setCurrentHistoryId(null) }}
+                      className={`text-left px-3 py-2.5 rounded-lg border transition-all cursor-pointer ${
+                        selectedBrandId === b.id ? 'bg-accent/15 border-accent/50 text-dark-100' : 'bg-white/20 border-white/30 text-dark-300 hover:bg-white/30'
+                      }`}>
+                      <p className="text-sm font-semibold truncate">{b.brand_name}</p>
+                      <p className="text-[11px] text-dark-400 truncate capitalize">{b.industry} · {formatDate(b.created_at)}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {brandLoading && <p className="text-xs text-dark-400 mt-2 flex items-center gap-1.5"><Loader2 size={12} className="animate-spin" /> Loading…</p>}
+            </>
+          )}
+
+          {/* Custom brand form */}
+          {brandSource === 'custom' && (
+            <div className="space-y-3">
+              {/* Form / Brief toggle */}
+              <div className="flex gap-2">
+                <button onClick={() => setCustomMode('form')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${
+                    customMode === 'form' ? 'bg-accent/20 text-accent border-accent/50' : 'bg-white/10 text-dark-400 border-white/20 hover:bg-white/20'
                   }`}>
-                  <p className="text-sm font-semibold truncate">{b.brand_name}</p>
-                  <p className="text-[11px] text-dark-400 truncate capitalize">{b.industry} · {formatDate(b.created_at)}</p>
+                  <AlignLeft size={11} /> Fill in Details
                 </button>
-              ))}
+                <button onClick={() => setCustomMode('brief')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${
+                    customMode === 'brief' ? 'bg-accent/20 text-accent border-accent/50' : 'bg-white/10 text-dark-400 border-white/20 hover:bg-white/20'
+                  }`}>
+                  <FileText size={11} /> Paste a Brief
+                </button>
+              </div>
+
+              {/* Required fields (both modes) */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <input
+                    type="text" value={customBrandForm.name} placeholder="Brand name *"
+                    onChange={(e) => setCustomBrandForm(f => ({ ...f, name: e.target.value }))}
+                    className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 placeholder-dark-400 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+                </div>
+                <div>
+                  <input
+                    type="text" value={customBrandForm.industry} placeholder="Industry *"
+                    onChange={(e) => setCustomBrandForm(f => ({ ...f, industry: e.target.value }))}
+                    className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 placeholder-dark-400 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+                </div>
+              </div>
+
+              {/* Fill in details mode */}
+              {customMode === 'form' && (
+                <div className="space-y-2.5">
+                  <input
+                    type="text" value={customBrandForm.tagline} placeholder="Tagline (optional)"
+                    onChange={(e) => setCustomBrandForm(f => ({ ...f, tagline: e.target.value }))}
+                    className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 placeholder-dark-400 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+                  <Textarea value={customBrandForm.concept} placeholder="Brand description / concept (optional) — what this brand is about"
+                    onChange={(e) => setCustomBrandForm(f => ({ ...f, concept: e.target.value }))}
+                    className="!min-h-[64px]" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text" value={customBrandForm.personality} placeholder="Brand personality (e.g. Bold, Playful)"
+                      onChange={(e) => setCustomBrandForm(f => ({ ...f, personality: e.target.value }))}
+                      className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 placeholder-dark-400 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+                    <input
+                      type="text" value={customBrandForm.tone} placeholder="Tone of voice (e.g. Warm, Direct)"
+                      onChange={(e) => setCustomBrandForm(f => ({ ...f, tone: e.target.value }))}
+                      className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 placeholder-dark-400 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+                  </div>
+                  <input
+                    type="text" value={customBrandForm.targetAudience} placeholder="Target audience (optional)"
+                    onChange={(e) => setCustomBrandForm(f => ({ ...f, targetAudience: e.target.value }))}
+                    className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 placeholder-dark-400 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+                  <input
+                    type="text" value={customBrandForm.values} placeholder="Brand values — comma separated (optional)"
+                    onChange={(e) => setCustomBrandForm(f => ({ ...f, values: e.target.value }))}
+                    className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 placeholder-dark-400 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text" value={customBrandForm.primaryColors} placeholder="Primary colours — #hex, #hex (optional)"
+                      onChange={(e) => setCustomBrandForm(f => ({ ...f, primaryColors: e.target.value }))}
+                      className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 placeholder-dark-400 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+                    <input
+                      type="text" value={customBrandForm.secondaryColors} placeholder="Secondary colours — #hex, #hex (optional)"
+                      onChange={(e) => setCustomBrandForm(f => ({ ...f, secondaryColors: e.target.value }))}
+                      className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 placeholder-dark-400 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text" value={customBrandForm.headingFont} placeholder="Heading font (optional)"
+                      onChange={(e) => setCustomBrandForm(f => ({ ...f, headingFont: e.target.value }))}
+                      className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 placeholder-dark-400 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+                    <input
+                      type="text" value={customBrandForm.bodyFont} placeholder="Body font (optional)"
+                      onChange={(e) => setCustomBrandForm(f => ({ ...f, bodyFont: e.target.value }))}
+                      className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 placeholder-dark-400 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+                  </div>
+                  <input
+                    type="text" value={customBrandForm.imageryStyle} placeholder="Imagery / photography style (optional)"
+                    onChange={(e) => setCustomBrandForm(f => ({ ...f, imageryStyle: e.target.value }))}
+                    className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-sm text-dark-100 placeholder-dark-400 focus:outline-none focus:ring-1 focus:ring-accent/50" />
+                </div>
+              )}
+
+              {/* Paste brief mode */}
+              {customMode === 'brief' && (
+                <Textarea value={customBrandForm.brief}
+                  placeholder="Paste your brand brief here — include as much or as little as you have: brand story, values, audience, tone, visual style, colours, etc. The AI will use this to generate contextually relevant content."
+                  onChange={(e) => setCustomBrandForm(f => ({ ...f, brief: e.target.value }))}
+                  className="!min-h-[140px]" />
+              )}
             </div>
           )}
-          {brandLoading && <p className="text-xs text-dark-400 mt-2 flex items-center gap-1.5"><Loader2 size={12} className="animate-spin" /> Loading…</p>}
-          {brand && (
+
+          {/* Active brand confirmation strip */}
+          {effectiveBrand && (
             <div className="mt-3 flex items-center gap-2 text-xs text-dark-300 bg-white/20 border border-white/30 rounded-lg px-3 py-2">
               <Check size={13} className="text-green-400 shrink-0" />
-              <span><span className="text-dark-100 font-semibold">{brand.brand.name}</span> — &ldquo;{brand.brand.tagline}&rdquo;</span>
-              <div className="flex gap-1 ml-auto shrink-0">
-                {brand.visualIdentity.primaryPalette.colors.slice(0, 4).map((c, i) => (
-                  <span key={i} className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: c }} />
-                ))}
-              </div>
+              <span>
+                <span className="text-dark-100 font-semibold">{effectiveBrand.brand.name}</span>
+                {effectiveBrand.brand.tagline ? <> — &ldquo;{effectiveBrand.brand.tagline}&rdquo;</> : null}
+              </span>
+              {effectiveBrand.visualIdentity.primaryPalette.colors.length > 0 && (
+                <div className="flex gap-1 ml-auto shrink-0">
+                  {effectiveBrand.visualIdentity.primaryPalette.colors.slice(0, 4).map((c, i) => (
+                    <span key={i} className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: c }} />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -889,7 +1055,7 @@ export default function SocialContentPage() {
         <div ref={resultsRef} className="space-y-5">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <h3 className="text-sm font-medium text-dark-300">
-              {posts.length} posts for <span className="text-dark-100">{brand?.brand.name}</span>
+              {posts.length} posts for <span className="text-dark-100">{effectiveBrand?.brand.name}</span>
             </h3>
             <div className="flex items-center gap-2 flex-wrap">
               <button onClick={() => setAllVisualOpen(v => !v)}
@@ -909,33 +1075,37 @@ export default function SocialContentPage() {
           </div>
 
           {/* Brand palette reference */}
-          {brand && (
+          {effectiveBrand && (effectiveBrand.visualIdentity.primaryPalette.colors.length > 0 || effectiveBrand.visualIdentity.secondaryPalette.colors.length > 0) && (
             <Card className="!p-3 flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-semibold text-dark-400 uppercase tracking-wider">Primary</span>
-                <div className="flex gap-1">
-                  {brand.visualIdentity.primaryPalette.colors.map((c, i) => (
-                    <span key={i} className="w-5 h-5 rounded border border-white/20" style={{ backgroundColor: c }} title={c} />
-                  ))}
+              {effectiveBrand.visualIdentity.primaryPalette.colors.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-semibold text-dark-400 uppercase tracking-wider">Primary</span>
+                  <div className="flex gap-1">
+                    {effectiveBrand.visualIdentity.primaryPalette.colors.map((c, i) => (
+                      <span key={i} className="w-5 h-5 rounded border border-white/20" style={{ backgroundColor: c }} title={c} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-semibold text-dark-400 uppercase tracking-wider">Secondary</span>
-                <div className="flex gap-1">
-                  {brand.visualIdentity.secondaryPalette.colors.map((c, i) => (
-                    <span key={i} className="w-5 h-5 rounded border border-white/20" style={{ backgroundColor: c }} title={c} />
-                  ))}
+              )}
+              {effectiveBrand.visualIdentity.secondaryPalette.colors.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-semibold text-dark-400 uppercase tracking-wider">Secondary</span>
+                  <div className="flex gap-1">
+                    {effectiveBrand.visualIdentity.secondaryPalette.colors.map((c, i) => (
+                      <span key={i} className="w-5 h-5 rounded border border-white/20" style={{ backgroundColor: c }} title={c} />
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
               <span className="text-[10px] text-dark-400 ml-auto">
-                <span className="text-dark-200">{brand.visualIdentity.typography.heading}</span> + {brand.visualIdentity.typography.body}
+                <span className="text-dark-200">{effectiveBrand.visualIdentity.typography.heading}</span> + {effectiveBrand.visualIdentity.typography.body}
               </span>
             </Card>
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} platforms={platforms} brand={brand!} forceVisualOpen={allVisualOpen} />
+              <PostCard key={post.id} post={post} platforms={platforms} brand={effectiveBrand!} forceVisualOpen={allVisualOpen} />
             ))}
           </div>
         </div>

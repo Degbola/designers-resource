@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Shield, ShieldOff, Trash2, UserCheck, UserX, Users, ChevronDown, ChevronUp } from 'lucide-react'
+import { Shield, ShieldOff, Trash2, UserCheck, UserX, Users, ChevronDown, ChevronUp, Check, X } from 'lucide-react'
 import { ALL_PERMISSIONS, PERMISSION_LABELS, type Permission } from '@/lib/permissions'
 
 interface AdminUser {
@@ -190,13 +190,16 @@ export default function AdminUsersPage() {
                             key={perm}
                             onClick={() => togglePermission(user, perm)}
                             disabled={isSaving}
-                            className={`flex items-center gap-2 px-3 py-2 rounded border text-sm font-medium transition-all cursor-pointer disabled:opacity-50 ${
+                            className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-all cursor-pointer disabled:opacity-50 ${
                               granted
-                                ? 'border-[var(--accent)] text-[var(--accent)] bg-[var(--accent)]/5'
-                                : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--accent)]/40'
+                                ? 'border-emerald-500/40 text-emerald-700 bg-emerald-50 dark:border-emerald-500/30 dark:text-emerald-400 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20'
+                                : 'border-red-400/40 text-red-600 bg-red-50 dark:border-red-500/30 dark:text-red-400 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20'
                             }`}
                           >
-                            <span className={`w-2 h-2 rounded-full shrink-0 ${granted ? 'bg-[var(--accent)]' : 'bg-[var(--border)]'}`} />
+                            {granted
+                              ? <Check className="w-3.5 h-3.5 shrink-0" />
+                              : <X className="w-3.5 h-3.5 shrink-0" />
+                            }
                             {PERMISSION_LABELS[perm]}
                           </button>
                         )

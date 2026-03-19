@@ -3,6 +3,7 @@ import { getDb, ensureSchema } from '@/lib/db'
 import { hashPassword, createSession, getSessionCookieOptions } from '@/lib/auth'
 import { validate, validationError } from '@/lib/validate'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { DEFAULT_PERMISSIONS } from '@/lib/permissions'
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for') || 'unknown'
@@ -42,8 +43,8 @@ export async function POST(req: NextRequest) {
   const role = (userCount?.count ?? 0) === 0 ? 'admin' : 'member'
 
   const password_hash = await hashPassword(body.password)
-  const result = await db.prepare('INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, ?)')
-    .bind((body.email as string).toLowerCase().trim(), password_hash, (body.name as string).trim(), role)
+  const result = await db.prepare('INSERT INTO users (email, password_hash, name, role, permissions) VALUES (?, ?, ?, ?, ?)')
+    .bind((body.email as string).toLowerCase().trim(), password_hash, (body.name as string).trim(), role, DEFAULT_PERMISSIONS)
     .run()
 
   const newId = Number(result.meta.last_row_id)

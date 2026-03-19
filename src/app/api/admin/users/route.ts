@@ -14,7 +14,7 @@ export async function GET() {
   if (!admin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const db = getDb()
   const result = await db.prepare(`
-    SELECT id, email, name, role, is_active, created_at,
+    SELECT id, email, name, role, is_active, permissions, created_at,
       (SELECT COUNT(*) FROM clients WHERE user_id = users.id) as client_count,
       (SELECT COUNT(*) FROM projects WHERE user_id = users.id) as project_count
     FROM users ORDER BY created_at ASC
@@ -42,11 +42,15 @@ export async function PATCH(req: NextRequest) {
     await db.prepare("UPDATE users SET role = 'admin' WHERE id = ?").bind(id).run()
   } else if (action === 'make_member') {
     await db.prepare("UPDATE users SET role = 'member' WHERE id = ?").bind(id).run()
+  } else if (action === 'set_permissions') {
+    const perms = body.permissions
+    if (!Array.isArray(perms)) return NextResponse.json({ error: 'permissions must be an array' }, { status: 400 })
+    await db.prepare('UPDATE users SET permissions = ? WHERE id = ?').bind(JSON.stringify(perms), id).run()
   } else {
     return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
   }
 
-  const user = await db.prepare('SELECT id, email, name, role, is_active, created_at FROM users WHERE id = ?').bind(id).first()
+  const user = await db.prepare('SELECT id, email, name, role, is_active, permissions, created_at FROM users WHERE id = ?').bind(id).first()
   return NextResponse.json(user)
 }
 

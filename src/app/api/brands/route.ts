@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { getSession } from '@/lib/auth'
+import { hasPermission } from '@/lib/permissions'
 
 export async function GET() {
   const user = await getSession()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!hasPermission(user, 'brands')) return NextResponse.json({ error: 'Access denied' }, { status: 403 })
   const db = getDb()
   const result = await db.prepare(
     `SELECT id, brand_name, tagline, industry, created_at FROM brand_generations WHERE user_id = ? ORDER BY created_at DESC LIMIT 50`
@@ -15,6 +17,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const user = await getSession()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!hasPermission(user, 'brands')) return NextResponse.json({ error: 'Access denied' }, { status: 403 })
   const db = getDb()
   const { result, prompt } = await req.json()
   if (!result?.brand?.name) return NextResponse.json({ error: 'Invalid brand data' }, { status: 400 })

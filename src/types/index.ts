@@ -130,6 +130,7 @@ export interface User {
   name: string
   role: 'admin' | 'member'
   is_active: number
+  permissions: string
   created_at: string
   updated_at: string
 }

@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { getSession } from '@/lib/auth'
+import { hasPermission } from '@/lib/permissions'
 import { validate, validationError } from '@/lib/validate'
 
 export async function GET() {
   const user = await getSession()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!hasPermission(user, 'finances')) return NextResponse.json({ error: 'Access denied' }, { status: 403 })
   const db = getDb()
   const result = await db.prepare(`
     SELECT i.*, c.name as client_name FROM income i
@@ -19,6 +21,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const user = await getSession()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!hasPermission(user, 'finances')) return NextResponse.json({ error: 'Access denied' }, { status: 403 })
   const db = getDb()
   const body = await req.json()
 
@@ -41,6 +44,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const user = await getSession()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!hasPermission(user, 'finances')) return NextResponse.json({ error: 'Access denied' }, { status: 403 })
   const db = getDb()
   const { searchParams } = new URL(req.url)
   const id = searchParams.get('id')

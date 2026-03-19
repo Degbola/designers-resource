@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { getSession } from '@/lib/auth'
+import { hasPermission } from '@/lib/permissions'
 
 export async function GET() {
   const user = await getSession()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!hasPermission(user, 'social')) return NextResponse.json({ error: 'Access denied' }, { status: 403 })
   const db = getDb()
   const result = await db.prepare(
     `SELECT id, brand_name, platforms, content_types, format_preference, post_count, created_at FROM social_content_history WHERE user_id = ? ORDER BY created_at DESC LIMIT 50`
@@ -15,6 +17,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const user = await getSession()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!hasPermission(user, 'social')) return NextResponse.json({ error: 'Access denied' }, { status: 403 })
   const db = getDb()
   const { brand_name, platforms, content_types, format_preference, posts } = await req.json()
   if (!posts?.length) return NextResponse.json({ error: 'No posts provided' }, { status: 400 })

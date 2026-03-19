@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 import { getSession } from '@/lib/auth'
+import { hasPermission } from '@/lib/permissions'
 
 export async function GET() {
   const user = await getSession()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!hasPermission(user, 'finances')) return NextResponse.json({ error: 'Access denied' }, { status: 403 })
   const db = getDb()
 
   const incomeRow = await db.prepare('SELECT COALESCE(SUM(amount),0) as t FROM income WHERE user_id = ?').bind(user.id).first<{ t: number }>()

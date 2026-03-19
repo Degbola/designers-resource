@@ -103,7 +103,7 @@ export async function getSessionByToken(token: string): Promise<SafeUser | null>
     return null
   }
 
-  const user = await db.prepare('SELECT id, email, name, role, created_at, updated_at FROM users WHERE id = ?')
+  const user = await db.prepare('SELECT id, email, name, role, is_active, permissions, created_at, updated_at FROM users WHERE id = ?')
     .bind(session.user_id)
     .first<SafeUser>()
 

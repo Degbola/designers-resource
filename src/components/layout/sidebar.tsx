@@ -25,37 +25,38 @@ import {
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import type { SafeUser } from '@/types'
+import { hasPermission, type Permission } from '@/lib/permissions'
 
 const NAV_GROUPS = [
   {
     label: 'Workspace',
     items: [
-      { href: '/',         label: 'Dashboard',  icon: LayoutDashboard },
-      { href: '/clients',  label: 'Clients',    icon: Users },
-      { href: '/projects', label: 'Projects',   icon: FolderKanban },
-      { href: '/invoices', label: 'Invoices',   icon: FileText },
+      { href: '/',         label: 'Dashboard',  icon: LayoutDashboard, permission: null },
+      { href: '/clients',  label: 'Clients',    icon: Users,           permission: 'clients' as Permission },
+      { href: '/projects', label: 'Projects',   icon: FolderKanban,    permission: 'projects' as Permission },
+      { href: '/invoices', label: 'Invoices',   icon: FileText,        permission: 'invoices' as Permission },
     ],
   },
   {
     label: 'Finance',
     items: [
-      { href: '/finances', label: 'Finances',   icon: DollarSign },
+      { href: '/finances', label: 'Finances',   icon: DollarSign,      permission: 'finances' as Permission },
     ],
   },
   {
     label: 'Library',
     items: [
-      { href: '/resources', label: 'Resources', icon: BookOpen },
+      { href: '/resources', label: 'Resources', icon: BookOpen,        permission: 'resources' as Permission },
     ],
   },
   {
     label: 'Tools',
     items: [
-      { href: '/tools',                label: 'Design Tools',   icon: Wrench },
-      { href: '/tools/colors',         label: 'Color Palette',  icon: Palette },
-      { href: '/tools/brief',          label: 'Visual Identity', icon: Sparkles },
-      { href: '/tools/brand-generator',label: 'Brand Generator', icon: Wand2 },
-      { href: '/tools/social-content', label: 'Social Content', icon: LayoutGrid },
+      { href: '/tools',                label: 'Design Tools',    icon: Wrench,     permission: 'tools' as Permission },
+      { href: '/tools/colors',         label: 'Color Palette',   icon: Palette,    permission: 'tools' as Permission },
+      { href: '/tools/brief',          label: 'Visual Identity', icon: Sparkles,   permission: 'tools' as Permission },
+      { href: '/tools/brand-generator',label: 'Brand Generator', icon: Wand2,      permission: 'brands' as Permission },
+      { href: '/tools/social-content', label: 'Social Content',  icon: LayoutGrid, permission: 'social' as Permission },
     ],
   },
 ]
@@ -137,6 +138,10 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
         {NAV_GROUPS.map((group) => {
           const isOpen = openGroups[group.label] ?? true
           const isCollapsedDesktop = collapsed && !mobileOpen
+          const visibleItems = group.items.filter(item =>
+            !item.permission || hasPermission(user, item.permission)
+          )
+          if (visibleItems.length === 0) return null
           return (
             <div key={group.label} className={cn('mb-1', isCollapsedDesktop ? 'px-2' : 'px-4')}>
               {(!collapsed || mobileOpen) ? (
@@ -156,7 +161,7 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
                 <div className="border-t border-dark-600 dark:border-[rgba(255,255,255,0.06)] my-3" />
               )}
 
-              {(isOpen || isCollapsedDesktop) && group.items.map((item) => {
+              {(isOpen || isCollapsedDesktop) && visibleItems.map((item) => {
                 const active = isActive(item.href)
                 return (
                   <Link

@@ -95,6 +95,7 @@ export async function initializeSchema(): Promise<void> {
       name TEXT NOT NULL,
       role TEXT DEFAULT 'member' CHECK(role IN ('admin','member')),
       is_active INTEGER DEFAULT 1,
+      permissions TEXT DEFAULT '["clients","projects","invoices","finances","resources","brands","social","tools"]',
       created_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
       updated_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS')
     )`),
@@ -266,6 +267,7 @@ export async function initializeSchema(): Promise<void> {
     `ALTER TABLE brand_generations ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
     `ALTER TABLE social_content_history ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active INTEGER DEFAULT 1`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS permissions TEXT DEFAULT '["clients","projects","invoices","finances","resources","brands","social","tools"]'`,
   ]
   for (const migration of migrations) {
     try { await sql(migration) } catch { /* already applied */ }

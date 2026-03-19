@@ -1,4 +1,4 @@
-name = "designer-hub"
+name = "designers-resource"
 main = ".open-next/worker.js"
 compatibility_date = "2024-12-18"
 compatibility_flags = ["nodejs_compat"]
@@ -14,7 +14,7 @@ database_id = "65c474af-c844-41e9-9148-f346f8e20498"
 
 [vars]
 RESEND_FROM_EMAIL = "onboarding@resend.dev"
-NEXT_PUBLIC_APP_URL = "https://designer-hub.abeseyifunmi.workers.dev"
+NEXT_PUBLIC_APP_URL = "https://designers-resource.abeseyifunmi.workers.dev"
 
 # Secrets — add via CLI:
 # npx wrangler secret put ANTHROPIC_API_KEY

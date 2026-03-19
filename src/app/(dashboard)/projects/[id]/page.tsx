@@ -1,4 +1,4 @@
-import { getDb, initDb } from '@/lib/db'
+import { getDb } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { Card } from '@/components/ui/card'
@@ -9,17 +9,16 @@ import type { Project, WorkApproval } from '@/types'
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  await initDb()
   const db = getDb()
-  const projectResult = await db.execute({
-    sql: 'SELECT p.*, c.name as client_name FROM projects p LEFT JOIN clients c ON p.client_id = c.id WHERE p.id = ?',
-    args: [id],
-  })
-  const project = projectResult.rows[0] as unknown as (Project & { client_name: string }) | undefined
+  const project = await db.prepare(
+    'SELECT p.*, c.name as client_name FROM projects p LEFT JOIN clients c ON p.client_id = c.id WHERE p.id = ?'
+  ).bind(id).first<Project & { client_name: string }>()
   if (!project) notFound()
 
-  const approvalsResult = await db.execute({ sql: 'SELECT * FROM work_approvals WHERE project_id = ? ORDER BY created_at DESC', args: [id] })
-  const approvals = approvalsResult.rows as unknown as WorkApproval[]
+  const approvalsResult = await db.prepare(
+    'SELECT * FROM work_approvals WHERE project_id = ? ORDER BY created_at DESC'
+  ).bind(id).all<WorkApproval>()
+  const approvals = approvalsResult.results
 
   return (
     <div className="space-y-6 animate-fade-in">

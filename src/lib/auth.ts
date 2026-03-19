@@ -1,41 +1,83 @@
-import { randomBytes, scryptSync, timingSafeEqual } from 'crypto'
 import { cookies } from 'next/headers'
-import { getDb, initDb } from '@/lib/db'
+import { getDb } from '@/lib/db'
 import { generateToken } from '@/lib/utils'
 import type { SafeUser, Session } from '@/types'
 
 const SESSION_DURATION_DAYS = 30
 export const COOKIE_NAME = 'session_token'
 
-// --- Password hashing ---
+// --- Password hashing (Web Crypto API — edge-compatible) ---
 
-export function hashPassword(password: string): string {
-  const salt = randomBytes(16).toString('hex')
-  const hash = scryptSync(password, salt, 64).toString('hex')
-  return `${salt}:${hash}`
+export async function hashPassword(password: string): Promise<string> {
+  const salt = crypto.getRandomValues(new Uint8Array(16))
+  const saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join('')
+
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  )
+
+  const hashBuffer = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    256
+  )
+
+  const hashHex = Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+
+  return `pbkdf2:${saltHex}:${hashHex}`
 }
 
-export function verifyPassword(password: string, stored: string): boolean {
-  const [salt, hash] = stored.split(':')
-  const hashBuffer = Buffer.from(hash, 'hex')
-  const derivedBuffer = scryptSync(password, salt, 64)
-  return timingSafeEqual(hashBuffer, derivedBuffer)
+export async function verifyPassword(password: string, stored: string): Promise<boolean> {
+  if (!stored.startsWith('pbkdf2:')) return false
+
+  const [, saltHex, hashHex] = stored.split(':')
+  const salt = new Uint8Array(saltHex.match(/.{2}/g)!.map(b => parseInt(b, 16)))
+
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  )
+
+  const hashBuffer = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    256
+  )
+
+  const derivedHex = Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+
+  // Timing-safe comparison
+  if (derivedHex.length !== hashHex.length) return false
+  let diff = 0
+  for (let i = 0; i < derivedHex.length; i++) {
+    diff |= derivedHex.charCodeAt(i) ^ hashHex.charCodeAt(i)
+  }
+  return diff === 0
 }
 
 // --- Session management ---
 
 export async function createSession(userId: number): Promise<string> {
-  await initDb()
   const db = getDb()
   const token = generateToken()
   const expiresAt = new Date(
     Date.now() + SESSION_DURATION_DAYS * 24 * 60 * 60 * 1000
   ).toISOString()
 
-  await db.execute({
-    sql: 'INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)',
-    args: [userId, token, expiresAt],
-  })
+  await db.prepare('INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)')
+    .bind(userId, token, expiresAt)
+    .run()
 
   return token
 }
@@ -49,41 +91,35 @@ export async function getSession(): Promise<SafeUser | null> {
 }
 
 export async function getSessionByToken(token: string): Promise<SafeUser | null> {
-  await initDb()
   const db = getDb()
-  const result = await db.execute({
-    sql: 'SELECT * FROM sessions WHERE token = ?',
-    args: [token],
-  })
-  const session = result.rows[0] as unknown as Session | undefined
+  const session = await db.prepare('SELECT * FROM sessions WHERE token = ?')
+    .bind(token)
+    .first<Session>()
 
   if (!session) return null
 
   if (new Date(session.expires_at) < new Date()) {
-    await db.execute({ sql: 'DELETE FROM sessions WHERE id = ?', args: [session.id] })
+    await db.prepare('DELETE FROM sessions WHERE id = ?').bind(session.id).run()
     return null
   }
 
-  const userResult = await db.execute({
-    sql: 'SELECT id, email, name, role, created_at, updated_at FROM users WHERE id = ?',
-    args: [session.user_id],
-  })
-  const row = userResult.rows[0]
-  if (!row) return null
+  const user = await db.prepare('SELECT id, email, name, role, created_at, updated_at FROM users WHERE id = ?')
+    .bind(session.user_id)
+    .first<SafeUser>()
 
-  return JSON.parse(JSON.stringify(row)) as SafeUser
+  if (!user) return null
+
+  return user
 }
 
 export async function deleteSession(token: string): Promise<void> {
-  await initDb()
   const db = getDb()
-  await db.execute({ sql: 'DELETE FROM sessions WHERE token = ?', args: [token] })
+  await db.prepare('DELETE FROM sessions WHERE token = ?').bind(token).run()
 }
 
 export async function cleanExpiredSessions(): Promise<void> {
-  await initDb()
   const db = getDb()
-  await db.execute("DELETE FROM sessions WHERE expires_at < datetime('now')")
+  await db.prepare("DELETE FROM sessions WHERE expires_at < datetime('now')").run()
 }
 
 // --- Cookie helpers ---

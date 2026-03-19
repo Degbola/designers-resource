@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb, initDb } from '@/lib/db'
+import { getDb } from '@/lib/db'
 import { verifyPassword, createSession, getSessionCookieOptions, cleanExpiredSessions } from '@/lib/auth'
 import { validate, validationError } from '@/lib/validate'
 import { checkRateLimit } from '@/lib/rate-limit'
@@ -23,14 +23,11 @@ export async function POST(req: NextRequest) {
   ])
   if (error) return validationError(error)
 
-  await initDb()
   const db = getDb()
 
-  const result = await db.execute({
-    sql: 'SELECT * FROM users WHERE email = ?',
-    args: [(body.email as string).toLowerCase().trim()],
-  })
-  const user = result.rows[0] as unknown as User | undefined
+  const user = await db.prepare('SELECT * FROM users WHERE email = ?')
+    .bind((body.email as string).toLowerCase().trim())
+    .first<User>()
 
   if (!user) {
     return NextResponse.json(
@@ -39,7 +36,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  if (!verifyPassword(body.password, user.password_hash)) {
+  if (!await verifyPassword(body.password, user.password_hash)) {
     return NextResponse.json(
       { error: 'Invalid email or password' },
       { status: 401 }

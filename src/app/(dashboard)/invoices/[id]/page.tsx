@@ -1,4 +1,4 @@
-import { getDb, initDb } from '@/lib/db'
+import { getDb } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { Card } from '@/components/ui/card'
@@ -6,24 +6,20 @@ import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { PdfDownloadButton } from '@/components/tools/pdf-download-button'
-import type { Invoice, InvoiceItem, Client } from '@/types'
+import type { Invoice, InvoiceItem } from '@/types'
 
 export default async function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  await initDb()
   const db = getDb()
 
-  const invoiceResult = await db.execute({
-    sql: `SELECT i.*, c.name as client_name, c.email as client_email, c.company, c.address, c.phone
-    FROM invoices i LEFT JOIN clients c ON i.client_id = c.id WHERE i.id = ?`,
-    args: [id],
-  })
-  const invoice = invoiceResult.rows[0] as unknown as (Invoice & { company: string; address: string; phone: string }) | undefined
+  const invoice = await db.prepare(`SELECT i.*, c.name as client_name, c.email as client_email, c.company, c.address, c.phone
+    FROM invoices i LEFT JOIN clients c ON i.client_id = c.id WHERE i.id = ?`
+  ).bind(id).first<Invoice & { company: string; address: string; phone: string }>()
 
   if (!invoice) notFound()
 
-  const itemsResult = await db.execute({ sql: 'SELECT * FROM invoice_items WHERE invoice_id = ?', args: [id] })
-  const items = itemsResult.rows as unknown as InvoiceItem[]
+  const itemsResult = await db.prepare('SELECT * FROM invoice_items WHERE invoice_id = ?').bind(id).all<InvoiceItem>()
+  const items = itemsResult.results
 
   return (
     <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">

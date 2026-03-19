@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb, initDb } from '@/lib/db'
+import { getDb } from '@/lib/db'
 import { validate, validationError } from '@/lib/validate'
 
 export async function GET() {
-  await initDb()
   const db = getDb()
-  const result = await db.execute(`
+  const result = await db.prepare(`
     SELECT i.*, c.name as client_name FROM income i
     LEFT JOIN clients c ON i.client_id = c.id
     ORDER BY i.date DESC
-  `)
-  return NextResponse.json(result.rows)
+  `).all()
+  return NextResponse.json(result.results)
 }
 
 export async function POST(req: NextRequest) {
-  await initDb()
   const db = getDb()
   const body = await req.json()
 
@@ -24,21 +22,21 @@ export async function POST(req: NextRequest) {
   ])
   if (error) return validationError(error)
 
-  const result = await db.execute({
-    sql: 'INSERT INTO income (client_id, invoice_id, amount, category, description, date) VALUES (?, ?, ?, ?, ?, ?)',
-    args: [body.client_id || null, body.invoice_id || null, body.amount, body.category || 'design', body.description || '', body.date],
-  })
+  const result = await db.prepare(
+    'INSERT INTO income (client_id, invoice_id, amount, category, description, date) VALUES (?, ?, ?, ?, ?, ?)'
+  ).bind(body.client_id || null, body.invoice_id || null, body.amount, body.category || 'design', body.description || '', body.date).run()
 
-  const incomeResult = await db.execute({ sql: 'SELECT * FROM income WHERE id = ?', args: [Number(result.lastInsertRowid)] })
-  return NextResponse.json(incomeResult.rows[0], { status: 201 })
+  const income = await db.prepare('SELECT * FROM income WHERE id = ?')
+    .bind(Number(result.meta.last_row_id))
+    .first()
+  return NextResponse.json(income, { status: 201 })
 }
 
 export async function DELETE(req: NextRequest) {
-  await initDb()
   const db = getDb()
   const { searchParams } = new URL(req.url)
   const id = searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
-  await db.execute({ sql: 'DELETE FROM income WHERE id = ?', args: [id] })
+  await db.prepare('DELETE FROM income WHERE id = ?').bind(id).run()
   return NextResponse.json({ success: true })
 }

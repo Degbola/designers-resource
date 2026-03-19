@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb, initDb } from '@/lib/db'
+import { getDb } from '@/lib/db'
 import { hashPassword, createSession, getSessionCookieOptions } from '@/lib/auth'
 import { validate, validationError } from '@/lib/validate'
 import { checkRateLimit } from '@/lib/rate-limit'
-import type { User } from '@/types'
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for') || 'unknown'
@@ -15,7 +14,6 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  await initDb()
   const db = getDb()
 
   const body = await req.json()
@@ -27,11 +25,9 @@ export async function POST(req: NextRequest) {
   ])
   if (error) return validationError(error)
 
-  const existingResult = await db.execute({
-    sql: 'SELECT id FROM users WHERE email = ?',
-    args: [(body.email as string).toLowerCase().trim()],
-  })
-  const existing = existingResult.rows[0] as unknown as User | undefined
+  const existing = await db.prepare('SELECT id FROM users WHERE email = ?')
+    .bind((body.email as string).toLowerCase().trim())
+    .first<{ id: number }>()
 
   if (existing) {
     return NextResponse.json(
@@ -40,16 +36,16 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const password_hash = hashPassword(body.password)
-  const result = await db.execute({
-    sql: 'INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, ?)',
-    args: [(body.email as string).toLowerCase().trim(), password_hash, (body.name as string).trim(), 'admin'],
-  })
+  const password_hash = await hashPassword(body.password)
+  const result = await db.prepare('INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, ?)')
+    .bind((body.email as string).toLowerCase().trim(), password_hash, (body.name as string).trim(), 'admin')
+    .run()
 
-  const token = await createSession(Number(result.lastInsertRowid))
+  const newId = Number(result.meta.last_row_id)
+  const token = await createSession(newId)
 
   const response = NextResponse.json(
-    { id: Number(result.lastInsertRowid), email: (body.email as string).toLowerCase().trim(), name: (body.name as string).trim(), role: 'admin' },
+    { id: newId, email: (body.email as string).toLowerCase().trim(), name: (body.name as string).trim(), role: 'admin' },
     { status: 201 }
   )
 

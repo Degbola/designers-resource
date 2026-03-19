@@ -1,26 +1,25 @@
 import { NextResponse } from 'next/server'
-import { getDb, initDb } from '@/lib/db'
+import { getDb } from '@/lib/db'
 
 export async function GET() {
-  await initDb()
   const db = getDb()
 
-  const incomeResult = await db.execute('SELECT COALESCE(SUM(amount),0) as t FROM income')
-  const totalIncome = (incomeResult.rows[0] as unknown as { t: number }).t
-  const expenseResult = await db.execute('SELECT COALESCE(SUM(amount),0) as t FROM expenses')
-  const totalExpenses = (expenseResult.rows[0] as unknown as { t: number }).t
+  const incomeRow = await db.prepare('SELECT COALESCE(SUM(amount),0) as t FROM income').first<{ t: number }>()
+  const totalIncome = incomeRow?.t ?? 0
+  const expenseRow = await db.prepare('SELECT COALESCE(SUM(amount),0) as t FROM expenses').first<{ t: number }>()
+  const totalExpenses = expenseRow?.t ?? 0
 
-  const monthlyIncomeResult = await db.execute(`
+  const monthlyIncomeResult = await db.prepare(`
     SELECT strftime('%Y-%m', date) as month, SUM(amount) as total
     FROM income GROUP BY month ORDER BY month DESC LIMIT 12
-  `)
-  const monthlyIncome = monthlyIncomeResult.rows as unknown as { month: string; total: number }[]
+  `).all<{ month: string; total: number }>()
+  const monthlyIncome = monthlyIncomeResult.results
 
-  const monthlyExpensesResult = await db.execute(`
+  const monthlyExpensesResult = await db.prepare(`
     SELECT strftime('%Y-%m', date) as month, SUM(amount) as total
     FROM expenses GROUP BY month ORDER BY month DESC LIMIT 12
-  `)
-  const monthlyExpenses = monthlyExpensesResult.rows as unknown as { month: string; total: number }[]
+  `).all<{ month: string; total: number }>()
+  const monthlyExpenses = monthlyExpensesResult.results
 
   const allMonths = new Set([
     ...monthlyIncome.map((m) => m.month),
@@ -33,11 +32,11 @@ export async function GET() {
     expenses: monthlyExpenses.find((m) => m.month === month)?.total || 0,
   }))
 
-  const expCatResult = await db.execute('SELECT category, SUM(amount) as total FROM expenses GROUP BY category ORDER BY total DESC')
-  const expense_categories = expCatResult.rows as unknown as { category: string; total: number }[]
+  const expCatResult = await db.prepare('SELECT category, SUM(amount) as total FROM expenses GROUP BY category ORDER BY total DESC').all<{ category: string; total: number }>()
+  const expense_categories = expCatResult.results
 
-  const incCatResult = await db.execute('SELECT category, SUM(amount) as total FROM income GROUP BY category ORDER BY total DESC')
-  const income_categories = incCatResult.rows as unknown as { category: string; total: number }[]
+  const incCatResult = await db.prepare('SELECT category, SUM(amount) as total FROM income GROUP BY category ORDER BY total DESC').all<{ category: string; total: number }>()
+  const income_categories = incCatResult.results
 
   return NextResponse.json({
     total_income: totalIncome,

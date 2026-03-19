@@ -20,13 +20,3 @@ export function checkRateLimit(key: string): { allowed: boolean; retryAfterSecon
   entry.count++
   return { allowed: true }
 }
-
-// Clean up old entries periodically
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, entry] of attempts) {
-    if (now > entry.resetAt) {
-      attempts.delete(key)
-    }
-  }
-}, 60 * 1000)

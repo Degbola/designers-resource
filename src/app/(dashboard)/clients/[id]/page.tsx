@@ -1,4 +1,4 @@
-import { getDb, initDb } from '@/lib/db'
+import { getDb } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { Card } from '@/components/ui/card'
@@ -11,16 +11,14 @@ import type { Client, Project, Invoice } from '@/types'
 
 export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  await initDb()
   const db = getDb()
-  const clientResult = await db.execute({ sql: 'SELECT * FROM clients WHERE id = ?', args: [id] })
-  const client = clientResult.rows[0] as unknown as Client | undefined
+  const client = await db.prepare('SELECT * FROM clients WHERE id = ?').bind(id).first<Client>()
   if (!client) notFound()
 
-  const projectsResult = await db.execute({ sql: 'SELECT * FROM projects WHERE client_id = ? ORDER BY updated_at DESC', args: [id] })
-  const projects = projectsResult.rows as unknown as Project[]
-  const invoicesResult = await db.execute({ sql: 'SELECT * FROM invoices WHERE client_id = ? ORDER BY created_at DESC', args: [id] })
-  const invoices = invoicesResult.rows as unknown as Invoice[]
+  const projectsResult = await db.prepare('SELECT * FROM projects WHERE client_id = ? ORDER BY updated_at DESC').bind(id).all<Project>()
+  const projects = projectsResult.results
+  const invoicesResult = await db.prepare('SELECT * FROM invoices WHERE client_id = ? ORDER BY created_at DESC').bind(id).all<Invoice>()
+  const invoices = invoicesResult.results
 
   return (
     <div className="space-y-6 animate-fade-in overflow-x-hidden">

@@ -9,11 +9,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cf:build": "next build && npx @opennextjs/cloudflare@latest build",
+    "cf:dev": "wrangler dev",
+    "cf:deploy": "npm run cf:build && wrangler deploy"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
-    "@libsql/client": "^0.17.0",
     "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "^25.3.5",
     "@types/react": "^19.2.14",
@@ -35,6 +37,9 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@types/uuid": "^10.0.0"
+    "@types/uuid": "^10.0.0",
+    "@cloudflare/workers-types": "^4.0.0",
+    "@opennextjs/cloudflare": "latest",
+    "wrangler": "^4.0.0"
   }
 }

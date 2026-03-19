@@ -1,20 +1,16 @@
 import { NextResponse } from 'next/server'
-import { getDb, initDb } from '@/lib/db'
+import { getDb } from '@/lib/db'
 import { sendInvoiceEmail } from '@/lib/email'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  await initDb()
   const db = getDb()
 
-  const result = await db.execute({
-    sql: `SELECT i.*, c.name as client_name, c.email as client_email
+  const invoice = await db.prepare(`SELECT i.*, c.name as client_name, c.email as client_email
     FROM invoices i LEFT JOIN clients c ON i.client_id = c.id
-    WHERE i.id = ?`,
-    args: [id],
-  })
-  const invoice = result.rows[0] as unknown as { invoice_number: string; client_email: string; total: number; due_date: string } | undefined
+    WHERE i.id = ?`
+  ).bind(id).first<{ invoice_number: string; client_email: string; total: number; due_date: string }>()
 
   if (!invoice) {
     return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
@@ -32,7 +28,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
       formatDate(invoice.due_date)
     )
 
-    await db.execute({ sql: "UPDATE invoices SET status = 'sent' WHERE id = ? AND status = 'draft'", args: [id] })
+    await db.prepare("UPDATE invoices SET status = 'sent' WHERE id = ? AND status = 'draft'").bind(id).run()
 
     return NextResponse.json({ success: true, message: `Invoice sent to ${invoice.client_email}` })
   } catch (error) {

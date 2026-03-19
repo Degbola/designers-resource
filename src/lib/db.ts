@@ -1,42 +1,15 @@
-import { createClient, type Client } from '@libsql/client'
-import path from 'path'
-import fs from 'fs'
+import { getCloudflareContext } from '@opennextjs/cloudflare'
+import type { D1Database } from '@cloudflare/workers-types'
 
-let client: Client | null = null
-let initialized = false
-
-export function getDb(): Client {
-  if (!client) {
-    // Use Turso in production, local SQLite file in development
-    if (process.env.TURSO_DATABASE_URL) {
-      client = createClient({
-        url: process.env.TURSO_DATABASE_URL,
-        authToken: process.env.TURSO_AUTH_TOKEN,
-      })
-    } else {
-      const dataDir = process.env.RAILWAY_ENVIRONMENT
-        ? '/data'
-        : path.join(process.cwd(), 'data')
-      if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true })
-      }
-      const dbPath = path.join(dataDir, 'designer-hub.db')
-      client = createClient({
-        url: `file:${dbPath}`,
-      })
-    }
-  }
-  return client
+export function getDb(): D1Database {
+  const { env } = getCloudflareContext() as unknown as { env: { DB: D1Database } }
+  return env.DB
 }
 
-export async function initDb() {
-  if (initialized) return
+export async function initializeSchema(): Promise<void> {
   const db = getDb()
-
-  await db.executeMultiple(`
-    PRAGMA foreign_keys = ON;
-
-    CREATE TABLE IF NOT EXISTS clients (
+  await db.batch([
+    db.prepare(`CREATE TABLE IF NOT EXISTS clients (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       email TEXT NOT NULL DEFAULT '',
@@ -50,9 +23,8 @@ export async function initDb() {
       avatar_color TEXT DEFAULT '#6366f1',
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
-    );
-
-    CREATE TABLE IF NOT EXISTS projects (
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS projects (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       client_id INTEGER NOT NULL,
       name TEXT NOT NULL,
@@ -63,12 +35,12 @@ export async function initDb() {
       due_date TEXT DEFAULT '',
       budget REAL DEFAULT 0,
       progress INTEGER DEFAULT 0,
+      drive_folder_url TEXT DEFAULT '',
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS invoices (
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS invoices (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       invoice_number TEXT NOT NULL UNIQUE,
       client_id INTEGER NOT NULL,
@@ -85,9 +57,8 @@ export async function initDb() {
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE,
       FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS invoice_items (
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS invoice_items (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       invoice_id INTEGER NOT NULL,
       description TEXT NOT NULL,
@@ -95,9 +66,8 @@ export async function initDb() {
       unit_price REAL NOT NULL DEFAULT 0,
       amount REAL NOT NULL DEFAULT 0,
       FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS income (
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS income (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       client_id INTEGER,
       invoice_id INTEGER,
@@ -108,9 +78,8 @@ export async function initDb() {
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE SET NULL,
       FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE SET NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS expenses (
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS expenses (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       amount REAL NOT NULL,
       category TEXT DEFAULT 'general',
@@ -119,9 +88,8 @@ export async function initDb() {
       date TEXT NOT NULL,
       receipt_url TEXT DEFAULT '',
       created_at TEXT DEFAULT (datetime('now'))
-    );
-
-    CREATE TABLE IF NOT EXISTS resources (
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS resources (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
       description TEXT DEFAULT '',
@@ -130,9 +98,8 @@ export async function initDb() {
       tags TEXT DEFAULT '',
       is_favorite INTEGER DEFAULT 0,
       created_at TEXT DEFAULT (datetime('now'))
-    );
-
-    CREATE TABLE IF NOT EXISTS project_files (
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS project_files (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       project_id INTEGER NOT NULL,
       name TEXT NOT NULL,
@@ -141,9 +108,8 @@ export async function initDb() {
       size INTEGER DEFAULT 0,
       uploaded_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS work_approvals (
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS work_approvals (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       project_id INTEGER NOT NULL,
       title TEXT NOT NULL,
@@ -152,9 +118,8 @@ export async function initDb() {
       client_feedback TEXT DEFAULT '',
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS users (
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL UNIQUE,
       password_hash TEXT NOT NULL,
@@ -162,18 +127,16 @@ export async function initDb() {
       role TEXT DEFAULT 'admin' CHECK(role IN ('admin','member')),
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
-    );
-
-    CREATE TABLE IF NOT EXISTS sessions (
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS sessions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
       token TEXT NOT NULL UNIQUE,
       expires_at TEXT NOT NULL,
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS brand_generations (
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS brand_generations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       brand_name TEXT NOT NULL,
       tagline TEXT DEFAULT '',
@@ -181,9 +144,8 @@ export async function initDb() {
       prompt TEXT DEFAULT '',
       result_json TEXT NOT NULL,
       created_at TEXT DEFAULT (datetime('now'))
-    );
-
-    CREATE TABLE IF NOT EXISTS social_content_history (
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS social_content_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       brand_name TEXT NOT NULL,
       platforms TEXT DEFAULT '',
@@ -192,9 +154,8 @@ export async function initDb() {
       post_count INTEGER DEFAULT 0,
       posts_json TEXT NOT NULL,
       created_at TEXT DEFAULT (datetime('now'))
-    );
-
-    CREATE TABLE IF NOT EXISTS portal_messages (
+    )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS portal_messages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       client_id INTEGER NOT NULL,
       sender TEXT NOT NULL CHECK(sender IN ('designer', 'client')),
@@ -203,13 +164,6 @@ export async function initDb() {
       read_by_client INTEGER DEFAULT 0,
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
-    );
-  `)
-
-  // Column migrations — safe to run multiple times (errors ignored if already exists)
-  try {
-    await db.execute({ sql: "ALTER TABLE projects ADD COLUMN drive_folder_url TEXT DEFAULT ''", args: [] })
-  } catch { /* column already exists */ }
-
-  initialized = true
+    )`),
+  ])
 }

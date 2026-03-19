@@ -1,4 +1,4 @@
-import { getDb, initDb } from '@/lib/db'
+import { getDb } from '@/lib/db'
 import { getSession } from '@/lib/auth'
 import { formatCurrency } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -14,23 +14,29 @@ import {
 import Link from 'next/link'
 
 async function getStats() {
-  await initDb()
   const db = getDb()
-  const clientCount = ((await db.execute('SELECT COUNT(*) as c FROM clients')).rows[0] as unknown as { c: number }).c
-  const activeProjects = ((await db.execute("SELECT COUNT(*) as c FROM projects WHERE status != 'completed'")).rows[0] as unknown as { c: number }).c
-  const pendingInvoices = ((await db.execute("SELECT COUNT(*) as c FROM invoices WHERE status IN ('sent','draft')")).rows[0] as unknown as { c: number }).c
-  const totalRevenue = ((await db.execute("SELECT COALESCE(SUM(amount),0) as t FROM income")).rows[0] as unknown as { t: number }).t
-  const totalExpenses = ((await db.execute("SELECT COALESCE(SUM(amount),0) as t FROM expenses")).rows[0] as unknown as { t: number }).t
-  const recentProjects = (await db.execute(`
+  const clientCountRow = await db.prepare('SELECT COUNT(*) as c FROM clients').first<{ c: number }>()
+  const clientCount = clientCountRow?.c ?? 0
+  const activeProjectsRow = await db.prepare("SELECT COUNT(*) as c FROM projects WHERE status != 'completed'").first<{ c: number }>()
+  const activeProjects = activeProjectsRow?.c ?? 0
+  const pendingInvoicesRow = await db.prepare("SELECT COUNT(*) as c FROM invoices WHERE status IN ('sent','draft')").first<{ c: number }>()
+  const pendingInvoices = pendingInvoicesRow?.c ?? 0
+  const totalRevenueRow = await db.prepare("SELECT COALESCE(SUM(amount),0) as t FROM income").first<{ t: number }>()
+  const totalRevenue = totalRevenueRow?.t ?? 0
+  const totalExpensesRow = await db.prepare("SELECT COALESCE(SUM(amount),0) as t FROM expenses").first<{ t: number }>()
+  const totalExpenses = totalExpensesRow?.t ?? 0
+  const recentProjectsResult = await db.prepare(`
     SELECT p.*, c.name as client_name FROM projects p
     LEFT JOIN clients c ON p.client_id = c.id
     ORDER BY p.updated_at DESC LIMIT 5
-  `)).rows as (Record<string, unknown>)[]
-  const recentInvoices = (await db.execute(`
+  `).all<Record<string, unknown>>()
+  const recentProjects = recentProjectsResult.results
+  const recentInvoicesResult = await db.prepare(`
     SELECT i.*, c.name as client_name FROM invoices i
     LEFT JOIN clients c ON i.client_id = c.id
     ORDER BY i.created_at DESC LIMIT 6
-  `)).rows as (Record<string, unknown>)[]
+  `).all<Record<string, unknown>>()
+  const recentInvoices = recentInvoicesResult.results
 
   return { clientCount, activeProjects, pendingInvoices, totalRevenue, totalExpenses, recentProjects, recentInvoices }
 }

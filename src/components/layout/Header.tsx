@@ -146,7 +146,7 @@ export function Header({ mobileMenuButton }: { mobileMenuButton?: React.ReactNod
           {quickAddOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setQuickAddOpen(false)} />
-              <div className="absolute right-0 top-full mt-1 z-50 glass-strong shadow-lg overflow-hidden min-w-[140px] animate-fade-in">
+              <div className="absolute right-0 top-full mt-1 z-50 shadow-lg overflow-hidden min-w-[140px] animate-fade-in rounded-lg border border-[#E2DDD8] dark:border-[rgba(255,255,255,0.10)] bg-[#FDFCFA] dark:bg-[#0a0f0b]">
                 {QUICK_ADD_OPTIONS.map(opt => (
                   <button
                     key={opt.href}

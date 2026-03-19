@@ -1,13 +1,18 @@
-import { neon } from '@neondatabase/serverless'
+import { createClient, type Client } from '@libsql/client'
 
-// D1-compatible wrapper for Neon PostgreSQL
-// This allows all existing API routes to keep their .prepare().bind().all()/.first()/.run() pattern
+// D1-compatible wrapper for Turso/libsql
+// All API routes keep their .prepare().bind().all()/.first()/.run() pattern
 
-const sql = neon(process.env.DATABASE_URL!)
+let clientInstance: Client | null = null
 
-function convertPlaceholders(query: string): string {
-  let i = 0
-  return query.replace(/\?/g, () => `$${++i}`)
+function getClient(): Client {
+  if (!clientInstance) {
+    clientInstance = createClient({
+      url: process.env.TURSO_DATABASE_URL!,
+      authToken: process.env.TURSO_AUTH_TOKEN!,
+    })
+  }
+  return clientInstance
 }
 
 class PreparedStatement {
@@ -15,7 +20,7 @@ class PreparedStatement {
   private params: unknown[] = []
 
   constructor(query: string) {
-    this.query = convertPlaceholders(query)
+    this.query = query
   }
 
   bind(...params: unknown[]): PreparedStatement {
@@ -24,33 +29,27 @@ class PreparedStatement {
   }
 
   async all<T = Record<string, unknown>>(): Promise<{ results: T[] }> {
-    const rows = await sql(this.query, this.params)
-    return { results: rows as T[] }
+    const result = await getClient().execute({ sql: this.query, args: this.params as any[] })
+    return { results: result.rows as unknown as T[] }
   }
 
   async first<T = Record<string, unknown>>(): Promise<T | null> {
-    const rows = await sql(this.query, this.params)
-    return (rows[0] as T) || null
+    const result = await getClient().execute({ sql: this.query, args: this.params as any[] })
+    return (result.rows[0] as unknown as T) || null
   }
 
   async run(): Promise<{ meta: { last_row_id: number | null; changes: number } }> {
-    let query = this.query
-    const trimmed = query.trim().toUpperCase()
-    const isInsert = trimmed.startsWith('INSERT')
-    if (isInsert && !trimmed.includes('RETURNING')) {
-      query = query.replace(/;?\s*$/, '') + ' RETURNING id'
-    }
-    const rows = await sql(query, this.params)
+    const result = await getClient().execute({ sql: this.query, args: this.params as any[] })
     return {
       meta: {
-        last_row_id: isInsert && rows[0] ? (rows[0] as { id: number }).id : null,
-        changes: rows.length
+        last_row_id: result.lastInsertRowid ? Number(result.lastInsertRowid) : null,
+        changes: result.rowsAffected,
       }
     }
   }
 }
 
-class NeonDB {
+class TursoDB {
   prepare(query: string): PreparedStatement {
     return new PreparedStatement(query)
   }
@@ -61,7 +60,6 @@ class NeonDB {
       try {
         results.push(await stmt.run())
       } catch {
-        // Ignore errors in batch (e.g. table already exists)
         results.push(null)
       }
     }
@@ -69,13 +67,11 @@ class NeonDB {
   }
 }
 
-let dbInstance: NeonDB | null = null
+let dbInstance: TursoDB | null = null
 let schemaInitialized = false
 
-export function getDb(): NeonDB {
-  if (!dbInstance) {
-    dbInstance = new NeonDB()
-  }
+export function getDb(): TursoDB {
+  if (!dbInstance) dbInstance = new TursoDB()
   return dbInstance
 }
 
@@ -89,26 +85,26 @@ export async function initializeSchema(): Promise<void> {
   const db = getDb()
   await db.batch([
     db.prepare(`CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL UNIQUE,
       password_hash TEXT NOT NULL,
       name TEXT NOT NULL,
       role TEXT DEFAULT 'member' CHECK(role IN ('admin','member')),
       is_active INTEGER DEFAULT 1,
       permissions TEXT DEFAULT '["clients","projects","invoices","finances","resources","brands","social","tools"]',
-      created_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
-      updated_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS')
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS sessions (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
       token TEXT NOT NULL UNIQUE,
       expires_at TEXT NOT NULL,
-      created_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
+      created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS clients (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       name TEXT NOT NULL,
       email TEXT NOT NULL DEFAULT '',
@@ -120,11 +116,11 @@ export async function initializeSchema(): Promise<void> {
       portal_token TEXT UNIQUE,
       notes TEXT DEFAULT '',
       avatar_color TEXT DEFAULT '#6366f1',
-      created_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
-      updated_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS')
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS projects (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       client_id INTEGER NOT NULL,
       name TEXT NOT NULL,
@@ -136,12 +132,12 @@ export async function initializeSchema(): Promise<void> {
       budget REAL DEFAULT 0,
       progress INTEGER DEFAULT 0,
       drive_folder_url TEXT DEFAULT '',
-      created_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
-      updated_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS invoices (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       invoice_number TEXT NOT NULL UNIQUE,
       client_id INTEGER NOT NULL,
@@ -155,12 +151,12 @@ export async function initializeSchema(): Promise<void> {
       total REAL DEFAULT 0,
       notes TEXT DEFAULT '',
       paid_date TEXT,
-      created_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
+      created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE,
       FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS invoice_items (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       invoice_id INTEGER NOT NULL,
       description TEXT NOT NULL,
       quantity REAL NOT NULL DEFAULT 1,
@@ -169,7 +165,7 @@ export async function initializeSchema(): Promise<void> {
       FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS income (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       client_id INTEGER,
       invoice_id INTEGER,
@@ -177,12 +173,12 @@ export async function initializeSchema(): Promise<void> {
       category TEXT DEFAULT 'design',
       description TEXT DEFAULT '',
       date TEXT NOT NULL,
-      created_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
+      created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE SET NULL,
       FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE SET NULL
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS expenses (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       amount REAL NOT NULL,
       category TEXT DEFAULT 'general',
@@ -190,10 +186,10 @@ export async function initializeSchema(): Promise<void> {
       vendor TEXT DEFAULT '',
       date TEXT NOT NULL,
       receipt_url TEXT DEFAULT '',
-      created_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS')
+      created_at TEXT DEFAULT (datetime('now'))
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS resources (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       title TEXT NOT NULL,
       description TEXT DEFAULT '',
@@ -201,40 +197,40 @@ export async function initializeSchema(): Promise<void> {
       category TEXT DEFAULT 'tools' CHECK(category IN ('tools','inspiration','fonts','colors','icons','stock','learning')),
       tags TEXT DEFAULT '',
       is_favorite INTEGER DEFAULT 0,
-      created_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS')
+      created_at TEXT DEFAULT (datetime('now'))
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS project_files (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       project_id INTEGER NOT NULL,
       name TEXT NOT NULL,
       file_path TEXT NOT NULL,
       file_type TEXT DEFAULT '',
       size INTEGER DEFAULT 0,
-      uploaded_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
+      uploaded_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS work_approvals (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       project_id INTEGER NOT NULL,
       title TEXT NOT NULL,
       description TEXT DEFAULT '',
       status TEXT DEFAULT 'pending' CHECK(status IN ('pending','approved','revision')),
       client_feedback TEXT DEFAULT '',
-      created_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
+      created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS brand_generations (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       brand_name TEXT NOT NULL,
       tagline TEXT DEFAULT '',
       industry TEXT DEFAULT '',
       prompt TEXT DEFAULT '',
       result_json TEXT NOT NULL,
-      created_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS')
+      created_at TEXT DEFAULT (datetime('now'))
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS social_content_history (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       brand_name TEXT NOT NULL,
       platforms TEXT DEFAULT '',
@@ -242,34 +238,34 @@ export async function initializeSchema(): Promise<void> {
       format_preference TEXT DEFAULT '',
       post_count INTEGER DEFAULT 0,
       posts_json TEXT NOT NULL,
-      created_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS')
+      created_at TEXT DEFAULT (datetime('now'))
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS portal_messages (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       client_id INTEGER NOT NULL,
       sender TEXT NOT NULL CHECK(sender IN ('designer', 'client')),
       content TEXT NOT NULL,
       read_by_designer INTEGER DEFAULT 0,
       read_by_client INTEGER DEFAULT 0,
-      created_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
+      created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
     )`),
   ])
 
-  // Migrations: add columns to existing tables if not present
+  // Migrations: add columns to existing tables (SQLite ignores errors if column exists)
   const migrations = [
-    `ALTER TABLE clients ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
-    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
-    `ALTER TABLE invoices ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
-    `ALTER TABLE income ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
-    `ALTER TABLE expenses ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
-    `ALTER TABLE resources ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
-    `ALTER TABLE brand_generations ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
-    `ALTER TABLE social_content_history ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
-    `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active INTEGER DEFAULT 1`,
-    `ALTER TABLE users ADD COLUMN IF NOT EXISTS permissions TEXT DEFAULT '["clients","projects","invoices","finances","resources","brands","social","tools"]'`,
+    `ALTER TABLE clients ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE projects ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE invoices ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE income ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE expenses ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE resources ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE brand_generations ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE social_content_history ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1`,
+    `ALTER TABLE users ADD COLUMN permissions TEXT DEFAULT '["clients","projects","invoices","finances","resources","brands","social","tools"]'`,
   ]
   for (const migration of migrations) {
-    try { await sql(migration) } catch { /* already applied */ }
+    try { await getClient().execute(migration) } catch { /* column already exists */ }
   }
 }

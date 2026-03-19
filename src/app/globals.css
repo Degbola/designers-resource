@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Make Tailwind's dark: prefix respond to .dark class, not OS preference */
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* ── Vellum Alabaster System — Light Mode ─────────── */
   --color-dark-900: #F7F5F2;  /* warm off-white base */

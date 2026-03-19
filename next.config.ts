@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['jspdf', 'html2canvas', 'fflate'],
+  serverExternalPackages: ['jspdf', 'html2canvas', 'fflate', '@libsql/client'],
   headers: async () => [
     {
       source: '/(.*)',

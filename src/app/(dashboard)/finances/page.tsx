@@ -1,251 +1,52 @@
-'use client'
+import { getDb } from '@/lib/db'
+import { getSession } from '@/lib/auth'
+import { redirect } from 'next/navigation'
+import { FinancesClientPage } from './_ClientPage'
 
-import { useState, useEffect, useCallback } from 'react'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Modal } from '@/components/ui/modal'
-import { Input, Select } from '@/components/ui/input'
-import { Tabs } from '@/components/ui/tabs'
-import { Plus, Trash2 } from 'lucide-react'
-import { formatCurrencyWith, formatDate, CURRENCIES } from '@/lib/utils'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
-import type { Income, Expense, FinanceSummary, Client } from '@/types'
+export default async function FinancesPage() {
+  const user = await getSession()
+  if (!user) redirect('/login')
 
-const PIE_COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#06b6d4']
+  const db = getDb()
 
-const INCOME_CATEGORIES = ['design', 'development', 'consulting', 'branding', 'illustration', 'other']
-const EXPENSE_CATEGORIES = ['software', 'hardware', 'office', 'marketing', 'education', 'travel', 'utilities', 'general']
+  const [incomeRow, expenseRow, monthlyIncomeResult, monthlyExpensesResult, expCatResult, incCatResult, incomeResult, expensesResult, clientsResult] = await Promise.all([
+    db.prepare('SELECT COALESCE(SUM(amount),0) as t FROM income WHERE user_id = ?').bind(user.id).first<{ t: number }>(),
+    db.prepare('SELECT COALESCE(SUM(amount),0) as t FROM expenses WHERE user_id = ?').bind(user.id).first<{ t: number }>(),
+    db.prepare(`SELECT strftime('%Y-%m', date) as month, SUM(amount) as total FROM income WHERE user_id = ? GROUP BY month ORDER BY month DESC LIMIT 12`).bind(user.id).all<{ month: string; total: number }>(),
+    db.prepare(`SELECT strftime('%Y-%m', date) as month, SUM(amount) as total FROM expenses WHERE user_id = ? GROUP BY month ORDER BY month DESC LIMIT 12`).bind(user.id).all<{ month: string; total: number }>(),
+    db.prepare('SELECT category, SUM(amount) as total FROM expenses WHERE user_id = ? GROUP BY category ORDER BY total DESC').bind(user.id).all<{ category: string; total: number }>(),
+    db.prepare('SELECT category, SUM(amount) as total FROM income WHERE user_id = ? GROUP BY category ORDER BY total DESC').bind(user.id).all<{ category: string; total: number }>(),
+    db.prepare(`SELECT i.*, c.name as client_name FROM income i LEFT JOIN clients c ON i.client_id = c.id WHERE i.user_id = ? ORDER BY i.date DESC`).bind(user.id).all(),
+    db.prepare('SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC').bind(user.id).all(),
+    db.prepare('SELECT * FROM clients WHERE user_id = ? ORDER BY name').bind(user.id).all(),
+  ])
 
-export default function FinancesPage() {
-  const [summary, setSummary] = useState<FinanceSummary | null>(null)
-  const [incomeList, setIncomeList] = useState<Income[]>([])
-  const [expenseList, setExpenseList] = useState<Expense[]>([])
-  const [clients, setClients] = useState<Client[]>([])
-  const [currency, setCurrency] = useState('USD')
-  const [showIncomeModal, setShowIncomeModal] = useState(false)
-  const [showExpenseModal, setShowExpenseModal] = useState(false)
-  const [incomeForm, setIncomeForm] = useState({ client_id: '', amount: '', category: 'design', description: '', date: new Date().toISOString().split('T')[0] })
-  const [expenseForm, setExpenseForm] = useState({ amount: '', category: 'general', description: '', vendor: '', date: new Date().toISOString().split('T')[0] })
+  const totalIncome = incomeRow?.t ?? 0
+  const totalExpenses = expenseRow?.t ?? 0
+  const monthlyIncome = monthlyIncomeResult.results
+  const monthlyExpenses = monthlyExpensesResult.results
+  const allMonths = new Set([...monthlyIncome.map((m) => m.month), ...monthlyExpenses.map((m) => m.month)])
+  const monthly_data = Array.from(allMonths).sort().map((month) => ({
+    month,
+    income: monthlyIncome.find((m) => m.month === month)?.total || 0,
+    expenses: monthlyExpenses.find((m) => m.month === month)?.total || 0,
+  }))
 
-  const load = useCallback(async () => {
-    const [sRes, iRes, eRes, cRes] = await Promise.all([
-      fetch('/api/finances/summary'), fetch('/api/finances/income'),
-      fetch('/api/finances/expenses'), fetch('/api/clients'),
-    ])
-    setSummary(await sRes.json())
-    setIncomeList(await iRes.json())
-    setExpenseList(await eRes.json())
-    setClients(await cRes.json())
-  }, [])
-
-  useEffect(() => { load() }, [load])
-
-  useEffect(() => {
-    const saved = localStorage.getItem('finance_currency')
-    if (saved) setCurrency(saved)
-  }, [])
-
-  const handleCurrencyChange = (c: string) => {
-    setCurrency(c)
-    localStorage.setItem('finance_currency', c)
+  const summary = {
+    total_income: totalIncome,
+    total_expenses: totalExpenses,
+    net_profit: totalIncome - totalExpenses,
+    monthly_data,
+    expense_categories: expCatResult.results,
+    income_categories: incCatResult.results,
   }
-
-  const fmt = (amount: number) => formatCurrencyWith(amount, currency)
-
-  const addIncome = async (e: React.FormEvent) => {
-    e.preventDefault()
-    await fetch('/api/finances/income', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...incomeForm, client_id: incomeForm.client_id ? Number(incomeForm.client_id) : null, amount: Number(incomeForm.amount) }) })
-    setShowIncomeModal(false)
-    setIncomeForm({ client_id: '', amount: '', category: 'design', description: '', date: new Date().toISOString().split('T')[0] })
-    load()
-  }
-
-  const addExpense = async (e: React.FormEvent) => {
-    e.preventDefault()
-    await fetch('/api/finances/expenses', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...expenseForm, amount: Number(expenseForm.amount) }) })
-    setShowExpenseModal(false)
-    setExpenseForm({ amount: '', category: 'general', description: '', vendor: '', date: new Date().toISOString().split('T')[0] })
-    load()
-  }
-
-  const deleteIncome = async (id: number) => { await fetch(`/api/finances/income?id=${id}`, { method: 'DELETE' }); load() }
-  const deleteExpense = async (id: number) => { await fetch(`/api/finances/expenses?id=${id}`, { method: 'DELETE' }); load() }
-
-  const tooltipStyle = { contentStyle: { background: '#FDFCFA', border: '0.5px solid #E2DDD8', borderRadius: '0', color: '#111008', fontFamily: 'var(--font-inter)' } }
-
-  const netProfit = summary?.net_profit || 0
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-end">
-        <select
-          value={currency}
-          onChange={(e) => handleCurrencyChange(e.target.value)}
-          className="bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-3 py-[7px] text-[12px] font-display text-dark-100 focus:outline-none focus:border-accent/50 transition-colors cursor-pointer"
-        >
-          {CURRENCIES.map((c) => (
-            <option key={c.code} value={c.code}>{c.label}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          { label: 'Total Income', value: summary?.total_income || 0, color: 'text-accent' },
-          { label: 'Total Expenses', value: summary?.total_expenses || 0, color: 'text-red-500' },
-          { label: 'Net Profit', value: netProfit, color: netProfit >= 0 ? 'text-accent' : 'text-red-500' },
-        ].map((s) => (
-          <Card key={s.label}>
-            <p className="text-[10px] font-display font-semibold uppercase tracking-[0.08em] text-dark-400 mb-1">{s.label}</p>
-            <p className={`font-serif text-2xl font-normal ${s.color}`}>{fmt(s.value)}</p>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <h3 className="font-serif text-base font-normal text-dark-100 mb-4">Income vs Expenses</h3>
-          {summary && summary.monthly_data.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={summary.monthly_data}>
-                <XAxis dataKey="month" stroke="#8494a7" tick={{ fontSize: 11, fill: '#8494a7', fontFamily: 'var(--font-inter)' }} />
-                <YAxis stroke="#8494a7" tick={{ fontSize: 11, fill: '#8494a7', fontFamily: 'var(--font-inter)' }} />
-                <Tooltip {...tooltipStyle} />
-                <Bar dataKey="income" fill="#1A4332" radius={[0, 0, 0, 0]} name="Income" />
-                <Bar dataKey="expenses" fill="#ef4444" radius={[0, 0, 0, 0]} name="Expenses" />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="py-10 text-center">
-              <p className="font-serif text-sm italic text-dark-400">Add income or expenses to see the chart.</p>
-            </div>
-          )}
-        </Card>
-
-        <Card>
-          <h3 className="font-serif text-base font-normal text-dark-100 mb-4">Expense Breakdown</h3>
-          {summary && summary.expense_categories.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie data={summary.expense_categories} dataKey="total" nameKey="category" cx="50%" cy="50%" outerRadius={100} label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                  {summary.expense_categories.map((_, idx) => (
-                    <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip {...tooltipStyle} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="py-10 text-center">
-              <p className="font-serif text-sm italic text-dark-400">Add expenses to see the breakdown.</p>
-            </div>
-          )}
-        </Card>
-      </div>
-
-      <Tabs tabs={[
-        {
-          id: 'income', label: 'Income',
-          content: (
-            <div className="space-y-4">
-              <div className="flex justify-end">
-                <Button onClick={() => setShowIncomeModal(true)}><Plus size={16} /> Add Income</Button>
-              </div>
-              {incomeList.length === 0 ? (
-                <button type="button" onClick={() => setShowIncomeModal(true)} className="w-full text-left group cursor-pointer">
-                  <div className="flex items-end justify-between px-6 py-8 rounded-md bg-accent group-hover:bg-accent-hover transition-all duration-300 group-hover:-translate-y-0.5">
-                    <div>
-                      <span className="text-[9px] font-display font-semibold uppercase tracking-[0.14em] text-white/50 block mb-3">Get Started</span>
-                      <span className="font-serif text-[1.2rem] font-normal text-white leading-snug">Record your first income.</span>
-                    </div>
-                    <Plus size={22} className="text-white/30 group-hover:text-white/60 transition-colors flex-shrink-0 ml-4" />
-                  </div>
-                </button>
-              ) : (
-                <div className="space-y-2">
-                  {incomeList.map((inc) => (
-                    <Card key={inc.id} className="!p-3 flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-dark-100 font-medium">{inc.description || inc.category}</p>
-                        <p className="text-xs text-dark-400">{inc.client_name ? `${inc.client_name} · ` : ''}{formatDate(inc.date)}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="font-serif text-accent">+{fmt(inc.amount)}</span>
-                        <button onClick={() => deleteIncome(inc.id)} className="p-1 text-dark-400 hover:text-red-500 cursor-pointer"><Trash2 size={14} /></button>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
-          ),
-        },
-        {
-          id: 'expenses', label: 'Expenses',
-          content: (
-            <div className="space-y-4">
-              <div className="flex justify-end">
-                <Button onClick={() => setShowExpenseModal(true)}><Plus size={16} /> Add Expense</Button>
-              </div>
-              {expenseList.length === 0 ? (
-                <button type="button" onClick={() => setShowExpenseModal(true)} className="w-full text-left group cursor-pointer">
-                  <div className="flex items-end justify-between px-6 py-8 rounded-md bg-accent group-hover:bg-accent-hover transition-all duration-300 group-hover:-translate-y-0.5">
-                    <div>
-                      <span className="text-[9px] font-display font-semibold uppercase tracking-[0.14em] text-white/50 block mb-3">Get Started</span>
-                      <span className="font-serif text-[1.2rem] font-normal text-white leading-snug">Log your first expense.</span>
-                    </div>
-                    <Plus size={22} className="text-white/30 group-hover:text-white/60 transition-colors flex-shrink-0 ml-4" />
-                  </div>
-                </button>
-              ) : (
-                <div className="space-y-2">
-                  {expenseList.map((exp) => (
-                    <Card key={exp.id} className="!p-3 flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-dark-100 font-medium">{exp.description || exp.category}</p>
-                        <p className="text-xs text-dark-400">{exp.vendor ? `${exp.vendor} · ` : ''}{formatDate(exp.date)}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="font-serif text-red-500">-{fmt(exp.amount)}</span>
-                        <button onClick={() => deleteExpense(exp.id)} className="p-1 text-dark-400 hover:text-red-500 cursor-pointer"><Trash2 size={14} /></button>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
-          ),
-        },
-      ]} />
-
-      <Modal open={showIncomeModal} onClose={() => setShowIncomeModal(false)} title="Add Income">
-        <form onSubmit={addIncome} className="space-y-4">
-          <Input label="Amount *" type="number" min="0" step="0.01" value={incomeForm.amount} onChange={(e) => setIncomeForm({ ...incomeForm, amount: e.target.value })} required />
-          <Select label="Category" value={incomeForm.category} onChange={(e) => setIncomeForm({ ...incomeForm, category: e.target.value })} options={INCOME_CATEGORIES.map((c) => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) }))} />
-          <Input label="Description" value={incomeForm.description} onChange={(e) => setIncomeForm({ ...incomeForm, description: e.target.value })} />
-          <Select label="Client" value={incomeForm.client_id} onChange={(e) => setIncomeForm({ ...incomeForm, client_id: e.target.value })} options={[{ value: '', label: 'None' }, ...clients.map((c) => ({ value: String(c.id), label: c.name }))]} />
-          <Input label="Date *" type="date" value={incomeForm.date} onChange={(e) => setIncomeForm({ ...incomeForm, date: e.target.value })} required />
-          <div className="flex justify-end gap-3">
-            <Button type="button" variant="secondary" onClick={() => setShowIncomeModal(false)}>Cancel</Button>
-            <Button type="submit">Add Income</Button>
-          </div>
-        </form>
-      </Modal>
-
-      <Modal open={showExpenseModal} onClose={() => setShowExpenseModal(false)} title="Add Expense">
-        <form onSubmit={addExpense} className="space-y-4">
-          <Input label="Amount *" type="number" min="0" step="0.01" value={expenseForm.amount} onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })} required />
-          <Select label="Category" value={expenseForm.category} onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })} options={EXPENSE_CATEGORIES.map((c) => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) }))} />
-          <Input label="Description" value={expenseForm.description} onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })} />
-          <Input label="Vendor" value={expenseForm.vendor} onChange={(e) => setExpenseForm({ ...expenseForm, vendor: e.target.value })} />
-          <Input label="Date *" type="date" value={expenseForm.date} onChange={(e) => setExpenseForm({ ...expenseForm, date: e.target.value })} required />
-          <div className="flex justify-end gap-3">
-            <Button type="button" variant="secondary" onClick={() => setShowExpenseModal(false)}>Cancel</Button>
-            <Button type="submit">Add Expense</Button>
-          </div>
-        </form>
-      </Modal>
-    </div>
+    <FinancesClientPage
+      initialSummary={summary as any}
+      initialIncome={incomeResult.results as any}
+      initialExpenses={expensesResult.results as any}
+      initialClients={clientsResult.results as any}
+    />
   )
 }

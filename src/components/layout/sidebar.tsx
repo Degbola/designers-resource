@@ -21,6 +21,7 @@ import {
   LogOut,
   Menu,
   X,
+  Shield,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import type { SafeUser } from '@/types'
@@ -189,6 +190,36 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
           )
         })}
       </nav>
+
+      {/* Admin section */}
+      {user.role === 'admin' && (
+        <div className={cn('mb-1', collapsed && !mobileOpen ? 'px-2' : 'px-4')}>
+          {(!collapsed || mobileOpen) ? (
+            <div className="flex items-center justify-between w-full px-1 py-1 mt-3 mb-1">
+              <span className="text-[9px] font-display font-semibold tracking-[0.14em] uppercase text-dark-400">Admin</span>
+            </div>
+          ) : (
+            <div className="border-t border-dark-600 dark:border-[rgba(255,255,255,0.06)] my-3" />
+          )}
+          <Link
+            href="/admin/users"
+            className={cn(
+              'flex items-center gap-2.5 px-2 py-1.5 text-[11px] font-display font-medium tracking-[0.05em] uppercase transition-all duration-300 relative mb-px rounded',
+              isActive('/admin/users')
+                ? 'text-accent dark:text-accent font-semibold opacity-100'
+                : 'text-dark-400 opacity-60 hover:opacity-100 hover:text-dark-200 dark:hover:text-dark-200',
+              collapsed && !mobileOpen && 'justify-center px-0'
+            )}
+            title={collapsed && !mobileOpen ? 'Users' : undefined}
+          >
+            {isActive('/admin/users') && !collapsed && <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0" />}
+            {(!isActive('/admin/users') || (collapsed && !mobileOpen)) && (
+              <Shield size={13} className={cn('flex-shrink-0 transition-colors', isActive('/admin/users') ? 'text-accent' : 'text-dark-400')} />
+            )}
+            {(!collapsed || mobileOpen) && <span>Users</span>}
+          </Link>
+        </div>
+      )}
 
       {/* Footer */}
       <div className={cn(

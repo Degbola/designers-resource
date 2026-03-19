@@ -44,6 +44,13 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  if (!user.is_active) {
+    return NextResponse.json(
+      { error: 'Your account has been deactivated. Contact the admin.' },
+      { status: 403 }
+    )
+  }
+
   await cleanExpiredSessions()
 
   const token = await createSession(user.id)

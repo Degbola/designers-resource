@@ -37,16 +37,20 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  // First user becomes admin, everyone else is a member
+  const userCount = await db.prepare('SELECT COUNT(*) as count FROM users').first<{ count: number }>()
+  const role = (userCount?.count ?? 0) === 0 ? 'admin' : 'member'
+
   const password_hash = await hashPassword(body.password)
   const result = await db.prepare('INSERT INTO users (email, password_hash, name, role) VALUES (?, ?, ?, ?)')
-    .bind((body.email as string).toLowerCase().trim(), password_hash, (body.name as string).trim(), 'admin')
+    .bind((body.email as string).toLowerCase().trim(), password_hash, (body.name as string).trim(), role)
     .run()
 
   const newId = Number(result.meta.last_row_id)
   const token = await createSession(newId)
 
   const response = NextResponse.json(
-    { id: newId, email: (body.email as string).toLowerCase().trim(), name: (body.name as string).trim(), role: 'admin' },
+    { id: newId, email: (body.email as string).toLowerCase().trim(), name: (body.name as string).trim(), role },
     { status: 201 }
   )
 

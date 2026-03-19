@@ -129,6 +129,7 @@ export interface User {
   password_hash: string
   name: string
   role: 'admin' | 'member'
+  is_active: number
   created_at: string
   updated_at: string
 }

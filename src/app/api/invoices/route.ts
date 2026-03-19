@@ -1,20 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
+import { getSession } from '@/lib/auth'
 import { generateInvoiceNumber } from '@/lib/utils'
 import { validate, validationError } from '@/lib/validate'
 
 export async function GET() {
+  const user = await getSession()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const db = getDb()
   const result = await db.prepare(`
     SELECT i.*, c.name as client_name, c.email as client_email
     FROM invoices i
     LEFT JOIN clients c ON i.client_id = c.id
+    WHERE i.user_id = ?
     ORDER BY i.created_at DESC
-  `).all()
+  `).bind(user.id).all()
   return NextResponse.json(result.results)
 }
 
 export async function POST(req: NextRequest) {
+  const user = await getSession()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const db = getDb()
   const body = await req.json()
 
@@ -33,10 +39,10 @@ export async function POST(req: NextRequest) {
   const total = subtotal + taxAmount
 
   const result = await db.prepare(
-    `INSERT INTO invoices (invoice_number, client_id, project_id, status, issue_date, due_date, subtotal, tax_rate, tax_amount, total, notes)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO invoices (user_id, invoice_number, client_id, project_id, status, issue_date, due_date, subtotal, tax_rate, tax_amount, total, notes)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
-    invoiceNumber, body.client_id, body.project_id || null,
+    user.id, invoiceNumber, body.client_id, body.project_id || null,
     body.status || 'draft', body.issue_date, body.due_date,
     subtotal, taxRate, taxAmount, total, body.notes || '',
   ).run()
@@ -56,6 +62,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const user = await getSession()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const db = getDb()
   const body = await req.json()
 
@@ -67,10 +75,10 @@ export async function PUT(req: NextRequest) {
 
   await db.prepare(
     `UPDATE invoices SET client_id=?, project_id=?, status=?, issue_date=?, due_date=?, subtotal=?, tax_rate=?, tax_amount=?, total=?, notes=?, paid_date=?
-    WHERE id=?`
+    WHERE id=? AND user_id=?`
   ).bind(
     body.client_id, body.project_id || null, body.status, body.issue_date, body.due_date,
-    subtotal, taxRate, taxAmount, total, body.notes || '', body.paid_date || null, body.id,
+    subtotal, taxRate, taxAmount, total, body.notes || '', body.paid_date || null, body.id, user.id,
   ).run()
 
   await db.prepare('DELETE FROM invoice_items WHERE invoice_id = ?').bind(body.id).run()
@@ -85,8 +93,8 @@ export async function PUT(req: NextRequest) {
     const existing = await db.prepare('SELECT id FROM income WHERE invoice_id = ?').bind(body.id).first()
     if (!existing) {
       await db.prepare(
-        'INSERT INTO income (client_id, invoice_id, amount, category, description, date) VALUES (?, ?, ?, ?, ?, ?)'
-      ).bind(body.client_id, body.id, total, 'invoice', `Payment for ${body.invoice_number || 'invoice'}`, body.paid_date).run()
+        'INSERT INTO income (user_id, client_id, invoice_id, amount, category, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).bind(user.id, body.client_id, body.id, total, 'invoice', `Payment for ${body.invoice_number || 'invoice'}`, body.paid_date).run()
     }
   }
 
@@ -97,11 +105,13 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const user = await getSession()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const db = getDb()
   const { searchParams } = new URL(req.url)
   const id = searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
 
-  await db.prepare('DELETE FROM invoices WHERE id = ?').bind(id).run()
+  await db.prepare('DELETE FROM invoices WHERE id = ? AND user_id = ?').bind(id, user.id).run()
   return NextResponse.json({ success: true })
 }

@@ -90,6 +90,7 @@ export async function initializeSchema(): Promise<void> {
   await db.batch([
     db.prepare(`CREATE TABLE IF NOT EXISTS clients (
       id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       name TEXT NOT NULL,
       email TEXT NOT NULL DEFAULT '',
       phone TEXT DEFAULT '',
@@ -105,6 +106,7 @@ export async function initializeSchema(): Promise<void> {
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS projects (
       id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       client_id INTEGER NOT NULL,
       name TEXT NOT NULL,
       description TEXT DEFAULT '',
@@ -121,6 +123,7 @@ export async function initializeSchema(): Promise<void> {
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS invoices (
       id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       invoice_number TEXT NOT NULL UNIQUE,
       client_id INTEGER NOT NULL,
       project_id INTEGER,
@@ -148,6 +151,7 @@ export async function initializeSchema(): Promise<void> {
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS income (
       id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       client_id INTEGER,
       invoice_id INTEGER,
       amount REAL NOT NULL,
@@ -160,6 +164,7 @@ export async function initializeSchema(): Promise<void> {
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS expenses (
       id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       amount REAL NOT NULL,
       category TEXT DEFAULT 'general',
       description TEXT DEFAULT '',
@@ -170,6 +175,7 @@ export async function initializeSchema(): Promise<void> {
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS resources (
       id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       title TEXT NOT NULL,
       description TEXT DEFAULT '',
       url TEXT DEFAULT '',
@@ -203,7 +209,8 @@ export async function initializeSchema(): Promise<void> {
       email TEXT NOT NULL UNIQUE,
       password_hash TEXT NOT NULL,
       name TEXT NOT NULL,
-      role TEXT DEFAULT 'admin' CHECK(role IN ('admin','member')),
+      role TEXT DEFAULT 'member' CHECK(role IN ('admin','member')),
+      is_active INTEGER DEFAULT 1,
       created_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
       updated_at TEXT DEFAULT TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS')
     )`),
@@ -217,6 +224,7 @@ export async function initializeSchema(): Promise<void> {
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS brand_generations (
       id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       brand_name TEXT NOT NULL,
       tagline TEXT DEFAULT '',
       industry TEXT DEFAULT '',
@@ -226,6 +234,7 @@ export async function initializeSchema(): Promise<void> {
     )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS social_content_history (
       id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       brand_name TEXT NOT NULL,
       platforms TEXT DEFAULT '',
       content_types TEXT DEFAULT '',
@@ -245,4 +254,20 @@ export async function initializeSchema(): Promise<void> {
       FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
     )`),
   ])
+
+  // Migrations: add columns to existing tables if not present
+  const migrations = [
+    `ALTER TABLE clients ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE projects ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE invoices ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE income ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE expenses ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE resources ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE brand_generations ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE social_content_history ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active INTEGER DEFAULT 1`,
+  ]
+  for (const migration of migrations) {
+    try { await sql(migration) } catch { /* already applied */ }
+  }
 }

@@ -80,6 +80,12 @@ export function getStatusColor(status: string): string {
     low:         'border-dark-600 text-dark-400 bg-transparent',
     medium:      'border-yellow-300/60 text-yellow-700 bg-yellow-50/60 dark:border-yellow-500/20 dark:text-yellow-400 dark:bg-transparent',
     high:        'border-red-300/60 text-red-600 bg-red-50/60 dark:border-red-500/20 dark:text-red-400 dark:bg-transparent',
+    admin:       'border-accent/40 text-accent bg-dark-700 dark:border-accent/30 dark:text-accent dark:bg-transparent',
+    member:      'border-dark-600 text-dark-400 bg-transparent',
+    danger:      'border-red-300/60 text-red-600 bg-red-50/60 dark:border-red-500/20 dark:text-red-400 dark:bg-transparent',
+    success:     'border-accent/40 text-accent bg-dark-700 dark:border-accent/30 dark:text-accent dark:bg-transparent',
+    default:     'border-dark-600 text-dark-400 bg-transparent',
+    inactive:    'border-red-300/60 text-red-600 bg-red-50/60 dark:border-red-500/20 dark:text-red-400 dark:bg-transparent',
   }
   return colors[status] || 'border-dark-600 text-dark-400 bg-transparent'
 }

@@ -10,13 +10,13 @@ export async function GET() {
   const totalExpenses = expenseRow?.t ?? 0
 
   const monthlyIncomeResult = await db.prepare(`
-    SELECT strftime('%Y-%m', date) as month, SUM(amount) as total
+    SELECT TO_CHAR(date::DATE, 'YYYY-MM') as month, SUM(amount) as total
     FROM income GROUP BY month ORDER BY month DESC LIMIT 12
   `).all<{ month: string; total: number }>()
   const monthlyIncome = monthlyIncomeResult.results
 
   const monthlyExpensesResult = await db.prepare(`
-    SELECT strftime('%Y-%m', date) as month, SUM(amount) as total
+    SELECT TO_CHAR(date::DATE, 'YYYY-MM') as month, SUM(amount) as total
     FROM expenses GROUP BY month ORDER BY month DESC LIMIT 12
   `).all<{ month: string; total: number }>()
   const monthlyExpenses = monthlyExpensesResult.results

@@ -9,10 +9,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "cf:build": "next build && npx @opennextjs/cloudflare@latest build",
-    "cf:dev": "wrangler dev",
-    "cf:deploy": "npm run cf:build && wrangler deploy"
+    "lint": "next lint"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
@@ -34,12 +31,10 @@
     "resend": "^6.9.3",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "@neondatabase/serverless": "^0.10.0"
   },
   "devDependencies": {
-    "@types/uuid": "^10.0.0",
-    "@cloudflare/workers-types": "^4.0.0",
-    "@opennextjs/cloudflare": "latest",
-    "wrangler": "^4.0.0"
+    "@types/uuid": "^10.0.0"
   }
 }

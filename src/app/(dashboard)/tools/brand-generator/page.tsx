@@ -8,7 +8,7 @@ import {
   ArrowLeft, Wand2, Loader2, ChevronDown, ChevronUp, Copy, Check,
   Target, Eye, Heart, Crosshair, Smile, MessageCircle, Users, Swords,
   Star, BookOpen, RefreshCw, Sparkles, Palette, Type, ImageIcon, Layers,
-  Download, History, Trash2, Clock, LayoutGrid,
+  Download, History, Trash2, Clock, LayoutGrid, Zap, Lock,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -347,6 +347,9 @@ export default function BrandGeneratorPage() {
   const resultsRef = useRef<HTMLDivElement>(null)
 
   const [aiAvailable, setAiAvailable] = useState(false)
+  const [availableProviders, setAvailableProviders] = useState({ claude: false, gemini: false, chatgpt: false })
+  const [provider, setProvider] = useState<'claude' | 'gemini' | 'chatgpt'>('claude')
+  const [mode, setMode] = useState<'fast' | 'quality'>('quality')
   const [prompt, setPrompt] = useState('')
   const [industry, setIndustry] = useState('')
   const [moods, setMoods] = useState<string[]>([])
@@ -368,7 +371,15 @@ export default function BrandGeneratorPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
   useEffect(() => {
-    fetch('/api/brief/generate').then(r => r.json()).then(d => setAiAvailable(d.available)).catch(() => {})
+    fetch('/api/brief/generate').then(r => r.json()).then(d => {
+      setAiAvailable(d.available)
+      if (d.providers) {
+        setAvailableProviders(d.providers)
+        // auto-select first available provider
+        const first = (['claude', 'gemini', 'chatgpt'] as const).find(p => d.providers[p])
+        if (first) setProvider(first)
+      }
+    }).catch(() => {})
     loadHistory()
   }, [])
 
@@ -430,7 +441,7 @@ export default function BrandGeneratorPage() {
       const res = await fetch('/api/brief/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, industry: industry || undefined, moods: moods.length ? moods : undefined, targetAudience: targetAudience || undefined }),
+        body: JSON.stringify({ prompt, industry: industry || undefined, moods: moods.length ? moods : undefined, targetAudience: targetAudience || undefined, provider, mode }),
       })
       const data = await res.json()
       if (!data.available) { setError('AI is not configured. Please add your Anthropic API key.'); return }
@@ -611,9 +622,67 @@ export default function BrandGeneratorPage() {
           </div>
         )}
 
+        {/* Provider + Mode picker */}
+        <div className="mt-4 space-y-3">
+          <div>
+            <label className="block text-xs font-semibold text-dark-300 uppercase tracking-wider mb-2">AI Provider</label>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { id: 'claude',  label: 'Claude',  sub: 'Anthropic' },
+                { id: 'gemini',  label: 'Gemini',  sub: 'Google' },
+                { id: 'chatgpt', label: 'ChatGPT', sub: 'OpenAI' },
+              ] as const).map(({ id, label, sub }) => {
+                const available = availableProviders[id]
+                const active = provider === id
+                return (
+                  <button
+                    key={id}
+                    onClick={() => available && setProvider(id)}
+                    disabled={!available}
+                    className={`relative flex flex-col items-center gap-0.5 rounded-xl border px-3 py-2.5 text-center transition-all cursor-pointer disabled:cursor-not-allowed ${
+                      active && available
+                        ? 'border-accent bg-accent/15 text-dark-100'
+                        : available
+                        ? 'border-white/10 bg-white/5 text-dark-300 hover:border-white/20'
+                        : 'border-white/5 bg-white/[0.02] text-dark-500 opacity-50'
+                    }`}
+                  >
+                    {!available && <Lock size={10} className="absolute top-1.5 right-1.5 opacity-60" />}
+                    <span className="text-xs font-semibold">{label}</span>
+                    <span className="text-[10px] opacity-60">{sub}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-dark-300 uppercase tracking-wider mb-2">Mode</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setMode('fast')}
+                className={`flex flex-col gap-0.5 rounded-xl border px-4 py-2.5 text-left transition-all cursor-pointer ${mode === 'fast' ? 'border-accent bg-accent/15 text-dark-100' : 'border-white/10 bg-white/5 text-dark-400 hover:border-white/20'}`}
+              >
+                <span className="flex items-center gap-1.5 text-xs font-semibold"><Zap size={11} /> Fast</span>
+                <span className="text-[10px] opacity-60">
+                  {provider === 'claude' ? 'Haiku' : provider === 'gemini' ? 'Flash 2.0' : 'GPT-4o mini'} · ~10s
+                </span>
+              </button>
+              <button
+                onClick={() => setMode('quality')}
+                className={`flex flex-col gap-0.5 rounded-xl border px-4 py-2.5 text-left transition-all cursor-pointer ${mode === 'quality' ? 'border-accent bg-accent/15 text-dark-100' : 'border-white/10 bg-white/5 text-dark-400 hover:border-white/20'}`}
+              >
+                <span className="flex items-center gap-1.5 text-xs font-semibold"><Sparkles size={11} /> Quality</span>
+                <span className="text-[10px] opacity-60">
+                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'gemini' ? 'Pro 1.5' : 'GPT-4o'} · ~25s
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         {!aiAvailable && (
           <p className="text-xs text-amber-400 mt-3 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
-            AI not configured. Add your Anthropic API key to use Brand Generator.
+            AI not configured. Add your Anthropic or Gemini API key.
           </p>
         )}
 

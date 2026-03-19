@@ -1,26 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import { generateWithAI, getAvailableProviders, type AIProvider, type AIMode } from '@/lib/ai-providers'
 
 export async function GET() {
-  return NextResponse.json({ available: !!process.env.ANTHROPIC_API_KEY })
+  const providers = getAvailableProviders()
+  return NextResponse.json({ available: Object.values(providers).some(Boolean), providers })
 }
 
 const BATCH_SIZE = 5
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) return NextResponse.json({ available: false })
+  const providers = getAvailableProviders()
+  const { brand, count, platforms, contentTypes, formatPreference, notes, strategy, mode = 'quality', provider = 'claude' } = await req.json()
 
-  const { brand, count, platforms, contentTypes, formatPreference, notes, strategy, mode } = await req.json()
+  const chosenProvider = provider as AIProvider
+  const chosenMode = mode as AIMode
+
+  if (!providers[chosenProvider]) {
+    return NextResponse.json({ available: false, error: `${chosenProvider} API key not configured.` })
+  }
   if (!brand) return NextResponse.json({ available: true, error: 'No brand data provided' })
-
-  const client = new Anthropic({ apiKey })
 
   const platformList: string[] = platforms?.length ? platforms : ['Instagram', 'LinkedIn']
   const typeList = contentTypes?.length ? contentTypes.join(', ') : 'Lifestyle, Promotional'
   const postCount = Math.min(Math.max(Number(count) || 5, 1), 20)
-  const isFast = mode === 'fast'
-  const model = isFast ? 'claude-haiku-4-5-20251001' : 'claude-sonnet-4-6'
+  const isFast = chosenMode === 'fast'
 
   const formatInstructions: Record<string, string> = {
     'single': 'ALL posts must use "Single Image" format only.',
@@ -122,7 +125,6 @@ Critical rules:
 - Each concept must be visually and thematically distinct
 - IDs must start at ${startId} and increment by 1`
 
-  // Build batches
   const batches: { start: number; size: number }[] = []
   let assigned = 0
   while (assigned < postCount) {
@@ -131,18 +133,14 @@ Critical rules:
     assigned += batchSize
   }
 
+  const maxTokens = isFast
+    ? Math.min(1000 + BATCH_SIZE * (280 + platformList.length * 80), 6000)
+    : Math.min(1500 + BATCH_SIZE * (360 + platformList.length * 100), 8192)
+
   try {
     const batchResults = await Promise.all(
       batches.map(async ({ start, size }) => {
-        const message = await client.messages.create({
-          model,
-          max_tokens: isFast
-            ? Math.min(1000 + size * (280 + platformList.length * 80), 6000)
-            : Math.min(1500 + size * (360 + platformList.length * 100), 8192),
-          system: systemPrompt,
-          messages: [{ role: 'user', content: buildPrompt(size, start, postCount) }],
-        })
-        const raw = message.content[0].type === 'text' ? message.content[0].text : ''
+        const raw = await generateWithAI(systemPrompt, buildPrompt(size, start, postCount), chosenProvider, chosenMode, maxTokens)
         const cleaned = raw.replace(/^```(?:json)?\s*/m, '').replace(/\s*```\s*$/m, '').trim()
         const parsed = JSON.parse(cleaned)
         return parsed.posts as unknown[]

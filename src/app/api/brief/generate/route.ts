@@ -1,18 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import { generateWithAI, getAvailableProviders, type AIProvider, type AIMode } from '@/lib/ai-providers'
 
 export async function GET() {
-  return NextResponse.json({ available: !!process.env.ANTHROPIC_API_KEY })
+  const providers = getAvailableProviders()
+  return NextResponse.json({ available: Object.values(providers).some(Boolean), providers })
 }
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) return NextResponse.json({ available: false })
+  const providers = getAvailableProviders()
+  const { prompt, industry, moods, targetAudience, provider = 'claude', mode = 'quality' } = await req.json()
 
-  const { prompt, industry, moods, targetAudience } = await req.json()
+  const chosenProvider = provider as AIProvider
+  const chosenMode = mode as AIMode
+
+  if (!providers[chosenProvider]) {
+    return NextResponse.json({ available: false, error: `${chosenProvider} API key not configured.` })
+  }
   if (!prompt?.trim()) return NextResponse.json({ available: true, error: 'No prompt provided' })
-
-  const client = new Anthropic({ apiKey })
 
   const extras = [
     industry && `Industry: ${industry}`,
@@ -79,14 +83,7 @@ Rules:
 - All sections must feel cohesive and aligned with the brand concept`
 
   try {
-    const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 2500,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
-    })
-
-    const raw = message.content[0].type === 'text' ? message.content[0].text : ''
+    const raw = await generateWithAI(systemPrompt, userPrompt, chosenProvider, chosenMode, 2500)
     const cleaned = raw.replace(/^```(?:json)?\s*/m, '').replace(/\s*```\s*$/m, '').trim()
     const result = JSON.parse(cleaned)
     return NextResponse.json({ available: true, result })

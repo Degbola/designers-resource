@@ -425,6 +425,8 @@ export default function SocialContentPage() {
   const [notes, setNotes] = useState('')
 
   const [mode, setMode] = useState<'fast' | 'quality'>('quality')
+  const [provider, setProvider] = useState<'claude' | 'gemini' | 'chatgpt'>('claude')
+  const [availableProviders, setAvailableProviders] = useState({ claude: false, gemini: false, chatgpt: false })
   const [loading, setLoading] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -448,7 +450,14 @@ export default function SocialContentPage() {
   })
 
   useEffect(() => {
-    fetch('/api/social-content').then(r => r.json()).then(d => setAiAvailable(d.available)).catch(() => {})
+    fetch('/api/social-content').then(r => r.json()).then(d => {
+      setAiAvailable(d.available)
+      if (d.providers) {
+        setAvailableProviders(d.providers)
+        const first = (['claude', 'gemini', 'chatgpt'] as const).find(p => d.providers[p])
+        if (first) setProvider(first)
+      }
+    }).catch(() => {})
     loadContentHistory()
 
     const params = new URLSearchParams(window.location.search)
@@ -522,7 +531,7 @@ export default function SocialContentPage() {
         headers: { 'Content-Type': 'application/json' },
         signal: abortController.signal,
         body: JSON.stringify({
-          brand: effectiveBrand, count: postCount, platforms, contentTypes, formatPreference, notes: notes || undefined, mode,
+          brand: effectiveBrand, count: postCount, platforms, contentTypes, formatPreference, notes: notes || undefined, mode, provider,
           strategy: (strategy.goals.length || strategy.keyMessage || strategy.ctas.length || strategy.theme || strategy.emotions.length) ? strategy : undefined,
         }),
       })
@@ -968,49 +977,88 @@ export default function SocialContentPage() {
             className="!min-h-[64px]" />
         </div>
 
-        {/* Mode toggle */}
-        <div>
-          <label className="block text-xs font-semibold text-accent uppercase tracking-wider mb-2">
-            8 — Generation Mode
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => setMode('fast')}
-              className={`flex flex-col gap-1 rounded-xl border px-4 py-3 text-left transition-all cursor-pointer ${mode === 'fast' ? 'border-accent bg-accent/15 text-dark-100' : 'border-white/10 bg-white/5 text-dark-400 hover:border-white/20 hover:text-dark-200'}`}
-            >
-              <span className="flex items-center gap-1.5 text-xs font-semibold"><Zap size={12} /> Fast</span>
-              <span className="text-[11px] leading-snug opacity-70">Haiku · ~15s per batch · Great for drafts</span>
-            </button>
-            <button
-              onClick={() => setMode('quality')}
-              className={`flex flex-col gap-1 rounded-xl border px-4 py-3 text-left transition-all cursor-pointer ${mode === 'quality' ? 'border-accent bg-accent/15 text-dark-100' : 'border-white/10 bg-white/5 text-dark-400 hover:border-white/20 hover:text-dark-200'}`}
-            >
-              <span className="flex items-center gap-1.5 text-xs font-semibold"><Sparkles size={12} /> Quality</span>
-              <span className="text-[11px] leading-snug opacity-70">Sonnet · ~35s per batch · Best output</span>
-            </button>
+        {/* Provider + Mode */}
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-semibold text-accent uppercase tracking-wider mb-2">
+              8 — AI Provider
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { id: 'claude',  label: 'Claude',  sub: 'Anthropic' },
+                { id: 'gemini',  label: 'Gemini',  sub: 'Google' },
+                { id: 'chatgpt', label: 'ChatGPT', sub: 'OpenAI' },
+              ] as const).map(({ id, label, sub }) => {
+                const available = availableProviders[id]
+                const active = provider === id
+                return (
+                  <button
+                    key={id}
+                    onClick={() => available && setProvider(id)}
+                    disabled={!available}
+                    className={`relative flex flex-col items-center gap-0.5 rounded-xl border px-3 py-2.5 text-center transition-all cursor-pointer disabled:cursor-not-allowed ${
+                      active && available
+                        ? 'border-accent bg-accent/15 text-dark-100'
+                        : available
+                        ? 'border-white/10 bg-white/5 text-dark-300 hover:border-white/20'
+                        : 'border-white/5 bg-white/[0.02] text-dark-500 opacity-50'
+                    }`}
+                  >
+                    {!available && <span className="absolute top-1.5 right-1.5 opacity-50 text-[9px]">🔒</span>}
+                    <span className="text-xs font-semibold">{label}</span>
+                    <span className="text-[10px] opacity-60">{sub}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
-          {(() => {
-            const batchCount = Math.ceil(postCount / 5)
-            const batchSize = batchCount > 1 ? 5 : postCount
-            const estSecs = mode === 'fast' ? 15 : 35
-            return (
-              <p className="text-[11px] text-dark-400 mt-2">
-                <span className="text-dark-300 font-medium">{postCount} post{postCount !== 1 ? 's' : ''}</span>
-                {' = '}
-                {batchCount > 1
-                  ? <>{batchCount} batches of {batchSize} running in parallel</>
-                  : <>1 batch of {batchSize}</>
-                }
-                {' · est. '}
-                <span className="text-dark-300 font-medium">~{estSecs}s</span>
-              </p>
-            )
-          })()}
+          <div>
+            <label className="block text-xs font-semibold text-accent uppercase tracking-wider mb-2">
+              Generation Mode
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setMode('fast')}
+                className={`flex flex-col gap-1 rounded-xl border px-4 py-3 text-left transition-all cursor-pointer ${mode === 'fast' ? 'border-accent bg-accent/15 text-dark-100' : 'border-white/10 bg-white/5 text-dark-400 hover:border-white/20 hover:text-dark-200'}`}
+              >
+                <span className="flex items-center gap-1.5 text-xs font-semibold"><Zap size={12} /> Fast</span>
+                <span className="text-[11px] leading-snug opacity-70">
+                  {provider === 'claude' ? 'Haiku' : provider === 'gemini' ? 'Flash 2.0' : 'GPT-4o mini'} · ~15s per batch
+                </span>
+              </button>
+              <button
+                onClick={() => setMode('quality')}
+                className={`flex flex-col gap-1 rounded-xl border px-4 py-3 text-left transition-all cursor-pointer ${mode === 'quality' ? 'border-accent bg-accent/15 text-dark-100' : 'border-white/10 bg-white/5 text-dark-400 hover:border-white/20 hover:text-dark-200'}`}
+              >
+                <span className="flex items-center gap-1.5 text-xs font-semibold"><Sparkles size={12} /> Quality</span>
+                <span className="text-[11px] leading-snug opacity-70">
+                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'gemini' ? 'Pro 1.5' : 'GPT-4o'} · ~35s per batch
+                </span>
+              </button>
+            </div>
+            {(() => {
+              const batchCount = Math.ceil(postCount / 5)
+              const batchSize = batchCount > 1 ? 5 : postCount
+              const estSecs = mode === 'fast' ? 15 : 35
+              return (
+                <p className="text-[11px] text-dark-400 mt-2">
+                  <span className="text-dark-300 font-medium">{postCount} post{postCount !== 1 ? 's' : ''}</span>
+                  {' = '}
+                  {batchCount > 1
+                    ? <>{batchCount} batches of {batchSize} running in parallel</>
+                    : <>1 batch of {batchSize}</>
+                  }
+                  {' · est. '}
+                  <span className="text-dark-300 font-medium">~{estSecs}s</span>
+                </p>
+              )
+            })()}
+          </div>
         </div>
 
         {!aiAvailable && (
           <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
-            AI not configured. Add your Anthropic API key to use this tool.
+            AI not configured. Add your Anthropic or Gemini API key.
           </p>
         )}
         {error && <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">{error}</p>}

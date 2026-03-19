@@ -8,6 +8,7 @@ const publicPaths = [
   '/api/auth/',
   '/portal/',
   '/api/portal/',
+  '/api/sync-data',
 ]
 
 function isPublicPath(pathname: string): boolean {

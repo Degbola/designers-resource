@@ -68,7 +68,7 @@ class TursoDB {
 }
 
 let dbInstance: TursoDB | null = null
-let schemaInitialized = false
+let schemaPromise: Promise<void> | null = null
 
 export function getDb(): TursoDB {
   if (!dbInstance) dbInstance = new TursoDB()
@@ -76,9 +76,13 @@ export function getDb(): TursoDB {
 }
 
 export async function ensureSchema(): Promise<void> {
-  if (schemaInitialized) return
-  schemaInitialized = true
-  await initializeSchema()
+  if (!schemaPromise) {
+    schemaPromise = initializeSchema().catch((err) => {
+      schemaPromise = null // allow retry on failure
+      throw err
+    })
+  }
+  return schemaPromise
 }
 
 export async function initializeSchema(): Promise<void> {

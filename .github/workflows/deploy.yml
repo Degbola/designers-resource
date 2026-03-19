@@ -21,9 +21,9 @@ jobs:
       - name: Build for Cloudflare
         run: npm run cf:build
 
-      - name: Deploy
+      - name: Deploy via Cloudflare API
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_GLOBAL_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler deploy
+        run: npx wrangler@3 deploy

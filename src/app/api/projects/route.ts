@@ -53,7 +53,7 @@ export async function PUT(req: NextRequest) {
   const body = await req.json()
 
   await db.prepare(
-    `UPDATE projects SET client_id=?, name=?, description=?, status=?, priority=?, start_date=?, due_date=?, budget=?, progress=?, drive_folder_url=?, updated_at=TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS')
+    `UPDATE projects SET client_id=?, name=?, description=?, status=?, priority=?, start_date=?, due_date=?, budget=?, progress=?, drive_folder_url=?, updated_at=datetime('now')
     WHERE id=? AND user_id=?`
   ).bind(body.client_id, body.name, body.description, body.status, body.priority, body.start_date, body.due_date, body.budget, body.progress, body.drive_folder_url || '', body.id, user.id).run()
 

@@ -54,7 +54,7 @@ export async function PUT(req: NextRequest) {
   const body = await req.json()
 
   await db.prepare(
-    `UPDATE clients SET name=?, email=?, phone=?, company=?, address=?, status=?, onboarding_step=?, notes=?, updated_at=TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS')
+    `UPDATE clients SET name=?, email=?, phone=?, company=?, address=?, status=?, onboarding_step=?, notes=?, updated_at=datetime('now')
     WHERE id=? AND user_id=?`
   ).bind(body.name, body.email, body.phone, body.company, body.address, body.status, body.onboarding_step, body.notes, body.id, user.id).run()
 

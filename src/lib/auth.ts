@@ -119,7 +119,7 @@ export async function deleteSession(token: string): Promise<void> {
 
 export async function cleanExpiredSessions(): Promise<void> {
   const db = getDb()
-  await db.prepare("DELETE FROM sessions WHERE expires_at::TIMESTAMP < NOW()").run()
+  await db.prepare("DELETE FROM sessions WHERE expires_at < datetime('now')").run()
 }
 
 // --- Cookie helpers ---

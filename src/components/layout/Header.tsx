@@ -64,7 +64,7 @@ const QUICK_ADD_OPTIONS = [
   { label: 'New Invoice',  href: '/invoices' },
 ]
 
-export function Header({ mobileMenuButton }: { mobileMenuButton?: React.ReactNode }) {
+export function Header({ mobileMenuButton, searchQuery = '', onSearchChange }: { mobileMenuButton?: React.ReactNode; searchQuery?: string; onSearchChange?: (q: string) => void }) {
   const pathname = usePathname()
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
@@ -108,6 +108,8 @@ export function Header({ mobileMenuButton }: { mobileMenuButton?: React.ReactNod
           <input
             type="text"
             placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange?.(e.target.value)}
             className="bg-transparent border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded pl-7 pr-3 py-1 text-[11px] font-display text-dark-200 placeholder:text-dark-400 focus:outline-none focus:border-accent/50 dark:focus:border-accent/50 w-32 lg:w-44 transition-all"
           />
         </div>

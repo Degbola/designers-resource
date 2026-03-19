@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSearchQuery } from '@/components/layout/dashboard-shell'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -15,10 +16,12 @@ type ClientWithStats = Client & { project_count: number; total_paid: number }
 
 export function ClientsClientPage({ initialClients }: { initialClients: ClientWithStats[] }) {
   const router = useRouter()
+  const { query: globalQuery } = useSearchQuery()
   const [clients, setClients] = useState(initialClients)
   const [showModal, setShowModal] = useState(false)
   const [editingClient, setEditingClient] = useState<Client | null>(null)
   const [search, setSearch] = useState('')
+  useEffect(() => { setSearch(globalQuery) }, [globalQuery])
   const [filterStatus, setFilterStatus] = useState('all')
   const [form, setForm] = useState({
     name: '', email: '', phone: '', company: '', address: '', status: 'lead' as string, notes: '',

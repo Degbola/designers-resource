@@ -1,13 +1,14 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSearchQuery } from '@/components/layout/dashboard-shell'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Modal } from '@/components/ui/modal'
 import { Input, Select, Textarea } from '@/components/ui/input'
-import { Plus, Search, Trash2, Send, Eye, DollarSign, X } from 'lucide-react'
+import { Plus, Search, Trash2, Send, Eye, DollarSign, X, ChevronDown } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import type { Invoice, Client, Project } from '@/types'
@@ -24,6 +25,7 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
   initialProjects: Project[]
 }) {
   const router = useRouter()
+  const { query: globalQuery } = useSearchQuery()
   const [invoices, setInvoices] = useState(initialInvoices)
   const [clients, setClients] = useState(initialClients)
   const [projects, setProjects] = useState(initialProjects)
@@ -32,10 +34,15 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
   const [filterStatus, setFilterStatus] = useState('all')
   const [sending, setSending] = useState<number | null>(null)
   const [form, setForm] = useState({
-    client_id: '', project_id: '', status: 'draft', issue_date: new Date().toISOString().split('T')[0],
+    client_name: '', project_name: '', status: 'draft',
+    issue_date: new Date().toISOString().split('T')[0],
     due_date: '', tax_rate: '0', notes: '',
   })
   const [items, setItems] = useState<LineItem[]>([{ description: '', quantity: 1, unit_price: 0 }])
+  const [clientSuggestions, setClientSuggestions] = useState<Client[]>([])
+  const [showClientSuggestions, setShowClientSuggestions] = useState(false)
+
+  useEffect(() => { setSearch(globalQuery) }, [globalQuery])
 
   const load = useCallback(async () => {
     const [iRes, cRes, pRes] = await Promise.all([fetch('/api/invoices'), fetch('/api/clients'), fetch('/api/projects')])
@@ -55,8 +62,8 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        client_id: Number(form.client_id),
-        project_id: form.project_id ? Number(form.project_id) : null,
+        client_name: form.client_name.trim(),
+        project_name: form.project_name.trim() || undefined,
         status: form.status,
         issue_date: form.issue_date,
         due_date: form.due_date,
@@ -96,9 +103,17 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
   }
 
   const openNew = () => {
-    setForm({ client_id: clients[0]?.id?.toString() || '', project_id: '', status: 'draft', issue_date: new Date().toISOString().split('T')[0], due_date: '', tax_rate: '0', notes: '' })
+    setForm({ client_name: '', project_name: '', status: 'draft', issue_date: new Date().toISOString().split('T')[0], due_date: '', tax_rate: '0', notes: '' })
     setItems([{ description: '', quantity: 1, unit_price: 0 }])
+    setClientSuggestions([])
     setShowModal(true)
+  }
+
+  const handleClientInput = (value: string) => {
+    setForm({ ...form, client_name: value })
+    const matches = clients.filter(c => c.name.toLowerCase().includes(value.toLowerCase()))
+    setClientSuggestions(value.length > 0 ? matches : [])
+    setShowClientSuggestions(value.length > 0)
   }
 
   const addItem = () => setItems([...items, { description: '', quantity: 1, unit_price: 0 }])
@@ -190,8 +205,47 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
       <Modal open={showModal} onClose={() => setShowModal(false)} title="Create Invoice" size="xl">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Select label="Client *" value={form.client_id} onChange={(e) => setForm({ ...form, client_id: e.target.value })} options={clients.map((c) => ({ value: String(c.id), label: c.name }))} />
-            <Select label="Project" value={form.project_id} onChange={(e) => setForm({ ...form, project_id: e.target.value })} options={[{ value: '', label: 'None' }, ...projects.filter((p) => !form.client_id || p.client_id === Number(form.client_id)).map((p) => ({ value: String(p.id), label: p.name }))]} />
+            {/* Client — typeahead, creates if new */}
+            <div className="relative">
+              <Input
+                label="Client *"
+                value={form.client_name}
+                onChange={(e) => handleClientInput(e.target.value)}
+                onBlur={() => setTimeout(() => setShowClientSuggestions(false), 150)}
+                placeholder="Type or enter new name"
+                required
+                autoComplete="off"
+              />
+              {showClientSuggestions && clientSuggestions.length > 0 && (
+                <div className="absolute z-20 left-0 right-0 top-full mt-1 rounded-lg border border-[#E2DDD8] dark:border-[rgba(255,255,255,0.10)] bg-[#FDFCFA] dark:bg-[#0a0f0b] shadow-lg overflow-hidden">
+                  {clientSuggestions.map(c => (
+                    <button key={c.id} type="button"
+                      onMouseDown={() => { setForm({ ...form, client_name: c.name }); setShowClientSuggestions(false) }}
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors"
+                    >
+                      {c.name}
+                      {c.company && <span className="text-xs text-[var(--text-muted)] ml-2">{c.company}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {form.client_name && !clients.find(c => c.name.toLowerCase() === form.client_name.toLowerCase()) && (
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1">New client will be created</p>
+              )}
+            </div>
+            {/* Project — optional, creates if new */}
+            <div>
+              <Input
+                label="Project (optional)"
+                value={form.project_name}
+                onChange={(e) => setForm({ ...form, project_name: e.target.value })}
+                placeholder="Type or leave blank"
+                autoComplete="off"
+              />
+              {form.project_name && !projects.find(p => p.name.toLowerCase() === form.project_name.toLowerCase()) && (
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1">New project will be created</p>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Input label="Issue Date *" type="date" value={form.issue_date} onChange={(e) => setForm({ ...form, issue_date: e.target.value })} required />

@@ -28,11 +28,40 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
 
   const error = validate(body, [
-    { field: 'client_id', required: true, type: 'number' },
     { field: 'issue_date', required: true, type: 'string' },
     { field: 'due_date', required: true, type: 'string' },
   ])
   if (error) return validationError(error)
+
+  // Resolve client — accept client_id or client_name (find-or-create)
+  let clientId: number = body.client_id
+  if (!clientId && body.client_name) {
+    const name = (body.client_name as string).trim()
+    const existing = await db.prepare('SELECT id FROM clients WHERE LOWER(name) = LOWER(?) AND user_id = ?')
+      .bind(name, user.id).first<{ id: number }>()
+    if (existing) {
+      clientId = existing.id
+    } else {
+      const r = await db.prepare('INSERT INTO clients (user_id, name, email) VALUES (?, ?, ?)').bind(user.id, name, '').run()
+      clientId = Number(r.meta.last_row_id)
+    }
+  }
+  if (!clientId) return NextResponse.json({ error: 'Client is required' }, { status: 400 })
+
+  // Resolve project — optional, find-or-create by name
+  let projectId: number | null = body.project_id || null
+  if (!projectId && body.project_name) {
+    const pname = (body.project_name as string).trim()
+    const existing = await db.prepare('SELECT id FROM projects WHERE LOWER(name) = LOWER(?) AND user_id = ?')
+      .bind(pname, user.id).first<{ id: number }>()
+    if (existing) {
+      projectId = existing.id
+    } else {
+      const r = await db.prepare('INSERT INTO projects (user_id, client_id, name, status) VALUES (?, ?, ?, ?)')
+        .bind(user.id, clientId, pname, 'not_started').run()
+      projectId = Number(r.meta.last_row_id)
+    }
+  }
 
   const invoiceNumber = body.invoice_number || generateInvoiceNumber()
   const items = body.items || []
@@ -45,7 +74,7 @@ export async function POST(req: NextRequest) {
     `INSERT INTO invoices (user_id, invoice_number, client_id, project_id, status, issue_date, due_date, subtotal, tax_rate, tax_amount, total, notes)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
-    user.id, invoiceNumber, body.client_id, body.project_id || null,
+    user.id, invoiceNumber, clientId, projectId,
     body.status || 'draft', body.issue_date, body.due_date,
     subtotal, taxRate, taxAmount, total, body.notes || '',
   ).run()

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSearchQuery } from '@/components/layout/dashboard-shell'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
@@ -25,10 +26,12 @@ const CATEGORY_CONFIG: Record<string, { icon: LucideIcon; label: string }> = {
 
 export function ResourcesClientPage({ initialResources }: { initialResources: Resource[] }) {
   const router = useRouter()
+  const { query: globalQuery } = useSearchQuery()
   const [resources, setResources] = useState(initialResources)
   const [showModal, setShowModal] = useState(false)
   const [editingResource, setEditingResource] = useState<Resource | null>(null)
   const [search, setSearch] = useState('')
+  useEffect(() => { setSearch(globalQuery) }, [globalQuery])
   const [filterCategory, setFilterCategory] = useState('all')
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [form, setForm] = useState({ title: '', description: '', url: '', category: 'tools' as string, tags: '' })

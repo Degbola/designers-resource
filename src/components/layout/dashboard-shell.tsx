@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, createContext, useContext } from 'react'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence, type Variants } from 'framer-motion'
 import { Sidebar, MobileMenuButton } from '@/components/layout/sidebar'
@@ -13,30 +13,35 @@ const pageVariants: Variants = {
   exit:    { opacity: 0, y: -6,  transition: { duration: 0.18, ease: 'easeIn' as const } },
 }
 
+const SearchContext = createContext<{ query: string; setQuery: (q: string) => void }>({ query: '', setQuery: () => {} })
+export const useSearchQuery = () => useContext(SearchContext)
+
 export function DashboardShell({ user, children }: { user: SafeUser; children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [query, setQuery] = useState('')
   const pathname = usePathname()
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar user={user} mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Laser line — re-mounts on every route change */}
-        <div key={`laser-${pathname}`} className="laser-line" aria-hidden="true" />
-        <Header mobileMenuButton={<MobileMenuButton onClick={() => setMobileOpen(true)} />} />
-        <AnimatePresence mode="wait">
-          <motion.main
-            key={pathname}
-            variants={pageVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className="flex-1 p-6 md:p-10 overflow-x-hidden"
-          >
-            {children}
-          </motion.main>
-        </AnimatePresence>
+    <SearchContext.Provider value={{ query, setQuery }}>
+      <div className="flex min-h-screen">
+        <Sidebar user={user} mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
+        <div className="flex-1 flex flex-col min-w-0">
+          <div key={`laser-${pathname}`} className="laser-line" aria-hidden="true" />
+          <Header mobileMenuButton={<MobileMenuButton onClick={() => setMobileOpen(true)} />} searchQuery={query} onSearchChange={setQuery} />
+          <AnimatePresence mode="wait">
+            <motion.main
+              key={pathname}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="flex-1 p-6 md:p-10 overflow-x-hidden"
+            >
+              {children}
+            </motion.main>
+          </AnimatePresence>
+        </div>
       </div>
-    </div>
+    </SearchContext.Provider>
   )
 }

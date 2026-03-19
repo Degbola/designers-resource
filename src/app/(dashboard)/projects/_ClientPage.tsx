@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSearchQuery } from '@/components/layout/dashboard-shell'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -21,11 +22,13 @@ const statusColumns = [
 
 export function ProjectsClientPage({ initialProjects, initialClients }: { initialProjects: Project[]; initialClients: Client[] }) {
   const router = useRouter()
+  const { query: globalQuery } = useSearchQuery()
   const [projects, setProjects] = useState(initialProjects)
   const [clients, setClients] = useState(initialClients)
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState<Project | null>(null)
   const [search, setSearch] = useState('')
+  useEffect(() => { setSearch(globalQuery) }, [globalQuery])
   const [form, setForm] = useState({
     client_id: '', name: '', description: '', status: 'not_started', priority: 'medium',
     start_date: '', due_date: '', budget: '', progress: '0', drive_folder_url: '',

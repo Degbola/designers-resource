@@ -52,23 +52,16 @@ Respond with ONLY valid JSON — no markdown, no extra text:
     "brandStory": "3-4 sentences — a compelling founding narrative with a clear problem, a moment of insight or frustration, and why this brand had to exist. Make it feel real and human."
   },
   "visualIdentity": {
-    "primaryPalette": {
-      "name": "Palette name",
-      "colors": ["#hex1", "#hex2", "#hex3", "#hex4", "#hex5"],
-      "rationale": "Why these colors work for this brand"
-    },
-    "secondaryPalette": {
-      "name": "Palette name",
-      "colors": ["#hex1", "#hex2", "#hex3", "#hex4", "#hex5"],
-      "rationale": "How this secondary palette complements the primary"
-    },
-    "typography": {
-      "heading": "A specific, unexpected Google Font for headings — chosen to reflect this exact brand's personality, era, and industry. Must be distinctive and not a common default.",
-      "body": "A Google Font for body text that creates a compelling, intentional pairing with the heading — can be contrasting in style (serif+sans, modern+vintage, etc.)",
-      "headingWeight": 700,
-      "bodyWeight": 400,
-      "rationale": "Why this pairing fits the brand"
-    },
+    "paletteOptions": [
+      { "name": "Option 1 palette name", "colors": ["#hex1", "#hex2", "#hex3", "#hex4", "#hex5"], "rationale": "Why this palette fits the brand" },
+      { "name": "Option 2 palette name", "colors": ["#hex1", "#hex2", "#hex3", "#hex4", "#hex5"], "rationale": "A different direction — warmer/cooler/bolder/more muted" },
+      { "name": "Option 3 palette name", "colors": ["#hex1", "#hex2", "#hex3", "#hex4", "#hex5"], "rationale": "A third distinct take on the brand's colour story" }
+    ],
+    "typographyOptions": [
+      { "heading": "Google Font name", "body": "Google Font name", "headingWeight": 700, "bodyWeight": 400, "rationale": "Why this pairing fits the brand" },
+      { "heading": "Google Font name", "body": "Google Font name", "headingWeight": 600, "bodyWeight": 300, "rationale": "A different typographic direction — different feel, different contrast" },
+      { "heading": "Google Font name", "body": "Google Font name", "headingWeight": 700, "bodyWeight": 400, "rationale": "A third option with distinct personality" }
+    ],
     "logoDirection": "2-3 sentences describing the logo concept — the symbol or mark idea and what it represents, the wordmark style, weight and form, and how they work together. Be specific enough that a designer could begin sketching.",
     "imageryStyle": "2-3 sentences describing the visual world of the brand — photography or illustration style, lighting, colour grading, the kinds of subjects and scenes, composition approach, and the overall feeling someone gets when they see it.",
     "designPrinciples": ["A actionable design principle stated as a directive — e.g. 'Breathe: generous whitespace signals confidence, never fill for the sake of filling'", "Principle 2 with rationale", "Principle 3 with rationale"],
@@ -82,11 +75,11 @@ Rules:
 - Font weights must be standard values: 300, 400, 500, 600, 700, 800, 900
 - Be specific and creative — no generic placeholder text
 - All sections must feel cohesive and aligned with the brand concept
-- Typography: Industry rules are STRICT — fintech, SaaS, tech, and financial brands must use sans-serif fonts only (no serif, no display, no slab — this includes DM Serif Display, Playfair Display, and any other serif or display face). Luxury, fashion, editorial → refined serif or elegant display. Food, wellness, handmade → warm humanist or handwritten. Legal, consultancy → authoritative serif or slab. Once the industry-appropriate category is confirmed, consider at least 3 specific font pairings within that category and choose the one that best matches this brand's exact personality and audience. Do not include this reasoning in the JSON.
-- Colors: First consider what color territory is appropriate for the industry and target audience, then evaluate at least 3 specific palette directions within that territory and choose the one that feels most authentic to this exact brand. Do not include this reasoning in the JSON.`
+- Typography: Industry rules are STRICT — fintech, SaaS, tech, and financial brands must use sans-serif fonts only (no serif, no display, no slab — this includes DM Serif Display, Playfair Display, and any other serif or display face). Luxury, fashion, editorial → refined serif or elegant display. Food, wellness, handmade → warm humanist or handwritten. Legal, consultancy → authoritative serif or slab. Generate 3 DISTINCT typographyOptions — each must feel meaningfully different (different weight contrast, different character, different era or energy) while all remaining appropriate for the industry. Do not repeat the same fonts across options.
+- Colors: Generate 3 DISTINCT paletteOptions — each must be a genuinely different colour direction (e.g. one bold and high-contrast, one muted and refined, one warm-toned) while all feeling appropriate for the brand. Each should have its own name and rationale. Do not use the same hues across options.`
 
   try {
-    const raw = await generateWithAI(systemPrompt, userPrompt, chosenProvider, chosenMode, 4096)
+    const raw = await generateWithAI(systemPrompt, userPrompt, chosenProvider, chosenMode, 5500)
     // Extract JSON by matching braces — handles models that append reasoning text after the JSON
     const start = raw.indexOf('{')
     if (start === -1) throw new Error('No JSON object found in response')

@@ -8,13 +8,16 @@ import {
   ArrowLeft, Wand2, Loader2, ChevronDown, ChevronUp, Copy, Check,
   Target, Eye, Heart, Crosshair, Smile, MessageCircle, Users, Swords,
   Star, BookOpen, RefreshCw, Sparkles, Palette, Type, ImageIcon, Layers,
-  Download, History, Trash2, Clock, LayoutGrid, Zap, Lock,
+  Download, History, Trash2, Clock, LayoutGrid, Zap, Lock, ChevronLeft, ChevronRight,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { STRATEGY_SECTIONS } from '@/lib/brand-strategy'
 
 // ---- Types ----
+interface PaletteOption { name: string; colors: string[]; rationale: string }
+interface TypographyOption { heading: string; body: string; headingWeight: number; bodyWeight: number; rationale: string }
+
 interface GeneratedBrand {
   brand: {
     name: string
@@ -35,9 +38,12 @@ interface GeneratedBrand {
     brandStory: string
   }
   visualIdentity: {
-    primaryPalette: { name: string; colors: string[]; rationale: string }
-    secondaryPalette: { name: string; colors: string[]; rationale: string }
-    typography: { heading: string; body: string; headingWeight: number; bodyWeight: number; rationale: string }
+    paletteOptions: PaletteOption[]
+    typographyOptions: TypographyOption[]
+    // legacy fields (old history items)
+    primaryPalette?: PaletteOption
+    secondaryPalette?: PaletteOption
+    typography?: TypographyOption
     logoDirection: string
     imageryStyle: string
     designPrinciples: string[]
@@ -111,7 +117,7 @@ function formatDate(iso: string): string {
 }
 
 // ---- PDF Generator ----
-async function generateBrandPDF(result: GeneratedBrand) {
+async function generateBrandPDF(result: GeneratedBrand, paletteIdx: number, typographyIdx: number) {
   const { jsPDF } = await import('jspdf')
   const { sanitizePdfText: s } = await import('@/lib/utils')
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
@@ -251,18 +257,17 @@ async function generateBrandPDF(result: GeneratedBrand) {
   doc.text('Visual Identity Guide', margin, y)
   y += 8
 
-  drawSectionLabel(`Primary Palette — ${result.visualIdentity.primaryPalette.name}`)
-  drawBody(result.visualIdentity.primaryPalette.rationale)
-  drawSwatches(result.visualIdentity.primaryPalette.colors)
+  const selectedPalette = result.visualIdentity.paletteOptions[paletteIdx] ?? result.visualIdentity.paletteOptions[0]
+  const selectedTypography = result.visualIdentity.typographyOptions[typographyIdx] ?? result.visualIdentity.typographyOptions[0]
 
-  drawSectionLabel(`Secondary Palette — ${result.visualIdentity.secondaryPalette.name}`)
-  drawBody(result.visualIdentity.secondaryPalette.rationale)
-  drawSwatches(result.visualIdentity.secondaryPalette.colors)
+  drawSectionLabel(`Colour Palette — ${selectedPalette?.name ?? ''}`)
+  drawBody(selectedPalette?.rationale ?? '')
+  drawSwatches(selectedPalette?.colors ?? [])
 
   drawSectionLabel('Typography')
-  drawBody(`Heading: ${result.visualIdentity.typography.heading} · Weight ${result.visualIdentity.typography.headingWeight}`)
-  drawBody(`Body: ${result.visualIdentity.typography.body} · Weight ${result.visualIdentity.typography.bodyWeight}`)
-  drawBody(result.visualIdentity.typography.rationale)
+  drawBody(`Heading: ${selectedTypography?.heading ?? ''} · Weight ${selectedTypography?.headingWeight ?? ''}`)
+  drawBody(`Body: ${selectedTypography?.body ?? ''} · Weight ${selectedTypography?.bodyWeight ?? ''}`)
+  drawBody(selectedTypography?.rationale ?? '')
 
   drawSectionLabel('Logo Direction')
   drawBody(result.visualIdentity.logoDirection)
@@ -316,7 +321,7 @@ function PaletteBlock({ palette }: { palette: { name: string; colors: string[]; 
   )
 }
 
-function TypographyBlock({ typography }: { typography: GeneratedBrand['visualIdentity']['typography'] }) {
+function TypographyBlock({ typography }: { typography: TypographyOption }) {
   useEffect(() => {
     loadGoogleFont(typography.heading, typography.headingWeight)
     loadGoogleFont(typography.body, typography.bodyWeight)
@@ -357,11 +362,42 @@ function TypographyBlock({ typography }: { typography: GeneratedBrand['visualIde
   )
 }
 
-// ---- Normalize AI result — ensures all arrays are arrays regardless of model quirks ----
+// ---- Normalize AI result — handles new multi-option format + old single format from history ----
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizePalette(p: any): PaletteOption {
+  return { name: p?.name ?? '', colors: Array.isArray(p?.colors) ? p.colors : [], rationale: p?.rationale ?? '' }
+}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeTypography(t: any): TypographyOption {
+  return { heading: t?.heading ?? '', body: t?.body ?? '', headingWeight: t?.headingWeight ?? 700, bodyWeight: t?.bodyWeight ?? 400, rationale: t?.rationale ?? '' }
+}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeResult(raw: any): GeneratedBrand {
   const vi = raw?.visualIdentity ?? {}
   const st = raw?.strategy ?? {}
+
+  // Build paletteOptions — new format has paletteOptions[], old format has primaryPalette/secondaryPalette
+  let paletteOptions: PaletteOption[]
+  if (Array.isArray(vi.paletteOptions) && vi.paletteOptions.length > 0) {
+    paletteOptions = vi.paletteOptions.map(normalizePalette)
+  } else {
+    paletteOptions = [
+      vi.primaryPalette ? normalizePalette(vi.primaryPalette) : { name: 'Primary', colors: [], rationale: '' },
+      vi.secondaryPalette ? normalizePalette(vi.secondaryPalette) : null,
+    ].filter(Boolean) as PaletteOption[]
+    if (paletteOptions.length === 0) paletteOptions = [{ name: 'Palette', colors: [], rationale: '' }]
+  }
+
+  // Build typographyOptions — new format has typographyOptions[], old format has typography
+  let typographyOptions: TypographyOption[]
+  if (Array.isArray(vi.typographyOptions) && vi.typographyOptions.length > 0) {
+    typographyOptions = vi.typographyOptions.map(normalizeTypography)
+  } else if (vi.typography) {
+    typographyOptions = [normalizeTypography(vi.typography)]
+  } else {
+    typographyOptions = [{ heading: '', body: '', headingWeight: 700, bodyWeight: 400, rationale: '' }]
+  }
+
   return {
     ...raw,
     strategy: {
@@ -372,14 +408,8 @@ function normalizeResult(raw: any): GeneratedBrand {
     },
     visualIdentity: {
       ...vi,
-      primaryPalette: {
-        ...(vi.primaryPalette ?? {}),
-        colors: Array.isArray(vi.primaryPalette?.colors) ? vi.primaryPalette.colors : [],
-      },
-      secondaryPalette: {
-        ...(vi.secondaryPalette ?? {}),
-        colors: Array.isArray(vi.secondaryPalette?.colors) ? vi.secondaryPalette.colors : [],
-      },
+      paletteOptions,
+      typographyOptions,
       designPrinciples: Array.isArray(vi.designPrinciples) ? vi.designPrinciples : [],
       moodboardKeywords: Array.isArray(vi.moodboardKeywords) ? vi.moodboardKeywords : [],
     },
@@ -405,6 +435,8 @@ export default function BrandGeneratorPage() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [error, setError] = useState('')
   const [result, setResult] = useState<GeneratedBrand | null>(null)
+  const [paletteIndex, setPaletteIndex] = useState(0)
+  const [typographyIndex, setTypographyIndex] = useState(0)
   const [copied, setCopied] = useState(false)
   const [pdfLoading, setPdfLoading] = useState(false)
   const [savedBrandId, setSavedBrandId] = useState<number | null>(null)
@@ -456,6 +488,8 @@ export default function BrandGeneratorPage() {
       const res = await fetch(`/api/brands/${id}`)
       const data = await res.json()
       setResult(normalizeResult(data.result))
+      setPaletteIndex(0)
+      setTypographyIndex(0)
       setShowHistory(false)
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     } catch {}
@@ -493,6 +527,8 @@ export default function BrandGeneratorPage() {
       if (data.error) { setError(data.error); return }
       const normalized = normalizeResult(data.result)
       setResult(normalized)
+      setPaletteIndex(0)
+      setTypographyIndex(0)
       saveBrand(normalized, prompt)
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     } catch {
@@ -544,9 +580,8 @@ export default function BrandGeneratorPage() {
       `Differentiators: ${result.strategy.differentiators.join(', ')}`,
       `Brand Story: ${result.strategy.brandStory}`,
       `\n## Visual Identity`,
-      `Primary Palette: ${result.visualIdentity.primaryPalette.colors.join(', ')}`,
-      `Secondary Palette: ${result.visualIdentity.secondaryPalette.colors.join(', ')}`,
-      `Typography: ${result.visualIdentity.typography.heading} (headings) + ${result.visualIdentity.typography.body} (body)`,
+      `Palette: ${(result.visualIdentity.paletteOptions[paletteIndex]?.colors ?? []).join(', ')}`,
+      `Typography: ${result.visualIdentity.typographyOptions[typographyIndex]?.heading} (headings) + ${result.visualIdentity.typographyOptions[typographyIndex]?.body} (body)`,
       `Logo Direction: ${result.visualIdentity.logoDirection}`,
       `Imagery Style: ${result.visualIdentity.imageryStyle}`,
       `Design Principles: ${result.visualIdentity.designPrinciples.join(', ')}`,
@@ -561,7 +596,7 @@ export default function BrandGeneratorPage() {
     if (!result) return
     setPdfLoading(true)
     try {
-      await generateBrandPDF(result)
+      await generateBrandPDF(result, paletteIndex, typographyIndex)
     } catch (e) {
       console.error('PDF generation failed:', e)
     } finally {
@@ -842,19 +877,46 @@ export default function BrandGeneratorPage() {
             <h3 className="font-serif text-lg font-normal text-dark-100 mb-5">Visual Identity Guide</h3>
 
             <div className="space-y-6">
-              {/* Color Palettes */}
+              {/* Color Palette Carousel */}
               <div>
-                <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-3">Color Palettes</p>
-                <div className="space-y-5">
-                  <PaletteBlock palette={result.visualIdentity.primaryPalette} />
-                  <PaletteBlock palette={result.visualIdentity.secondaryPalette} />
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold text-accent uppercase tracking-wider">Colour Palette</p>
+                  {result.visualIdentity.paletteOptions.length > 1 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-dark-400">{paletteIndex + 1} / {result.visualIdentity.paletteOptions.length}</span>
+                      <button onClick={() => setPaletteIndex(i => (i - 1 + result.visualIdentity.paletteOptions.length) % result.visualIdentity.paletteOptions.length)}
+                        className="w-6 h-6 rounded-full bg-white/30 border border-white/40 flex items-center justify-center hover:bg-white/50 transition-colors cursor-pointer">
+                        <ChevronLeft size={12} className="text-dark-300" />
+                      </button>
+                      <button onClick={() => setPaletteIndex(i => (i + 1) % result.visualIdentity.paletteOptions.length)}
+                        className="w-6 h-6 rounded-full bg-white/30 border border-white/40 flex items-center justify-center hover:bg-white/50 transition-colors cursor-pointer">
+                        <ChevronRight size={12} className="text-dark-300" />
+                      </button>
+                    </div>
+                  )}
                 </div>
+                <PaletteBlock palette={result.visualIdentity.paletteOptions[paletteIndex] ?? result.visualIdentity.paletteOptions[0]} />
               </div>
 
-              {/* Typography */}
+              {/* Typography Carousel */}
               <div>
-                <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-3">Typography</p>
-                <TypographyBlock typography={result.visualIdentity.typography} />
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold text-accent uppercase tracking-wider">Typography</p>
+                  {result.visualIdentity.typographyOptions.length > 1 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-dark-400">{typographyIndex + 1} / {result.visualIdentity.typographyOptions.length}</span>
+                      <button onClick={() => setTypographyIndex(i => (i - 1 + result.visualIdentity.typographyOptions.length) % result.visualIdentity.typographyOptions.length)}
+                        className="w-6 h-6 rounded-full bg-white/30 border border-white/40 flex items-center justify-center hover:bg-white/50 transition-colors cursor-pointer">
+                        <ChevronLeft size={12} className="text-dark-300" />
+                      </button>
+                      <button onClick={() => setTypographyIndex(i => (i + 1) % result.visualIdentity.typographyOptions.length)}
+                        className="w-6 h-6 rounded-full bg-white/30 border border-white/40 flex items-center justify-center hover:bg-white/50 transition-colors cursor-pointer">
+                        <ChevronRight size={12} className="text-dark-300" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <TypographyBlock typography={result.visualIdentity.typographyOptions[typographyIndex] ?? result.visualIdentity.typographyOptions[0]} />
               </div>
 
               {/* Logo Direction */}

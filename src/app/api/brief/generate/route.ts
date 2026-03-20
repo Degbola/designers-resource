@@ -82,8 +82,8 @@ Rules:
 - Font weights must be standard values: 300, 400, 500, 600, 700, 800, 900
 - Be specific and creative — no generic placeholder text
 - All sections must feel cohesive and aligned with the brand concept
-- Typography: Before choosing, mentally consider at least 4 different font pairing directions (e.g. geometric sans + humanist serif, display serif + grotesque, handwritten + mono, condensed + light weight, slab serif + clean sans, editorial serif + mono, etc.) and evaluate each against this brand's specific personality, era, industry, and audience. A fintech brand could use a sharp geometric sans, but it could also use an authoritative slab serif, a refined modern serif, or a distinctive display face — let the specific brand concept dictate the choice, not the industry category alone. Then pick the pairing that fits most precisely. Do not include this reasoning in the JSON.
-- Colors: Before choosing, mentally consider at least 3 different palette directions for this brand and evaluate which evokes the right emotion, era, and market position. Then commit to the palette that fits most precisely. Do not include this reasoning in the JSON.`
+- Typography: First establish what type of typography is appropriate for the industry (e.g. fintech/SaaS → clean modern sans-serif; luxury/fashion → refined serif or elegant display; food/handmade → warm humanist or handwritten; legal/finance → authoritative serif or slab). Then within that industry-appropriate direction, consider at least 3 specific font pairings and choose the one that best fits this specific brand's personality, tone, and target audience. Never use heavy display or novelty fonts for professional/financial/tech brands. Do not include this reasoning in the JSON.
+- Colors: First consider what color territory is appropriate for the industry and target audience, then evaluate at least 3 specific palette directions within that territory and choose the one that feels most authentic to this exact brand. Do not include this reasoning in the JSON.`
 
   try {
     const raw = await generateWithAI(systemPrompt, userPrompt, chosenProvider, chosenMode, 4096)

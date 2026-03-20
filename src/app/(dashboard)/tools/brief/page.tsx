@@ -576,22 +576,27 @@ export default function BrandBuilderPage() {
                 <Textarea label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Describe the brand, its values, what makes it unique..." />
 
                 <div>
-                  <label className="block text-sm font-medium text-dark-200 mb-2">Brand Colors (optional)</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-dark-200">Brand Colors</label>
+                    <span className="text-xs text-dark-400">optional — leave empty to let AI decide</span>
+                  </div>
                   <div className="flex items-center gap-2 mb-2">
                     <input type="color" value={colorInput} onChange={(e) => setColorInput(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
                     <input type="text" value={colorInput} onChange={(e) => setColorInput(e.target.value)} className="bg-black/[0.05] dark:bg-white/[0.05] border border-black/[0.07] dark:border-white/[0.08] rounded px-2 py-1.5 text-sm text-dark-100 font-mono w-24 focus:outline-none focus:ring-1 focus:ring-accent/50" />
                     <Button variant="secondary" size="sm" onClick={addBrandColor}>Add</Button>
                   </div>
-                  {form.brandColors && form.brandColors.length > 0 && (
-                    <div className="flex gap-2">
+                  {form.brandColors && form.brandColors.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
                       {form.brandColors.map((color) => (
                         <button key={color} onClick={() => removeBrandColor(color)}
                           className="w-8 h-8 rounded-lg cursor-pointer hover:scale-110 transition-transform relative group"
-                          style={{ backgroundColor: color }} title={`${color} - click to remove`}>
-                          <span className="absolute inset-0 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: textColorForBg(color) }}>x</span>
+                          style={{ backgroundColor: color }} title={`${color} — click to remove`}>
+                          <span className="absolute inset-0 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: textColorForBg(color) }}>✕</span>
                         </button>
                       ))}
                     </div>
+                  ) : (
+                    <p className="text-xs text-dark-400 italic">No colors added — AI will choose the palette freely based on your brand.</p>
                   )}
                 </div>
 

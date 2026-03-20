@@ -1,19 +1,19 @@
 import Anthropic from '@anthropic-ai/sdk'
 
-export type AIProvider = 'claude' | 'openrouter' | 'chatgpt'
+export type AIProvider = 'claude' | 'nvidia' | 'chatgpt'
 export type AIMode = 'fast' | 'quality'
 
 const MODELS = {
-  claude:      { fast: 'claude-haiku-4-5-20251001',              quality: 'claude-sonnet-4-6' },
-  openrouter:  { fast: 'mistralai/mistral-7b-instruct:free',  quality: 'mistralai/mistral-7b-instruct:free' },
-  chatgpt:     { fast: 'gpt-4o-mini',                            quality: 'gpt-4o' },
+  claude:  { fast: 'claude-haiku-4-5-20251001',      quality: 'claude-sonnet-4-6' },
+  nvidia:  { fast: 'moonshotai/kimi-k2-instruct',    quality: 'moonshotai/kimi-k2-thinking' },
+  chatgpt: { fast: 'gpt-4o-mini',                    quality: 'gpt-4o' },
 } as const
 
 export function getAvailableProviders() {
   return {
-    claude:     !!process.env.ANTHROPIC_API_KEY,
-    openrouter: !!process.env.OPENROUTER_API_KEY,
-    chatgpt:    false,
+    claude:  !!process.env.ANTHROPIC_API_KEY,
+    nvidia:  !!process.env.NVIDIA_API_KEY,
+    chatgpt: false,
   }
 }
 
@@ -38,14 +38,12 @@ export async function generateWithAI(
     return block.type === 'text' ? block.text : ''
   }
 
-  if (provider === 'openrouter') {
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  if (provider === 'nvidia') {
+    const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Authorization': `Bearer ${process.env.NVIDIA_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-        'X-Title': 'Seysey Studios',
       },
       body: JSON.stringify({
         model,
@@ -58,7 +56,7 @@ export async function generateWithAI(
     })
     if (!res.ok) {
       const err = await res.text()
-      throw new Error(`OpenRouter error ${res.status}: ${err}`)
+      throw new Error(`NVIDIA API error ${res.status}: ${err}`)
     }
     const data = await res.json()
     return data.choices?.[0]?.message?.content ?? ''

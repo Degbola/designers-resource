@@ -689,7 +689,7 @@ export default function BrandGeneratorPage() {
               >
                 <span className="flex items-center gap-1.5 text-xs font-semibold"><Sparkles size={11} /> Quality</span>
                 <span className="text-[10px] opacity-60">
-                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'nvidia' ? 'Kimi K2 Thinking' : 'GPT-4o'} · ~25s
+                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'nvidia' ? 'Kimi K2 Instruct' : 'GPT-4o'} · ~25s
                 </span>
               </button>
             </div>

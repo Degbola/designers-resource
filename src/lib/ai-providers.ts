@@ -5,7 +5,7 @@ export type AIMode = 'fast' | 'quality'
 
 const MODELS = {
   claude:  { fast: 'claude-haiku-4-5-20251001',      quality: 'claude-sonnet-4-6' },
-  nvidia:  { fast: 'moonshotai/kimi-k2-instruct',    quality: 'moonshotai/kimi-k2-thinking' },
+  nvidia:  { fast: 'moonshotai/kimi-k2-instruct',    quality: 'moonshotai/kimi-k2-instruct' },
   chatgpt: { fast: 'gpt-4o-mini',                    quality: 'gpt-4o' },
 } as const
 
@@ -48,17 +48,19 @@ export async function generateWithAI(
       body: JSON.stringify({
         model,
         max_tokens: maxTokens,
+        stream: false,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user',   content: userPrompt },
         ],
       }),
     })
+    const text = await res.text()
     if (!res.ok) {
-      const err = await res.text()
-      throw new Error(`NVIDIA API error ${res.status}: ${err}`)
+      throw new Error(`NVIDIA API error ${res.status}: ${text}`)
     }
-    const data = await res.json()
+    if (!text) throw new Error('NVIDIA API returned empty response')
+    const data = JSON.parse(text)
     return data.choices?.[0]?.message?.content ?? ''
   }
 

@@ -1032,7 +1032,7 @@ export default function SocialContentPage() {
               >
                 <span className="flex items-center gap-1.5 text-xs font-semibold"><Sparkles size={12} /> Quality</span>
                 <span className="text-[11px] leading-snug opacity-70">
-                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'nvidia' ? 'Kimi K2 Thinking' : 'GPT-4o'} · ~35s per batch
+                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'nvidia' ? 'Kimi K2 Instruct' : 'GPT-4o'} · ~35s per batch
                 </span>
               </button>
             </div>

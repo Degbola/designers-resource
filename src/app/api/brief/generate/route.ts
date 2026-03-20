@@ -87,10 +87,15 @@ Rules:
 
   try {
     const raw = await generateWithAI(systemPrompt, userPrompt, chosenProvider, chosenMode, 2500)
-    // Extract the JSON object — find first { and its matching closing }
+    // Extract JSON by matching braces — handles models that append reasoning text after the JSON
     const start = raw.indexOf('{')
-    const end = raw.lastIndexOf('}')
-    if (start === -1 || end === -1) throw new Error('No JSON object found in response')
+    if (start === -1) throw new Error('No JSON object found in response')
+    let depth = 0, end = -1
+    for (let i = start; i < raw.length; i++) {
+      if (raw[i] === '{') depth++
+      else if (raw[i] === '}') { depth--; if (depth === 0) { end = i; break } }
+    }
+    if (end === -1) throw new Error('Unclosed JSON object in response')
     const cleaned = raw.slice(start, end + 1)
     const result = JSON.parse(cleaned)
     return NextResponse.json({ available: true, result })

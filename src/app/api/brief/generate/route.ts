@@ -8,6 +8,28 @@ export async function GET() {
   return NextResponse.json({ available: Object.values(providers).some(Boolean), providers })
 }
 
+async function getRandomFontSample(count = 40): Promise<string[]> {
+  try {
+    const apiKey = process.env.GOOGLE_FONTS_API_KEY
+    if (!apiKey) return []
+    const res = await fetch(
+      `https://www.googleapis.com/webfonts/v1/webfonts?key=${apiKey}&sort=popularity`,
+      { next: { revalidate: 86400 } }
+    )
+    if (!res.ok) return []
+    const data = await res.json()
+    const all: string[] = (data.items || []).map((f: { family: string }) => f.family)
+    // shuffle and pick `count` fonts
+    for (let i = all.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [all[i], all[j]] = [all[j], all[i]]
+    }
+    return all.slice(0, count)
+  } catch {
+    return []
+  }
+}
+
 export async function POST(req: NextRequest) {
   const providers = getAvailableProviders()
   const { prompt, industry, moods, targetAudience, provider = 'claude', mode = 'quality' } = await req.json()
@@ -20,11 +42,14 @@ export async function POST(req: NextRequest) {
   }
   if (!prompt?.trim()) return NextResponse.json({ available: true, error: 'No prompt provided' })
 
-  const extras = [
-    industry && `Industry: ${industry}`,
-    moods?.length && `Desired mood/vibe: ${moods.join(', ')}`,
-    targetAudience && `Target audience: ${targetAudience}`,
-  ].filter(Boolean).join('\n')
+  const [extras, fontSample] = await Promise.all([
+    Promise.resolve([
+      industry && `Industry: ${industry}`,
+      moods?.length && `Desired mood/vibe: ${moods.join(', ')}`,
+      targetAudience && `Target audience: ${targetAudience}`,
+    ].filter(Boolean).join('\n')),
+    getRandomFontSample(40),
+  ])
 
   const systemPrompt = `You are an expert brand strategist and creative director. Generate a complete, detailed, fictional brand from the user's idea. Be specific, creative, and realistic — avoid generic filler. Every field should feel intentional and cohesive.`
 
@@ -63,8 +88,8 @@ Respond with ONLY valid JSON — no markdown, no extra text:
       "rationale": "How this secondary palette complements the primary"
     },
     "typography": {
-      "heading": "Real Google Font name for headings",
-      "body": "Real Google Font name for body text",
+      "heading": "Choose a heading font from the list below that fits this brand",
+      "body": "Choose a body font from the list below that pairs well with the heading",
       "headingWeight": 700,
       "bodyWeight": 400,
       "rationale": "Why this pairing fits the brand"
@@ -79,10 +104,11 @@ Respond with ONLY valid JSON — no markdown, no extra text:
 Rules:
 - Brand name must be original and fitting
 - All hex colors must be valid 6-digit hex codes starting with #
-- Google Font names must be real, currently available fonts
 - Font weights must be standard values: 300, 400, 500, 600, 700, 800, 900
 - Be specific and creative — no generic placeholder text
-- All sections must feel cohesive and aligned with the brand concept`
+- All sections must feel cohesive and aligned with the brand concept
+- Typography MUST use fonts from this list (choose the most fitting pair for the brand):
+${fontSample.length > 0 ? fontSample.join(', ') : 'Use any real Google Font'}`
 
   try {
     const raw = await generateWithAI(systemPrompt, userPrompt, chosenProvider, chosenMode, 2500)

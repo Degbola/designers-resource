@@ -6,7 +6,7 @@ export type AIMode = 'fast' | 'quality'
 
 const MODELS = {
   claude: { fast: 'claude-haiku-4-5-20251001', quality: 'claude-sonnet-4-6' },
-  gemini: { fast: 'gemini-2.0-flash',          quality: 'gemini-1.5-pro' },
+  gemini: { fast: 'gemini-2.0-flash',          quality: 'gemini-2.0-flash' },
   chatgpt: { fast: 'gpt-4o-mini',              quality: 'gpt-4o' },
 } as const
 

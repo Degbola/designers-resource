@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateWithAI, getAvailableProviders, type AIProvider, type AIMode } from '@/lib/ai-providers'
 
+export const maxDuration = 60
+
 export async function GET() {
   const providers = getAvailableProviders()
   return NextResponse.json({ available: Object.values(providers).some(Boolean), providers })
@@ -87,8 +89,9 @@ Rules:
     const cleaned = raw.replace(/^```(?:json)?\s*/m, '').replace(/\s*```\s*$/m, '').trim()
     const result = JSON.parse(cleaned)
     return NextResponse.json({ available: true, result })
-  } catch (e) {
-    console.error('Brand generation failed:', e)
-    return NextResponse.json({ available: true, error: 'Brand generation failed. Please try again.' })
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e)
+    console.error('Brand generation failed:', msg)
+    return NextResponse.json({ available: true, error: `Brand generation failed: ${msg}` })
   }
 }

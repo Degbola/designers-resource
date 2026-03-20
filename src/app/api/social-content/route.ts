@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateWithAI, getAvailableProviders, type AIProvider, type AIMode } from '@/lib/ai-providers'
 
+export const maxDuration = 60
+
 export async function GET() {
   const providers = getAvailableProviders()
   return NextResponse.json({ available: Object.values(providers).some(Boolean), providers })
@@ -150,7 +152,8 @@ Critical rules:
     const allPosts = batchResults.flat()
     return NextResponse.json({ available: true, result: { posts: allPosts } })
   } catch (e) {
-    console.error('Social content generation failed:', e)
-    return NextResponse.json({ available: true, error: 'Content generation failed. Please try again.' })
+    const msg = e instanceof Error ? (e as Error).message : String(e)
+    console.error('Social content generation failed:', msg)
+    return NextResponse.json({ available: true, error: `Content generation failed: ${msg}` })
   }
 }

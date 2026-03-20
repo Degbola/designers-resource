@@ -680,7 +680,7 @@ export default function BrandGeneratorPage() {
               >
                 <span className="flex items-center gap-1.5 text-xs font-semibold"><Zap size={11} /> Fast</span>
                 <span className="text-[10px] opacity-60">
-                  {provider === 'claude' ? 'Haiku' : provider === 'openrouter' ? 'Llama 3.1 8B' : 'GPT-4o mini'} · ~10s
+                  {provider === 'claude' ? 'Haiku' : provider === 'openrouter' ? 'Mistral 7B' : 'GPT-4o mini'} · ~10s
                 </span>
               </button>
               <button
@@ -689,7 +689,7 @@ export default function BrandGeneratorPage() {
               >
                 <span className="flex items-center gap-1.5 text-xs font-semibold"><Sparkles size={11} /> Quality</span>
                 <span className="text-[10px] opacity-60">
-                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'openrouter' ? 'DeepSeek R1 70B' : 'GPT-4o'} · ~25s
+                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'openrouter' ? 'Mistral 7B' : 'GPT-4o'} · ~25s
                 </span>
               </button>
             </div>

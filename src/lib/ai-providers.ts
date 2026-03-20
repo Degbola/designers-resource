@@ -5,7 +5,7 @@ export type AIMode = 'fast' | 'quality'
 
 const MODELS = {
   claude:      { fast: 'claude-haiku-4-5-20251001',              quality: 'claude-sonnet-4-6' },
-  openrouter:  { fast: 'meta-llama/llama-3.1-8b-instruct:free',  quality: 'deepseek/deepseek-r1-distill-llama-70b:free' },
+  openrouter:  { fast: 'mistralai/mistral-7b-instruct:free',  quality: 'mistralai/mistral-7b-instruct:free' },
   chatgpt:     { fast: 'gpt-4o-mini',                            quality: 'gpt-4o' },
 } as const
 

@@ -63,8 +63,8 @@ Respond with ONLY valid JSON — no markdown, no extra text:
       "rationale": "How this secondary palette complements the primary"
     },
     "typography": {
-      "heading": "Best Google Font for this brand's headings — choose freely based on the brand personality",
-      "body": "Best Google Font for body text that pairs with the heading",
+      "heading": "A specific, unexpected Google Font for headings — chosen to reflect this exact brand's personality, era, and industry. Must be distinctive and not a common default.",
+      "body": "A Google Font for body text that creates a compelling, intentional pairing with the heading — can be contrasting in style (serif+sans, modern+vintage, etc.)",
       "headingWeight": 700,
       "bodyWeight": 400,
       "rationale": "Why this pairing fits the brand"
@@ -82,8 +82,8 @@ Rules:
 - Font weights must be standard values: 300, 400, 500, 600, 700, 800, 900
 - Be specific and creative — no generic placeholder text
 - All sections must feel cohesive and aligned with the brand concept
-- Typography: pick fonts that genuinely suit the brand's personality — use your full knowledge of Google Fonts, not just common defaults
-- Colors: choose palettes that feel authentic to the brand — avoid generic combinations`
+- Typography: pick fonts that GENUINELY suit this specific brand's personality. Be bold and specific — avoid overused defaults like Playfair Display, Montserrat, Open Sans, Roboto, Lato, Raleway, Nunito, Poppins. Each brand must get a UNIQUE pairing that reflects its exact concept, era, tone, and industry. A luxury brand, a tech startup, a handmade bakery, and a law firm should each get completely different font choices.
+- Colors: choose palettes that feel authentic to THIS specific brand — avoid generic combinations. The colors should evoke the brand's personality directly.`
 
   try {
     const raw = await generateWithAI(systemPrompt, userPrompt, chosenProvider, chosenMode, 2500)

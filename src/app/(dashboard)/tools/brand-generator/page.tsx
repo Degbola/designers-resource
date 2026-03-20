@@ -303,7 +303,7 @@ function PaletteBlock({ palette }: { palette: { name: string; colors: string[]; 
       <h4 className="text-sm font-semibold text-dark-100 mb-1">{palette.name}</h4>
       <p className="text-xs text-dark-400 mb-3">{palette.rationale}</p>
       <div className="flex gap-2 h-20">
-        {palette.colors.map((color, i) => (
+        {(palette.colors ?? []).map((color, i) => (
           <button key={i} onClick={() => copy(color)}
             className="flex-1 rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer hover:scale-105 transition-transform"
             style={{ backgroundColor: color, color: textColorForBg(color) }}>
@@ -844,7 +844,7 @@ export default function BrandGeneratorPage() {
                 <div>
                   <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-2">Design Principles</p>
                   <ul className="space-y-1.5">
-                    {result.visualIdentity.designPrinciples.map((p, i) => (
+                    {(result.visualIdentity.designPrinciples ?? []).map((p, i) => (
                       <li key={i} className="text-sm text-dark-200 flex items-start gap-2">
                         <span className="text-accent mt-1.5 text-[6px]">&#9679;</span>{p}
                       </li>
@@ -854,7 +854,7 @@ export default function BrandGeneratorPage() {
                 <div>
                   <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-2">Moodboard</p>
                   <div className="flex flex-wrap gap-2">
-                    {result.visualIdentity.moodboardKeywords.map((kw, i) => (
+                    {(result.visualIdentity.moodboardKeywords ?? []).map((kw, i) => (
                       <span key={i} className="text-xs bg-white/30 text-dark-300 border border-white/40 px-2.5 py-1 rounded-full capitalize">{kw}</span>
                     ))}
                   </div>

@@ -44,7 +44,7 @@ Respond with ONLY valid JSON — no markdown, no extra text:
     "vision": "Inspiring vision — where the brand is headed long-term",
     "values": ["Value 1", "Value 2", "Value 3", "Value 4"],
     "positioning": "How the brand is positioned relative to the market",
-    "personality": "3-5 vivid personality traits written as if describing a person — not just adjectives but short phrases that capture character (e.g. 'speaks plainly but means everything it says', 'quietly confident, never loud')",
+    "personality": "3-5 strong adjectives as the primary format — these are essential and must come first (e.g. 'Bold, Precise, Warm, Trustworthy, Ambitious'). Optionally follow with a single brief phrase that captures the overall character (e.g. 'Bold, Precise, Warm — the kind of confidence that earns trust quietly'). The adjectives are non-negotiable.",
     "toneOfVoice": "2-3 sentences describing how the brand sounds — the register, rhythm, vocabulary it uses, what it avoids, and 1-2 example phrases that sound like the brand",
     "targetAudience": "A rich 3-4 sentence portrait of the ideal customer — their age range, profession, mindset, aspirations, daily life, what they care about, and what they're tired of from existing options",
     "competitors": ["Real brand name + 1 sentence on why it's a competitor or point of comparison", "Competitor 2 + context", "Competitor 3 + context"],
@@ -82,7 +82,7 @@ Rules:
 - Font weights must be standard values: 300, 400, 500, 600, 700, 800, 900
 - Be specific and creative — no generic placeholder text
 - All sections must feel cohesive and aligned with the brand concept
-- Typography: First establish what type of typography is appropriate for the industry (e.g. fintech/SaaS → clean modern sans-serif; luxury/fashion → refined serif or elegant display; food/handmade → warm humanist or handwritten; legal/finance → authoritative serif or slab). Then within that industry-appropriate direction, consider at least 3 specific font pairings and choose the one that best fits this specific brand's personality, tone, and target audience. Never use heavy display or novelty fonts for professional/financial/tech brands. Do not include this reasoning in the JSON.
+- Typography: Industry rules are STRICT — fintech, SaaS, tech, and financial brands must use sans-serif fonts only (no serif, no display, no slab — this includes DM Serif Display, Playfair Display, and any other serif or display face). Luxury, fashion, editorial → refined serif or elegant display. Food, wellness, handmade → warm humanist or handwritten. Legal, consultancy → authoritative serif or slab. Once the industry-appropriate category is confirmed, consider at least 3 specific font pairings within that category and choose the one that best matches this brand's exact personality and audience. Do not include this reasoning in the JSON.
 - Colors: First consider what color territory is appropriate for the industry and target audience, then evaluate at least 3 specific palette directions within that territory and choose the one that feels most authentic to this exact brand. Do not include this reasoning in the JSON.`
 
   try {

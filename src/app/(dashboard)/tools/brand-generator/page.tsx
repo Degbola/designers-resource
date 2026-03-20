@@ -357,6 +357,35 @@ function TypographyBlock({ typography }: { typography: GeneratedBrand['visualIde
   )
 }
 
+// ---- Normalize AI result — ensures all arrays are arrays regardless of model quirks ----
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeResult(raw: any): GeneratedBrand {
+  const vi = raw?.visualIdentity ?? {}
+  const st = raw?.strategy ?? {}
+  return {
+    ...raw,
+    strategy: {
+      ...st,
+      values: Array.isArray(st.values) ? st.values : [],
+      competitors: Array.isArray(st.competitors) ? st.competitors : [],
+      differentiators: Array.isArray(st.differentiators) ? st.differentiators : [],
+    },
+    visualIdentity: {
+      ...vi,
+      primaryPalette: {
+        ...(vi.primaryPalette ?? {}),
+        colors: Array.isArray(vi.primaryPalette?.colors) ? vi.primaryPalette.colors : [],
+      },
+      secondaryPalette: {
+        ...(vi.secondaryPalette ?? {}),
+        colors: Array.isArray(vi.secondaryPalette?.colors) ? vi.secondaryPalette.colors : [],
+      },
+      designPrinciples: Array.isArray(vi.designPrinciples) ? vi.designPrinciples : [],
+      moodboardKeywords: Array.isArray(vi.moodboardKeywords) ? vi.moodboardKeywords : [],
+    },
+  }
+}
+
 // ---- Main Page ----
 export default function BrandGeneratorPage() {
   const router = useRouter()
@@ -426,7 +455,7 @@ export default function BrandGeneratorPage() {
     try {
       const res = await fetch(`/api/brands/${id}`)
       const data = await res.json()
-      setResult(data.result)
+      setResult(normalizeResult(data.result))
       setShowHistory(false)
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     } catch {}
@@ -462,8 +491,9 @@ export default function BrandGeneratorPage() {
       const data = await res.json()
       if (!data.available) { setError('AI is not configured. Please add your Anthropic API key.'); return }
       if (data.error) { setError(data.error); return }
-      setResult(data.result)
-      saveBrand(data.result, prompt)
+      const normalized = normalizeResult(data.result)
+      setResult(normalized)
+      saveBrand(normalized, prompt)
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     } catch {
       setError('Something went wrong. Please try again.')

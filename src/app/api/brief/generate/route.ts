@@ -82,11 +82,11 @@ Rules:
 - Font weights must be standard values: 300, 400, 500, 600, 700, 800, 900
 - Be specific and creative — no generic placeholder text
 - All sections must feel cohesive and aligned with the brand concept
-- Typography: Before choosing, mentally consider at least 4 different font pairing directions (e.g. geometric sans + humanist serif, display serif + grotesque, handwritten + mono, condensed + light weight, etc.) and evaluate each against this brand's specific personality, era, industry, and audience. Then pick the pairing that fits most precisely. Do not include this reasoning in the JSON.
+- Typography: Before choosing, mentally consider at least 4 different font pairing directions (e.g. geometric sans + humanist serif, display serif + grotesque, handwritten + mono, condensed + light weight, slab serif + clean sans, editorial serif + mono, etc.) and evaluate each against this brand's specific personality, era, industry, and audience. A fintech brand could use a sharp geometric sans, but it could also use an authoritative slab serif, a refined modern serif, or a distinctive display face — let the specific brand concept dictate the choice, not the industry category alone. Then pick the pairing that fits most precisely. Do not include this reasoning in the JSON.
 - Colors: Before choosing, mentally consider at least 3 different palette directions for this brand and evaluate which evokes the right emotion, era, and market position. Then commit to the palette that fits most precisely. Do not include this reasoning in the JSON.`
 
   try {
-    const raw = await generateWithAI(systemPrompt, userPrompt, chosenProvider, chosenMode, 2500)
+    const raw = await generateWithAI(systemPrompt, userPrompt, chosenProvider, chosenMode, 4096)
     // Extract JSON by matching braces — handles models that append reasoning text after the JSON
     const start = raw.indexOf('{')
     if (start === -1) throw new Error('No JSON object found in response')

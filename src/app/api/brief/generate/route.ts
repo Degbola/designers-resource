@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     targetAudience && `Target audience: ${targetAudience}`,
   ].filter(Boolean).join('\n')
 
-  const systemPrompt = `You are an expert brand strategist and creative director. Generate a complete, detailed, fictional brand from the user's idea. Be specific, creative, and realistic — avoid generic filler. Every field should feel intentional and cohesive.`
+  const systemPrompt = `You are a senior brand strategist and creative director with 20 years of experience building iconic brands. Generate a complete, richly detailed brand from the user's idea. Write like a professional brand deck — vivid, specific, evocative. Every description should paint a picture, not just state a fact. Avoid generic filler at all costs.`
 
   const userPrompt = `Generate a complete brand for this idea: "${prompt}"
 ${extras ? `\nAdditional context:\n${extras}` : ''}
@@ -44,12 +44,12 @@ Respond with ONLY valid JSON — no markdown, no extra text:
     "vision": "Inspiring vision — where the brand is headed long-term",
     "values": ["Value 1", "Value 2", "Value 3", "Value 4"],
     "positioning": "How the brand is positioned relative to the market",
-    "personality": "Brand personality traits (3-5 descriptive words/phrases)",
-    "toneOfVoice": "How the brand communicates — tone, style, language examples",
-    "targetAudience": "Detailed description of the ideal customer",
-    "competitors": ["Competitor or comparable brand 1", "Competitor 2", "Competitor 3"],
-    "differentiators": ["Key differentiator 1", "Key differentiator 2", "Key differentiator 3"],
-    "brandStory": "2-3 sentence compelling origin/narrative story for the brand"
+    "personality": "3-5 vivid personality traits written as if describing a person — not just adjectives but short phrases that capture character (e.g. 'speaks plainly but means everything it says', 'quietly confident, never loud')",
+    "toneOfVoice": "2-3 sentences describing how the brand sounds — the register, rhythm, vocabulary it uses, what it avoids, and 1-2 example phrases that sound like the brand",
+    "targetAudience": "A rich 3-4 sentence portrait of the ideal customer — their age range, profession, mindset, aspirations, daily life, what they care about, and what they're tired of from existing options",
+    "competitors": ["Real brand name + 1 sentence on why it's a competitor or point of comparison", "Competitor 2 + context", "Competitor 3 + context"],
+    "differentiators": ["A specific, concrete differentiator — not vague like 'better UX' but what exactly sets it apart", "Differentiator 2", "Differentiator 3"],
+    "brandStory": "3-4 sentences — a compelling founding narrative with a clear problem, a moment of insight or frustration, and why this brand had to exist. Make it feel real and human."
   },
   "visualIdentity": {
     "primaryPalette": {
@@ -69,9 +69,9 @@ Respond with ONLY valid JSON — no markdown, no extra text:
       "bodyWeight": 400,
       "rationale": "Why this pairing fits the brand"
     },
-    "logoDirection": "Detailed description of logo concept, style, and symbol/wordmark approach",
-    "imageryStyle": "Description of photography or illustration style, composition, and mood",
-    "designPrinciples": ["Design principle 1", "Design principle 2", "Design principle 3"],
+    "logoDirection": "2-3 sentences describing the logo concept — the symbol or mark idea and what it represents, the wordmark style, weight and form, and how they work together. Be specific enough that a designer could begin sketching.",
+    "imageryStyle": "2-3 sentences describing the visual world of the brand — photography or illustration style, lighting, colour grading, the kinds of subjects and scenes, composition approach, and the overall feeling someone gets when they see it.",
+    "designPrinciples": ["A actionable design principle stated as a directive — e.g. 'Breathe: generous whitespace signals confidence, never fill for the sake of filling'", "Principle 2 with rationale", "Principle 3 with rationale"],
     "moodboardKeywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5", "keyword6"]
   }
 }

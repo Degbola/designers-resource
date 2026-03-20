@@ -82,7 +82,7 @@ Rules:
 - Font weights must be standard values: 300, 400, 500, 600, 700, 800, 900
 - Be specific and creative — no generic placeholder text
 - All sections must feel cohesive and aligned with the brand concept
-- Typography: pick fonts that GENUINELY suit this specific brand's personality. Be bold and specific — avoid overused defaults like Playfair Display, Montserrat, Open Sans, Roboto, Lato, Raleway, Nunito, Poppins. Each brand must get a UNIQUE pairing that reflects its exact concept, era, tone, and industry. A luxury brand, a tech startup, a handmade bakery, and a law firm should each get completely different font choices.
+- Typography: pick the font that BEST fits this specific brand's personality, concept, era, tone, and industry. Let the brand guide the choice — a luxury brand, a tech startup, a handmade bakery, and a law firm should each get a pairing that feels made for them specifically.
 - Colors: choose palettes that feel authentic to THIS specific brand — avoid generic combinations. The colors should evoke the brand's personality directly.`
 
   try {

@@ -87,7 +87,11 @@ Rules:
 
   try {
     const raw = await generateWithAI(systemPrompt, userPrompt, chosenProvider, chosenMode, 2500)
-    const cleaned = raw.replace(/^```(?:json)?\s*/m, '').replace(/\s*```\s*$/m, '').trim()
+    // Extract the JSON object — find first { and its matching closing }
+    const start = raw.indexOf('{')
+    const end = raw.lastIndexOf('}')
+    if (start === -1 || end === -1) throw new Error('No JSON object found in response')
+    const cleaned = raw.slice(start, end + 1)
     const result = JSON.parse(cleaned)
     return NextResponse.json({ available: true, result })
   } catch (e: unknown) {

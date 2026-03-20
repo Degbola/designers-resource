@@ -143,8 +143,10 @@ Critical rules:
     const batchResults = await Promise.all(
       batches.map(async ({ start, size }) => {
         const raw = await generateWithAI(systemPrompt, buildPrompt(size, start, postCount), chosenProvider, chosenMode, maxTokens)
-        const cleaned = raw.replace(/^```(?:json)?\s*/m, '').replace(/\s*```\s*$/m, '').trim()
-        const parsed = JSON.parse(cleaned)
+        const start2 = raw.indexOf('{')
+        const end2 = raw.lastIndexOf('}')
+        if (start2 === -1 || end2 === -1) throw new Error('No JSON object found in response')
+        const parsed = JSON.parse(raw.slice(start2, end2 + 1))
         return parsed.posts as unknown[]
       })
     )

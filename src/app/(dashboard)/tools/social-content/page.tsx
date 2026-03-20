@@ -425,8 +425,8 @@ export default function SocialContentPage() {
   const [notes, setNotes] = useState('')
 
   const [mode, setMode] = useState<'fast' | 'quality'>('quality')
-  const [provider, setProvider] = useState<'claude' | 'gemini' | 'chatgpt'>('claude')
-  const [availableProviders, setAvailableProviders] = useState({ claude: false, gemini: false, chatgpt: false })
+  const [provider, setProvider] = useState<'claude' | 'openrouter' | 'chatgpt'>('claude')
+  const [availableProviders, setAvailableProviders] = useState({ claude: false, openrouter: false, chatgpt: false })
   const [loading, setLoading] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -454,7 +454,7 @@ export default function SocialContentPage() {
       setAiAvailable(d.available)
       if (d.providers) {
         setAvailableProviders(d.providers)
-        const first = (['claude', 'gemini', 'chatgpt'] as const).find(p => d.providers[p])
+        const first = (['claude', 'openrouter', 'chatgpt'] as const).find(p => d.providers[p])
         if (first) setProvider(first)
       }
     }).catch(() => {})
@@ -986,7 +986,7 @@ export default function SocialContentPage() {
             <div className="grid grid-cols-3 gap-2">
               {([
                 { id: 'claude',  label: 'Claude',  sub: 'Anthropic' },
-                { id: 'gemini',  label: 'Gemini',  sub: 'Google' },
+                { id: 'openrouter', label: 'OpenRouter', sub: 'Free Models' },
                 { id: 'chatgpt', label: 'ChatGPT', sub: 'OpenAI' },
               ] as const).map(({ id, label, sub }) => {
                 const available = availableProviders[id]
@@ -1023,7 +1023,7 @@ export default function SocialContentPage() {
               >
                 <span className="flex items-center gap-1.5 text-xs font-semibold"><Zap size={12} /> Fast</span>
                 <span className="text-[11px] leading-snug opacity-70">
-                  {provider === 'claude' ? 'Haiku' : provider === 'gemini' ? 'Flash 2.0' : 'GPT-4o mini'} · ~15s per batch
+                  {provider === 'claude' ? 'Haiku' : provider === 'openrouter' ? 'Llama 3.1 8B' : 'GPT-4o mini'} · ~15s per batch
                 </span>
               </button>
               <button
@@ -1032,7 +1032,7 @@ export default function SocialContentPage() {
               >
                 <span className="flex items-center gap-1.5 text-xs font-semibold"><Sparkles size={12} /> Quality</span>
                 <span className="text-[11px] leading-snug opacity-70">
-                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'gemini' ? 'Pro 1.5' : 'GPT-4o'} · ~35s per batch
+                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'openrouter' ? 'Qwen 2.5 72B' : 'GPT-4o'} · ~35s per batch
                 </span>
               </button>
             </div>
@@ -1058,7 +1058,7 @@ export default function SocialContentPage() {
 
         {!aiAvailable && (
           <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
-            AI not configured. Add your Anthropic or Gemini API key.
+            AI not configured. Add your Anthropic or OpenRouter API key.
           </p>
         )}
         {error && <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">{error}</p>}

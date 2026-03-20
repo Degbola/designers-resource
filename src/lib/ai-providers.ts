@@ -1,20 +1,19 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { GoogleGenerativeAI } from '@google/generative-ai'
 
-export type AIProvider = 'claude' | 'gemini' | 'chatgpt'
+export type AIProvider = 'claude' | 'openrouter' | 'chatgpt'
 export type AIMode = 'fast' | 'quality'
 
 const MODELS = {
-  claude: { fast: 'claude-haiku-4-5-20251001', quality: 'claude-sonnet-4-6' },
-  gemini: { fast: 'gemini-2.0-flash',          quality: 'gemini-2.0-flash' },
-  chatgpt: { fast: 'gpt-4o-mini',              quality: 'gpt-4o' },
+  claude:      { fast: 'claude-haiku-4-5-20251001',              quality: 'claude-sonnet-4-6' },
+  openrouter:  { fast: 'meta-llama/llama-3.1-8b-instruct:free',  quality: 'qwen/qwen-2.5-72b-instruct:free' },
+  chatgpt:     { fast: 'gpt-4o-mini',                            quality: 'gpt-4o' },
 } as const
 
 export function getAvailableProviders() {
   return {
-    claude:  !!process.env.ANTHROPIC_API_KEY,
-    gemini:  !!process.env.GEMINI_API_KEY,
-    chatgpt: false, // add OPENAI_API_KEY to enable
+    claude:     !!process.env.ANTHROPIC_API_KEY,
+    openrouter: !!process.env.OPENROUTER_API_KEY,
+    chatgpt:    false,
   }
 }
 
@@ -39,14 +38,30 @@ export async function generateWithAI(
     return block.type === 'text' ? block.text : ''
   }
 
-  if (provider === 'gemini') {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-    const geminiModel = genAI.getGenerativeModel({
-      model,
-      systemInstruction: systemPrompt,
+  if (provider === 'openrouter') {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+        'X-Title': 'Seysey Studios',
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: maxTokens,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user',   content: userPrompt },
+        ],
+      }),
     })
-    const result = await geminiModel.generateContent(userPrompt)
-    return result.response.text()
+    if (!res.ok) {
+      const err = await res.text()
+      throw new Error(`OpenRouter error ${res.status}: ${err}`)
+    }
+    const data = await res.json()
+    return data.choices?.[0]?.message?.content ?? ''
   }
 
   throw new Error(`Unknown or unavailable provider: ${provider}`)

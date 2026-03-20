@@ -363,8 +363,8 @@ export default function BrandGeneratorPage() {
   const resultsRef = useRef<HTMLDivElement>(null)
 
   const [aiAvailable, setAiAvailable] = useState(false)
-  const [availableProviders, setAvailableProviders] = useState({ claude: false, gemini: false, chatgpt: false })
-  const [provider, setProvider] = useState<'claude' | 'gemini' | 'chatgpt'>('claude')
+  const [availableProviders, setAvailableProviders] = useState({ claude: false, openrouter: false, chatgpt: false })
+  const [provider, setProvider] = useState<'claude' | 'openrouter' | 'chatgpt'>('claude')
   const [mode, setMode] = useState<'fast' | 'quality'>('quality')
   const [prompt, setPrompt] = useState('')
   const [industry, setIndustry] = useState('')
@@ -392,7 +392,7 @@ export default function BrandGeneratorPage() {
       if (d.providers) {
         setAvailableProviders(d.providers)
         // auto-select first available provider
-        const first = (['claude', 'gemini', 'chatgpt'] as const).find(p => d.providers[p])
+        const first = (['claude', 'openrouter', 'chatgpt'] as const).find(p => d.providers[p])
         if (first) setProvider(first)
       }
     }).catch(() => {})
@@ -645,7 +645,7 @@ export default function BrandGeneratorPage() {
             <div className="grid grid-cols-3 gap-2">
               {([
                 { id: 'claude',  label: 'Claude',  sub: 'Anthropic' },
-                { id: 'gemini',  label: 'Gemini',  sub: 'Google' },
+                { id: 'openrouter', label: 'OpenRouter', sub: 'Free Models' },
                 { id: 'chatgpt', label: 'ChatGPT', sub: 'OpenAI' },
               ] as const).map(({ id, label, sub }) => {
                 const available = availableProviders[id]
@@ -680,7 +680,7 @@ export default function BrandGeneratorPage() {
               >
                 <span className="flex items-center gap-1.5 text-xs font-semibold"><Zap size={11} /> Fast</span>
                 <span className="text-[10px] opacity-60">
-                  {provider === 'claude' ? 'Haiku' : provider === 'gemini' ? 'Flash 2.0' : 'GPT-4o mini'} · ~10s
+                  {provider === 'claude' ? 'Haiku' : provider === 'openrouter' ? 'Llama 3.1 8B' : 'GPT-4o mini'} · ~10s
                 </span>
               </button>
               <button
@@ -689,7 +689,7 @@ export default function BrandGeneratorPage() {
               >
                 <span className="flex items-center gap-1.5 text-xs font-semibold"><Sparkles size={11} /> Quality</span>
                 <span className="text-[10px] opacity-60">
-                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'gemini' ? 'Pro 1.5' : 'GPT-4o'} · ~25s
+                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'openrouter' ? 'Qwen 2.5 72B' : 'GPT-4o'} · ~25s
                 </span>
               </button>
             </div>
@@ -698,7 +698,7 @@ export default function BrandGeneratorPage() {
 
         {!aiAvailable && (
           <p className="text-xs text-amber-400 mt-3 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
-            AI not configured. Add your Anthropic or Gemini API key.
+            AI not configured. Add your Anthropic or OpenRouter API key.
           </p>
         )}
 

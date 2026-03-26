@@ -30,12 +30,16 @@ class PreparedStatement {
 
   async all<T = Record<string, unknown>>(): Promise<{ results: T[] }> {
     const result = await getClient().execute({ sql: this.query, args: this.params as any[] })
-    return { results: result.rows as unknown as T[] }
+    const cols = result.columns
+    const rows = result.rows.map(row => Object.fromEntries(cols.map((col, i) => [col, row[i]])))
+    return { results: rows as unknown as T[] }
   }
 
   async first<T = Record<string, unknown>>(): Promise<T | null> {
     const result = await getClient().execute({ sql: this.query, args: this.params as any[] })
-    return (result.rows[0] as unknown as T) || null
+    if (!result.rows[0]) return null
+    const row = Object.fromEntries(result.columns.map((col, i) => [col, result.rows[0][i]]))
+    return row as unknown as T
   }
 
   async run(): Promise<{ meta: { last_row_id: number | null; changes: number } }> {
@@ -268,6 +272,8 @@ export async function initializeSchema(): Promise<void> {
     `ALTER TABLE social_content_history ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`,
     `ALTER TABLE users ADD COLUMN is_active INTEGER DEFAULT 1`,
     `ALTER TABLE users ADD COLUMN permissions TEXT DEFAULT '["clients","projects","invoices","finances","resources","brands","social","tools"]'`,
+    `ALTER TABLE invoices ADD COLUMN sender_email TEXT DEFAULT ''`,
+    `ALTER TABLE invoices ADD COLUMN currency TEXT DEFAULT 'USD'`,
   ]
   for (const migration of migrations) {
     try { await getClient().execute(migration) } catch { /* column already exists */ }

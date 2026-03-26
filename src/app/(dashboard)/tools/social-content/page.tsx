@@ -25,9 +25,27 @@ interface GeneratedBrand {
   visualIdentity: {
     primaryPalette: { name: string; colors: string[]; rationale: string }
     secondaryPalette: { name: string; colors: string[]; rationale: string }
+    // new multi-option format
+    paletteOptions?: { name: string; colors: string[]; rationale: string }[]
     typography: { heading: string; body: string; headingWeight: number; bodyWeight: number; rationale: string }
+    typographyOptions?: { heading: string; body: string; headingWeight: number; bodyWeight: number; rationale: string }[]
     logoDirection: string; imageryStyle: string; designPrinciples: string[]; moodboardKeywords: string[]
   }
+}
+
+// Ensure brand always has primaryPalette/secondaryPalette regardless of generation format
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeBrand(raw: any): GeneratedBrand {
+  if (!raw) return raw
+  if (!raw.visualIdentity) raw.visualIdentity = {}
+  const vi = raw.visualIdentity
+  const empty = { name: '', colors: [], rationale: '' }
+  if (!vi.primaryPalette) vi.primaryPalette = vi.paletteOptions?.[0] ?? empty
+  if (!Array.isArray(vi.primaryPalette.colors)) vi.primaryPalette.colors = []
+  if (!vi.secondaryPalette) vi.secondaryPalette = vi.paletteOptions?.[1] ?? vi.primaryPalette ?? empty
+  if (!Array.isArray(vi.secondaryPalette.colors)) vi.secondaryPalette.colors = []
+  if (!vi.typography) vi.typography = vi.typographyOptions?.[0] ?? { heading: 'Sans-serif', body: 'Sans-serif', headingWeight: 700, bodyWeight: 400, rationale: '' }
+  return raw
 }
 
 interface BrandHistoryItem {
@@ -167,7 +185,7 @@ async function generateSocialPDF(posts: SocialPost[], brand: GeneratedBrand, pla
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 120)
   doc.text(s(`${posts.length} posts  -  ${platforms.join(', ')}  -  Seysey Studios`), margin, y); y += 7
 
-  const allColors = [...brand.visualIdentity.primaryPalette.colors, ...brand.visualIdentity.secondaryPalette.colors]
+  const allColors = [...(brand.visualIdentity?.primaryPalette?.colors ?? []), ...(brand.visualIdentity?.secondaryPalette?.colors ?? [])]
   allColors.slice(0, 10).forEach((color, i) => {
     const hex = color.replace('#', '')
     doc.setFillColor(parseInt(hex.slice(0,2),16), parseInt(hex.slice(2,4),16), parseInt(hex.slice(4,6),16))
@@ -262,7 +280,7 @@ function PostCard({ post, platforms, brand, forceVisualOpen }: {
 
   const showVisual = forceVisualOpen || visualOpen
   const FormatIcon = FORMAT_ICONS[post.format] ?? ImageIcon
-  const allColors = [...brand.visualIdentity.primaryPalette.colors, ...brand.visualIdentity.secondaryPalette.colors]
+  const allColors = [...(brand.visualIdentity?.primaryPalette?.colors ?? []), ...(brand.visualIdentity?.secondaryPalette?.colors ?? [])]
 
   const copyHeadline = () => {
     const text = [post.designCopy.headline, post.designCopy.subtext, post.designCopy.cta].filter(Boolean).join('\n')
@@ -436,7 +454,7 @@ export default function SocialContentPage() {
   const [pdfLoading, setPdfLoading] = useState(false)
 
   const [contentHistory, setContentHistory] = useState<ContentHistoryItem[]>([])
-  const [showHistory, setShowHistory] = useState(false)
+  const [showHistory, setShowHistory] = useState(true)
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [currentHistoryId, setCurrentHistoryId] = useState<number | null>(null)
 
@@ -492,7 +510,7 @@ export default function SocialContentPage() {
     try {
       const res = await fetch(`/api/brands/${id}`)
       const data = await res.json()
-      setBrand(data.result)
+      setBrand(normalizeBrand(data.result))
     } catch {}
     setBrandLoading(false)
   }
@@ -503,20 +521,15 @@ export default function SocialContentPage() {
       const data = await res.json()
       setPosts(data.posts ?? [])
       setCurrentHistoryId(id)
-      setShowHistory(false)
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     } catch {}
   }
 
-  const deleteFromHistory = async (e: React.MouseEvent, id: number) => {
+  const deleteFromHistory = (e: React.MouseEvent, id: number) => {
     e.stopPropagation()
-    setDeletingId(id)
-    try {
-      await fetch(`/api/social-content-history/${id}`, { method: 'DELETE' })
-      setContentHistory(prev => prev.filter(i => i.id !== id))
-      if (currentHistoryId === id) setPosts([])
-    } catch {}
-    setDeletingId(null)
+    setContentHistory(prev => prev.filter(i => i.id !== id))
+    if (currentHistoryId === id) setPosts([])
+    fetch(`/api/social-content-history/${id}`, { method: 'DELETE' }).catch(() => {})
   }
 
   const handleGenerate = async () => {
@@ -651,7 +664,7 @@ export default function SocialContentPage() {
                       <Clock size={10} />{formatDate(item.created_at as string)}
                     </span>
                     <span role="button" onClick={(e) => deleteFromHistory(e, item.id as number)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-red-500/20 text-dark-400 hover:text-red-400">
+                      className="p-1 rounded hover:bg-red-500/20 text-dark-400 hover:text-red-400 transition-colors">
                       {deletingId === item.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
                     </span>
                   </div>
@@ -819,9 +832,9 @@ export default function SocialContentPage() {
                 <span className="text-dark-100 font-semibold">{effectiveBrand.brand.name}</span>
                 {effectiveBrand.brand.tagline ? <> — &ldquo;{effectiveBrand.brand.tagline}&rdquo;</> : null}
               </span>
-              {effectiveBrand.visualIdentity.primaryPalette.colors.length > 0 && (
+              {(effectiveBrand.visualIdentity?.primaryPalette?.colors?.length ?? 0) > 0 && (
                 <div className="flex gap-1 ml-auto shrink-0">
-                  {effectiveBrand.visualIdentity.primaryPalette.colors.slice(0, 4).map((c, i) => (
+                  {effectiveBrand.visualIdentity?.primaryPalette?.colors?.slice(0, 4).map((c, i) => (
                     <span key={i} className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: c }} />
                   ))}
                 </div>
@@ -983,10 +996,10 @@ export default function SocialContentPage() {
             <label className="block text-xs font-semibold text-accent uppercase tracking-wider mb-2">
               8 — AI Provider
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {([
                 { id: 'claude',  label: 'Claude',  sub: 'Anthropic' },
-                { id: 'nvidia', label: 'Kimi K2', sub: 'NVIDIA · Free' },
+                { id: 'nvidia',  label: 'Kimi K2', sub: 'NVIDIA · Free' },
                 { id: 'chatgpt', label: 'ChatGPT', sub: 'OpenAI' },
               ] as const).map(({ id, label, sub }) => {
                 const available = availableProviders[id]
@@ -1023,7 +1036,7 @@ export default function SocialContentPage() {
               >
                 <span className="flex items-center gap-1.5 text-xs font-semibold"><Zap size={12} /> Fast</span>
                 <span className="text-[11px] leading-snug opacity-70">
-                  {provider === 'claude' ? 'Haiku' : provider === 'nvidia' ? 'Kimi K2 Instruct' : 'GPT-4o mini'} · ~15s per batch
+                  {provider === 'claude' ? 'Haiku' : provider === 'nvidia' ? 'Kimi K2' : 'GPT-4o mini'} · ~15s per batch
                 </span>
               </button>
               <button
@@ -1032,7 +1045,7 @@ export default function SocialContentPage() {
               >
                 <span className="flex items-center gap-1.5 text-xs font-semibold"><Sparkles size={12} /> Quality</span>
                 <span className="text-[11px] leading-snug opacity-70">
-                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'nvidia' ? 'Kimi K2 Instruct' : 'GPT-4o'} · ~35s per batch
+                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'nvidia' ? 'Kimi K2' : 'GPT-4o'} · ~35s per batch
                 </span>
               </button>
             </div>
@@ -1123,23 +1136,23 @@ export default function SocialContentPage() {
           </div>
 
           {/* Brand palette reference */}
-          {effectiveBrand && (effectiveBrand.visualIdentity.primaryPalette.colors.length > 0 || effectiveBrand.visualIdentity.secondaryPalette.colors.length > 0) && (
+          {effectiveBrand && ((effectiveBrand.visualIdentity?.primaryPalette?.colors?.length ?? 0) > 0 || (effectiveBrand.visualIdentity?.secondaryPalette?.colors?.length ?? 0) > 0) && (
             <Card className="!p-3 flex flex-wrap items-center gap-4">
-              {effectiveBrand.visualIdentity.primaryPalette.colors.length > 0 && (
+              {(effectiveBrand.visualIdentity?.primaryPalette?.colors?.length ?? 0) > 0 && (
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-semibold text-dark-400 uppercase tracking-wider">Primary</span>
                   <div className="flex gap-1">
-                    {effectiveBrand.visualIdentity.primaryPalette.colors.map((c, i) => (
+                    {effectiveBrand.visualIdentity?.primaryPalette?.colors?.map((c, i) => (
                       <span key={i} className="w-5 h-5 rounded border border-white/20" style={{ backgroundColor: c }} title={c} />
                     ))}
                   </div>
                 </div>
               )}
-              {effectiveBrand.visualIdentity.secondaryPalette.colors.length > 0 && (
+              {(effectiveBrand.visualIdentity?.secondaryPalette?.colors?.length ?? 0) > 0 && (
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-semibold text-dark-400 uppercase tracking-wider">Secondary</span>
                   <div className="flex gap-1">
-                    {effectiveBrand.visualIdentity.secondaryPalette.colors.map((c, i) => (
+                    {effectiveBrand.visualIdentity?.secondaryPalette?.colors?.map((c, i) => (
                       <span key={i} className="w-5 h-5 rounded border border-white/20" style={{ backgroundColor: c }} title={c} />
                     ))}
                   </div>

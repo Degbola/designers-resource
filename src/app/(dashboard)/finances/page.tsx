@@ -41,12 +41,13 @@ export default async function FinancesPage() {
     income_categories: incCatResult.results,
   }
 
+  const s = <T,>(v: T): T => JSON.parse(JSON.stringify(v))
   return (
     <FinancesClientPage
-      initialSummary={summary as any}
-      initialIncome={incomeResult.results as any}
-      initialExpenses={expensesResult.results as any}
-      initialClients={clientsResult.results as any}
+      initialSummary={s(summary) as any}
+      initialIncome={s(incomeResult.results) as any}
+      initialExpenses={s(expensesResult.results) as any}
+      initialClients={s(clientsResult.results) as any}
     />
   )
 }

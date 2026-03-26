@@ -9,7 +9,12 @@ import { Badge } from '@/components/ui/badge'
 import { Modal } from '@/components/ui/modal'
 import { Input, Select, Textarea } from '@/components/ui/input'
 import { Plus, Search, Trash2, Send, Eye, DollarSign, X, ChevronDown } from 'lucide-react'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrencyWith, formatDate, CURRENCIES } from '@/lib/utils'
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: '$', EUR: '€', GBP: '£', NGN: '₦', GHS: '₵',
+  KES: 'KSh', ZAR: 'R', CAD: 'C$', AUD: 'A$', JPY: '¥', CHF: 'Fr', INR: '₹',
+}
 import Link from 'next/link'
 import type { Invoice, Client, Project } from '@/types'
 
@@ -34,9 +39,9 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
   const [filterStatus, setFilterStatus] = useState('all')
   const [sending, setSending] = useState<number | null>(null)
   const [form, setForm] = useState({
-    client_name: '', project_name: '', status: 'draft',
+    client_name: '', client_email: '', project_name: '', status: 'draft',
     issue_date: new Date().toISOString().split('T')[0],
-    due_date: '', tax_rate: '0', notes: '',
+    due_date: '', tax_rate: '0', notes: '', sender_email: '', currency: 'USD',
   })
   const [items, setItems] = useState<LineItem[]>([{ description: '', quantity: 1, unit_price: 0 }])
   const [clientSuggestions, setClientSuggestions] = useState<Client[]>([])
@@ -63,13 +68,16 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         client_name: form.client_name.trim(),
+        client_email: form.client_email.trim() || undefined,
         project_name: form.project_name.trim() || undefined,
         status: form.status,
         issue_date: form.issue_date,
         due_date: form.due_date,
         tax_rate: Number(form.tax_rate),
         notes: form.notes,
-        items: items.filter((i) => i.description),
+        sender_email: form.sender_email.trim() || undefined,
+        currency: form.currency,
+        items: items.filter((i) => i.description || i.unit_price > 0),
       }),
     })
     setShowModal(false)
@@ -103,7 +111,7 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
   }
 
   const openNew = () => {
-    setForm({ client_name: '', project_name: '', status: 'draft', issue_date: new Date().toISOString().split('T')[0], due_date: '', tax_rate: '0', notes: '' })
+    setForm({ client_name: '', client_email: '', project_name: '', status: 'draft', issue_date: new Date().toISOString().split('T')[0], due_date: '', tax_rate: '0', notes: '', sender_email: '', currency: 'USD' })
     setItems([{ description: '', quantity: 1, unit_price: 0 }])
     setClientSuggestions([])
     setShowModal(true)
@@ -148,7 +156,7 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
         ].map((s) => (
           <Card key={s.label} className="!p-4">
             <p className="text-[10px] font-display font-semibold uppercase tracking-[0.08em] text-dark-400 mb-1">{s.label}</p>
-            <p className={`font-serif text-xl font-normal ${s.color}`}>{formatCurrency(s.value)}</p>
+            <p className={`font-serif text-xl font-normal ${s.color}`}>{formatCurrencyWith(s.value, 'USD')}</p>
           </Card>
         ))}
       </div>
@@ -187,7 +195,7 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
               </div>
               <div className="flex items-center justify-between sm:justify-end gap-4">
                 <div className="text-left sm:text-right">
-                  <p className="font-serif text-base text-dark-100">{formatCurrency(inv.total)}</p>
+                  <p className="font-serif text-base text-dark-100">{formatCurrencyWith(inv.total, inv.currency || 'USD')}</p>
                   <Badge variant={inv.status}>{inv.status}</Badge>
                 </div>
                 <div className="flex gap-1">
@@ -230,7 +238,17 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
                 </div>
               )}
               {form.client_name && !clients.find(c => c.name.toLowerCase() === form.client_name.toLowerCase()) && (
-                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1">New client will be created</p>
+                <div className="mt-2 space-y-1">
+                  <Input
+                    label="Client email"
+                    type="email"
+                    value={form.client_email}
+                    onChange={(e) => setForm({ ...form, client_email: e.target.value })}
+                    placeholder="client@example.com"
+                    autoComplete="off"
+                  />
+                  <p className="text-[11px] text-emerald-600 dark:text-emerald-400">New client will be created</p>
+                </div>
               )}
             </div>
             {/* Project — optional, creates if new */}
@@ -247,10 +265,22 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
               )}
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <Input label="Issue Date *" type="date" value={form.issue_date} onChange={(e) => setForm({ ...form, issue_date: e.target.value })} required />
             <Input label="Due Date *" type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} required />
-            <Input label="Tax Rate (%)" type="number" min="0" max="100" value={form.tax_rate} onChange={(e) => setForm({ ...form, tax_rate: e.target.value })} />
+            <div>
+              <label className="block text-[10px] font-display font-semibold uppercase tracking-[0.08em] text-dark-300 mb-1.5">Currency</label>
+              <select
+                value={form.currency}
+                onChange={(e) => setForm({ ...form, currency: e.target.value })}
+                className="w-full bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-3 py-[7px] text-[13px] font-display text-dark-100 focus:outline-none focus:border-accent/50 transition-colors appearance-none cursor-pointer"
+              >
+                {CURRENCIES.map(c => (
+                  <option key={c.code} value={c.code}>{c.code} — {c.label.split('—')[1]?.trim()}</option>
+                ))}
+              </select>
+            </div>
+            <Input label="Tax Rate (%)" type="number" min="0" max="100" step="0.1" value={form.tax_rate} onChange={(e) => setForm({ ...form, tax_rate: e.target.value })} />
           </div>
           <div>
             <label className="block text-[10px] font-display font-semibold uppercase tracking-[0.08em] text-dark-300 mb-2">Line Items</label>
@@ -262,9 +292,17 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
                   <div className="flex gap-2 items-center">
                     <input type="number" placeholder="Qty" min="1" value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', Number(e.target.value))}
                       className="w-20 bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-3 py-[7px] text-[13px] font-display text-dark-100 focus:outline-none focus:border-accent/50 transition-colors" />
-                    <input type="number" placeholder="Price" min="0" step="0.01" value={item.unit_price} onChange={(e) => updateItem(idx, 'unit_price', Number(e.target.value))}
-                      className="flex-1 sm:w-28 sm:flex-none bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-3 py-[7px] text-[13px] font-display text-dark-100 focus:outline-none focus:border-accent/50 transition-colors" />
-                    <span className="w-24 py-2 text-sm text-dark-200 text-right flex-shrink-0">{formatCurrency(item.quantity * item.unit_price)}</span>
+                    <div className="flex items-stretch flex-1 sm:w-32 sm:flex-none">
+                      <span className="flex items-center px-2 text-[11px] font-display text-dark-400 bg-[#F5F3F0] dark:bg-[rgba(255,255,255,0.02)] border border-r-0 border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded-l select-none">
+                        {CURRENCY_SYMBOLS[form.currency] || form.currency}
+                      </span>
+                      <input type="number" placeholder="0.00" min="0" step="0.01"
+                        value={item.unit_price || ''}
+                        onFocus={(e) => e.target.select()}
+                        onChange={(e) => updateItem(idx, 'unit_price', Number(e.target.value))}
+                        className="flex-1 min-w-0 bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded-r px-3 py-[7px] text-[13px] font-display text-dark-100 focus:outline-none focus:border-accent/50 transition-colors" />
+                    </div>
+                    <span className="w-24 py-2 text-sm text-dark-200 text-right flex-shrink-0">{formatCurrencyWith(item.quantity * item.unit_price, form.currency)}</span>
                     {items.length > 1 && <button type="button" onClick={() => removeItem(idx)} className="p-2 text-dark-400 hover:text-red-500 cursor-pointer flex-shrink-0"><X size={16} /></button>}
                   </div>
                 </div>
@@ -273,13 +311,14 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
             <Button type="button" variant="ghost" size="sm" onClick={addItem} className="mt-2"><Plus size={14} /> Add Item</Button>
           </div>
           <div className="border border-dark-600 dark:border-[rgba(255,255,255,0.08)] p-4 space-y-2 text-sm">
-            <div className="flex justify-between text-dark-300"><span>Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
-            <div className="flex justify-between text-dark-300"><span>Tax ({form.tax_rate}%)</span><span>{formatCurrency(taxAmount)}</span></div>
+            <div className="flex justify-between text-dark-300"><span>Subtotal</span><span>{formatCurrencyWith(subtotal, form.currency)}</span></div>
+            <div className="flex justify-between text-dark-300"><span>Tax ({form.tax_rate}%)</span><span>{formatCurrencyWith(taxAmount, form.currency)}</span></div>
             <div className="flex justify-between text-dark-100 pt-2 border-t border-dark-600 dark:border-[rgba(255,255,255,0.08)]">
               <span className="font-display font-semibold uppercase tracking-[0.06em] text-[11px]">Total</span>
-              <span className="font-serif text-lg">{formatCurrency(total)}</span>
+              <span className="font-serif text-lg">{formatCurrencyWith(total, form.currency)}</span>
             </div>
           </div>
+          <Input label="Your email (optional)" type="email" value={form.sender_email} onChange={(e) => setForm({ ...form, sender_email: e.target.value })} placeholder="yourname@example.com — clients will reply to this address" />
           <Textarea label="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Payment terms, additional info..." />
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>

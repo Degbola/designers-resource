@@ -18,11 +18,12 @@ export default async function InvoicesPage() {
     db.prepare('SELECT * FROM projects WHERE user_id = ? ORDER BY name').bind(user.id).all(),
   ])
 
+  const s = <T,>(v: T): T => JSON.parse(JSON.stringify(v))
   return (
     <InvoicesClientPage
-      initialInvoices={invoicesResult.results as any}
-      initialClients={clientsResult.results as any}
-      initialProjects={projectsResult.results as any}
+      initialInvoices={s(invoicesResult.results) as any}
+      initialClients={s(clientsResult.results) as any}
+      initialProjects={s(projectsResult.results) as any}
     />
   )
 }

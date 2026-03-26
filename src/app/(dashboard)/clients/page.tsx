@@ -15,5 +15,5 @@ export default async function ClientsPage() {
     FROM clients c WHERE c.user_id = ? ORDER BY c.updated_at DESC
   `).bind(user.id).all()
 
-  return <ClientsClientPage initialClients={result.results as any} />
+  return <ClientsClientPage initialClients={JSON.parse(JSON.stringify(result.results)) as any} />
 }

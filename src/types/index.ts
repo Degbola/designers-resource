@@ -45,6 +45,8 @@ export interface Invoice {
   notes: string
   paid_date: string | null
   created_at: string
+  currency?: string
+  sender_email?: string
   client_name?: string
   client_email?: string
   items?: InvoiceItem[]

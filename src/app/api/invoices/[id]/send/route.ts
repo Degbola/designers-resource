@@ -10,7 +10,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   const invoice = await db.prepare(`SELECT i.*, c.name as client_name, c.email as client_email
     FROM invoices i LEFT JOIN clients c ON i.client_id = c.id
     WHERE i.id = ?`
-  ).bind(id).first<{ invoice_number: string; client_email: string; total: number; due_date: string }>()
+  ).bind(id).first<{ invoice_number: string; client_email: string; total: number; due_date: string; sender_email: string }>()
 
   if (!invoice) {
     return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
@@ -25,7 +25,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
       invoice.client_email,
       invoice.invoice_number,
       formatCurrency(invoice.total),
-      formatDate(invoice.due_date)
+      formatDate(invoice.due_date),
+      undefined,
+      invoice.sender_email || undefined
     )
 
     await db.prepare("UPDATE invoices SET status = 'sent' WHERE id = ? AND status = 'draft'").bind(id).run()

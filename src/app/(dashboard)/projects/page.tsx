@@ -17,10 +17,11 @@ export default async function ProjectsPage() {
     db.prepare('SELECT * FROM clients WHERE user_id = ? ORDER BY name').bind(user.id).all(),
   ])
 
+  const s = <T,>(v: T): T => JSON.parse(JSON.stringify(v))
   return (
     <ProjectsClientPage
-      initialProjects={projectsResult.results as any}
-      initialClients={clientsResult.results as any}
+      initialProjects={s(projectsResult.results) as any}
+      initialClients={s(clientsResult.results) as any}
     />
   )
 }

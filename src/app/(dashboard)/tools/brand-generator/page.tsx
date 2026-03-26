@@ -444,7 +444,7 @@ export default function BrandGeneratorPage() {
   // History
   const [history, setHistory] = useState<BrandHistoryItem[]>([])
   const [historyLoading, setHistoryLoading] = useState(false)
-  const [showHistory, setShowHistory] = useState(false)
+  const [showHistory, setShowHistory] = useState(true)
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
   useEffect(() => {
@@ -490,19 +490,14 @@ export default function BrandGeneratorPage() {
       setResult(normalizeResult(data.result))
       setPaletteIndex(0)
       setTypographyIndex(0)
-      setShowHistory(false)
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     } catch {}
   }
 
-  const deleteFromHistory = async (e: React.MouseEvent, id: number) => {
+  const deleteFromHistory = (e: React.MouseEvent, id: number) => {
     e.stopPropagation()
-    setDeletingId(id)
-    try {
-      await fetch(`/api/brands/${id}`, { method: 'DELETE' })
-      setHistory(prev => prev.filter(b => b.id !== id))
-    } catch {}
-    setDeletingId(null)
+    setHistory(prev => prev.filter(b => b.id !== id))
+    fetch(`/api/brands/${id}`, { method: 'DELETE' }).catch(() => {})
   }
 
   const toggleMood = (mood: string) => {
@@ -647,7 +642,7 @@ export default function BrandGeneratorPage() {
                       <span
                         role="button"
                         onClick={(e) => deleteFromHistory(e, item.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-red-500/20 text-dark-400 hover:text-red-400"
+                        className="p-1 rounded hover:bg-red-500/20 text-dark-400 hover:text-red-400 transition-colors"
                       >
                         {deletingId === item.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
                       </span>
@@ -707,10 +702,10 @@ export default function BrandGeneratorPage() {
         <div className="mt-4 space-y-3">
           <div>
             <label className="block text-xs font-semibold text-dark-300 uppercase tracking-wider mb-2">AI Provider</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {([
                 { id: 'claude',  label: 'Claude',  sub: 'Anthropic' },
-                { id: 'nvidia', label: 'Kimi K2', sub: 'NVIDIA · Free' },
+                { id: 'nvidia',  label: 'Kimi K2', sub: 'NVIDIA · Free' },
                 { id: 'chatgpt', label: 'ChatGPT', sub: 'OpenAI' },
               ] as const).map(({ id, label, sub }) => {
                 const available = availableProviders[id]
@@ -745,7 +740,7 @@ export default function BrandGeneratorPage() {
               >
                 <span className="flex items-center gap-1.5 text-xs font-semibold"><Zap size={11} /> Fast</span>
                 <span className="text-[10px] opacity-60">
-                  {provider === 'claude' ? 'Haiku' : provider === 'nvidia' ? 'Kimi K2 Instruct' : 'GPT-4o mini'} · ~10s
+                  {provider === 'claude' ? 'Haiku' : provider === 'nvidia' ? 'Kimi K2' : 'GPT-4o mini'} · ~10s
                 </span>
               </button>
               <button
@@ -754,7 +749,7 @@ export default function BrandGeneratorPage() {
               >
                 <span className="flex items-center gap-1.5 text-xs font-semibold"><Sparkles size={11} /> Quality</span>
                 <span className="text-[10px] opacity-60">
-                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'nvidia' ? 'Kimi K2 Instruct' : 'GPT-4o'} · ~25s
+                  {provider === 'claude' ? 'Sonnet 4.6' : provider === 'nvidia' ? 'Kimi K2' : 'GPT-4o'} · ~25s
                 </span>
               </button>
             </div>

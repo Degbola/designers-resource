@@ -1,6 +1,6 @@
 import { getDb } from '@/lib/db'
 import { getSession } from '@/lib/auth'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatCurrencyWith } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import {
   Users,
@@ -13,29 +13,29 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 
-async function getStats() {
+async function getStats(userId: number) {
   const db = getDb()
-  const clientCountRow = await db.prepare('SELECT COUNT(*) as c FROM clients').first<{ c: number }>()
+  const clientCountRow = await db.prepare('SELECT COUNT(*) as c FROM clients WHERE user_id = ?').bind(userId).first<{ c: number }>()
   const clientCount = clientCountRow?.c ?? 0
-  const activeProjectsRow = await db.prepare("SELECT COUNT(*) as c FROM projects WHERE status != 'completed'").first<{ c: number }>()
+  const activeProjectsRow = await db.prepare("SELECT COUNT(*) as c FROM projects WHERE user_id = ? AND status != 'completed'").bind(userId).first<{ c: number }>()
   const activeProjects = activeProjectsRow?.c ?? 0
-  const pendingInvoicesRow = await db.prepare("SELECT COUNT(*) as c FROM invoices WHERE status IN ('sent','draft')").first<{ c: number }>()
+  const pendingInvoicesRow = await db.prepare("SELECT COUNT(*) as c FROM invoices WHERE user_id = ? AND status IN ('sent','draft')").bind(userId).first<{ c: number }>()
   const pendingInvoices = pendingInvoicesRow?.c ?? 0
-  const totalRevenueRow = await db.prepare("SELECT COALESCE(SUM(amount),0) as t FROM income").first<{ t: number }>()
+  const totalRevenueRow = await db.prepare("SELECT COALESCE(SUM(amount),0) as t FROM income WHERE user_id = ?").bind(userId).first<{ t: number }>()
   const totalRevenue = totalRevenueRow?.t ?? 0
-  const totalExpensesRow = await db.prepare("SELECT COALESCE(SUM(amount),0) as t FROM expenses").first<{ t: number }>()
+  const totalExpensesRow = await db.prepare("SELECT COALESCE(SUM(amount),0) as t FROM expenses WHERE user_id = ?").bind(userId).first<{ t: number }>()
   const totalExpenses = totalExpensesRow?.t ?? 0
   const recentProjectsResult = await db.prepare(`
     SELECT p.*, c.name as client_name FROM projects p
     LEFT JOIN clients c ON p.client_id = c.id
-    ORDER BY p.updated_at DESC LIMIT 5
-  `).all<Record<string, unknown>>()
+    WHERE p.user_id = ? ORDER BY p.updated_at DESC LIMIT 5
+  `).bind(userId).all<Record<string, unknown>>()
   const recentProjects = recentProjectsResult.results
   const recentInvoicesResult = await db.prepare(`
     SELECT i.*, c.name as client_name FROM invoices i
     LEFT JOIN clients c ON i.client_id = c.id
-    ORDER BY i.created_at DESC LIMIT 6
-  `).all<Record<string, unknown>>()
+    WHERE i.user_id = ? ORDER BY i.created_at DESC LIMIT 6
+  `).bind(userId).all<Record<string, unknown>>()
   const recentInvoices = recentInvoicesResult.results
 
   return { clientCount, activeProjects, pendingInvoices, totalRevenue, totalExpenses, recentProjects, recentInvoices }
@@ -126,7 +126,8 @@ function DarkCtaCard({ href, eyebrow, heading, icon: Icon }: {
 }
 
 export default async function DashboardPage() {
-  const [stats, user] = await Promise.all([getStats(), getSession()])
+  const user = await getSession()
+  const stats = await getStats(user?.id ?? 0)
   const profit = stats.totalRevenue - stats.totalExpenses
   const profitPositive = profit >= 0
   const revenueBarWidth = (stats.totalRevenue + stats.totalExpenses) > 0
@@ -278,7 +279,7 @@ export default async function DashboardPage() {
                     <p className="text-[9px] font-display text-dark-400 mt-0.5">{inv.invoice_number as string}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-3">
-                    <p className="font-display font-semibold text-[11px] text-dark-200 tabular-nums">{formatCurrency(inv.total as number)}</p>
+                    <p className="font-display font-semibold text-[11px] text-dark-200 tabular-nums">{formatCurrencyWith(inv.total as number, (inv.currency as string) || 'USD')}</p>
                     <Badge variant={inv.status as string}>{inv.status as string}</Badge>
                   </div>
                 </Link>

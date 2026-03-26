@@ -37,12 +37,17 @@ export async function POST(req: NextRequest) {
   let clientId: number = body.client_id
   if (!clientId && body.client_name) {
     const name = (body.client_name as string).trim()
-    const existing = await db.prepare('SELECT id FROM clients WHERE LOWER(name) = LOWER(?) AND user_id = ?')
-      .bind(name, user.id).first<{ id: number }>()
+    const clientEmail = (body.client_email as string | undefined)?.trim() || ''
+    const existing = await db.prepare('SELECT id, email FROM clients WHERE LOWER(name) = LOWER(?) AND user_id = ?')
+      .bind(name, user.id).first<{ id: number; email: string }>()
     if (existing) {
       clientId = existing.id
+      // Fill in email if the existing client has none and one was provided
+      if (clientEmail && !existing.email) {
+        await db.prepare('UPDATE clients SET email = ? WHERE id = ?').bind(clientEmail, clientId).run()
+      }
     } else {
-      const r = await db.prepare('INSERT INTO clients (user_id, name, email) VALUES (?, ?, ?)').bind(user.id, name, '').run()
+      const r = await db.prepare('INSERT INTO clients (user_id, name, email) VALUES (?, ?, ?)').bind(user.id, name, clientEmail).run()
       clientId = Number(r.meta.last_row_id)
     }
   }
@@ -71,12 +76,13 @@ export async function POST(req: NextRequest) {
   const total = subtotal + taxAmount
 
   const result = await db.prepare(
-    `INSERT INTO invoices (user_id, invoice_number, client_id, project_id, status, issue_date, due_date, subtotal, tax_rate, tax_amount, total, notes)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO invoices (user_id, invoice_number, client_id, project_id, status, issue_date, due_date, subtotal, tax_rate, tax_amount, total, notes, sender_email, currency)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
     user.id, invoiceNumber, clientId, projectId,
     body.status || 'draft', body.issue_date, body.due_date,
-    subtotal, taxRate, taxAmount, total, body.notes || '',
+    subtotal, taxRate, taxAmount, total, body.notes || '', body.sender_email || '',
+    body.currency || 'USD',
   ).run()
 
   const invoiceId = Number(result.meta.last_row_id)

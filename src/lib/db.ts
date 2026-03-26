@@ -275,6 +275,7 @@ export async function initializeSchema(): Promise<void> {
     `ALTER TABLE users ADD COLUMN permissions TEXT DEFAULT '["clients","projects","invoices","finances","resources","brands","social","tools"]'`,
     `ALTER TABLE invoices ADD COLUMN sender_email TEXT DEFAULT ''`,
     `ALTER TABLE invoices ADD COLUMN currency TEXT DEFAULT 'USD'`,
+    `ALTER TABLE users ADD COLUMN display_currency TEXT DEFAULT 'USD'`,
   ]
   for (const migration of migrations) {
     try { await getClient().execute(migration) } catch { /* column already exists */ }

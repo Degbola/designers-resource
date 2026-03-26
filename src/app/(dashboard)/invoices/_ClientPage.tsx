@@ -10,6 +10,7 @@ import { Modal } from '@/components/ui/modal'
 import { Input, Select, Textarea } from '@/components/ui/input'
 import { Plus, Search, Trash2, Send, Eye, DollarSign, X, ChevronDown } from 'lucide-react'
 import { formatCurrencyWith, formatDate, CURRENCIES } from '@/lib/utils'
+import { useCurrency } from '@/lib/currency-context'
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: '$', EUR: '€', GBP: '£', NGN: '₦', GHS: '₵',
@@ -31,6 +32,7 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
 }) {
   const router = useRouter()
   const { query: globalQuery } = useSearchQuery()
+  const { convert, format: formatDisplay } = useCurrency()
   const [invoices, setInvoices] = useState(initialInvoices)
   const [clients, setClients] = useState(initialClients)
   const [projects, setProjects] = useState(initialProjects)
@@ -138,11 +140,14 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
     return matchSearch && matchStatus
   })
 
+  // Sum each group's totals converted to the display currency
+  const sumConverted = (list: Invoice[]) =>
+    list.reduce((s, i) => s + convert(i.total, i.currency || 'USD'), 0)
   const statusTotals = {
-    draft: invoices.filter((i) => i.status === 'draft').reduce((s, i) => s + i.total, 0),
-    sent: invoices.filter((i) => i.status === 'sent').reduce((s, i) => s + i.total, 0),
-    paid: invoices.filter((i) => i.status === 'paid').reduce((s, i) => s + i.total, 0),
-    overdue: invoices.filter((i) => i.status === 'overdue').reduce((s, i) => s + i.total, 0),
+    draft:   sumConverted(invoices.filter((i) => i.status === 'draft')),
+    sent:    sumConverted(invoices.filter((i) => i.status === 'sent')),
+    paid:    sumConverted(invoices.filter((i) => i.status === 'paid')),
+    overdue: sumConverted(invoices.filter((i) => i.status === 'overdue')),
   }
 
   return (
@@ -156,7 +161,7 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
         ].map((s) => (
           <Card key={s.label} className="!p-4">
             <p className="text-[10px] font-display font-semibold uppercase tracking-[0.08em] text-dark-400 mb-1">{s.label}</p>
-            <p className={`font-serif text-xl font-normal ${s.color}`}>{formatCurrencyWith(s.value, 'USD')}</p>
+            <p className={`font-serif text-xl font-normal ${s.color}`}>{formatDisplay(s.value)}</p>
           </Card>
         ))}
       </div>
@@ -195,7 +200,7 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
               </div>
               <div className="flex items-center justify-between sm:justify-end gap-4">
                 <div className="text-left sm:text-right">
-                  <p className="font-serif text-base text-dark-100">{formatCurrencyWith(inv.total, inv.currency || 'USD')}</p>
+                  <p className="font-serif text-base text-dark-100">{formatDisplay(inv.total, inv.currency || 'USD')}</p>
                   <Badge variant={inv.status}>{inv.status}</Badge>
                 </div>
                 <div className="flex gap-1">

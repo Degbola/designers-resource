@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { ensureSchema } from '@/lib/db'
 import { DashboardShell } from '@/components/layout/dashboard-shell'
+import { CurrencyProvider } from '@/lib/currency-context'
 
 export default async function DashboardLayout({
   children,
@@ -15,5 +16,9 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  return <DashboardShell user={JSON.parse(JSON.stringify(user))}>{children}</DashboardShell>
+  return (
+    <CurrencyProvider>
+      <DashboardShell user={JSON.parse(JSON.stringify(user))}>{children}</DashboardShell>
+    </CurrencyProvider>
+  )
 }

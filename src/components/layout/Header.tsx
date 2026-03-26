@@ -5,6 +5,41 @@ import { Search, ChevronRight, Bell, Plus, Sun, Moon } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useTheme } from '@/lib/theme'
+import { useCurrency } from '@/lib/currency-context'
+
+const DISPLAY_CURRENCIES = ['USD', 'EUR', 'GBP', 'NGN', 'GHS', 'KES', 'ZAR', 'CAD', 'AUD', 'JPY', 'CHF', 'INR']
+
+function CurrencySelector() {
+  const { displayCurrency, setDisplayCurrency } = useCurrency()
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        title="Change display currency"
+        className="text-[10px] font-display font-semibold border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-2 py-[3px] text-dark-400 hover:text-dark-200 hover:border-accent/40 transition-all cursor-pointer tracking-[0.06em]"
+      >
+        {displayCurrency}
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full mt-1 z-50 shadow-lg min-w-[80px] rounded-lg border border-[#E2DDD8] dark:border-[rgba(255,255,255,0.10)] bg-[#FDFCFA] dark:bg-[#0a0f0b] overflow-hidden animate-fade-in max-h-64 overflow-y-auto">
+            {DISPLAY_CURRENCIES.map((c) => (
+              <button
+                key={c}
+                onClick={() => { setDisplayCurrency(c); setOpen(false) }}
+                className={`block w-full text-left px-3 py-2 text-[11px] font-display font-medium transition-colors cursor-pointer hover:bg-dark-700 dark:hover:bg-[rgba(255,255,255,0.04)] ${c === displayCurrency ? 'text-accent' : 'text-dark-300 hover:text-dark-100'}`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 // ── Route metadata ────────────────────────────────────
 const ROUTE_META: Record<string, { label: string; parent?: string }> = {
@@ -101,6 +136,7 @@ export function Header({ mobileMenuButton, searchQuery = '', onSearchChange }: {
       {/* Right: date + search + theme + notifications + add */}
       <div className="flex items-center gap-2">
         <CurrentDate />
+        <CurrencySelector />
 
         {/* Search */}
         <div className="relative hidden sm:block">

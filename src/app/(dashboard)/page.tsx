@@ -1,7 +1,7 @@
 import { getDb } from '@/lib/db'
 import { getSession } from '@/lib/auth'
-import { formatCurrency, formatCurrencyWith } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { Money } from '@/components/ui/money'
 import {
   Users,
   FolderKanban,
@@ -159,17 +159,17 @@ export default async function DashboardPage() {
             Revenue · YTD
           </span>
           <div className="font-serif text-5xl font-normal text-dark-100 mb-auto tabular-nums">
-            {formatCurrency(stats.totalRevenue)}
+            <Money amount={stats.totalRevenue} />
           </div>
           <div className="flex items-center gap-6 mt-4 mb-4">
             <div>
               <p className="text-[9px] font-display uppercase tracking-[0.12em] text-dark-400 mb-1">Expenses</p>
-              <p className="font-display font-semibold text-dark-200 text-sm tabular-nums">{formatCurrency(stats.totalExpenses)}</p>
+              <p className="font-display font-semibold text-dark-200 text-sm tabular-nums"><Money amount={stats.totalExpenses} /></p>
             </div>
             <div>
               <p className="text-[9px] font-display uppercase tracking-[0.12em] text-dark-400 mb-1">Net Profit</p>
               <p className={`font-display font-semibold text-sm tabular-nums ${profitPositive ? 'text-accent' : 'text-red-500'}`}>
-                {formatCurrency(profit)}
+                <Money amount={profit} />
               </p>
             </div>
           </div>
@@ -279,7 +279,7 @@ export default async function DashboardPage() {
                     <p className="text-[9px] font-display text-dark-400 mt-0.5">{inv.invoice_number as string}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-3">
-                    <p className="font-display font-semibold text-[11px] text-dark-200 tabular-nums">{formatCurrencyWith(inv.total as number, (inv.currency as string) || 'USD')}</p>
+                    <p className="font-display font-semibold text-[11px] text-dark-200 tabular-nums"><Money amount={inv.total as number} from={(inv.currency as string) || 'USD'} /></p>
                     <Badge variant={inv.status as string}>{inv.status as string}</Badge>
                   </div>
                 </Link>

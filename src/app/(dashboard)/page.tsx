@@ -53,9 +53,11 @@ async function getStats(userId: number) {
     const now = new Date()
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
     const incomeMap = new Map(rawIncome.map((r) => [r.month, r.total]))
-    // Start from earliest month with income, expand to current month, zeros for gaps
-    const startMonth = rawIncome.length > 0 ? rawIncome[0].month : currentMonth
-    const cursor = new Date(startMonth + '-01')
+    // Start one month before the first income (zero anchor) so the line always draws
+    const firstIncomeMonth = rawIncome.length > 0 ? rawIncome[0].month : currentMonth
+    const anchor = new Date(firstIncomeMonth + '-01')
+    anchor.setMonth(anchor.getMonth() - 1)
+    const cursor = new Date(anchor)
     const end = new Date(currentMonth + '-01')
     while (cursor <= end) {
       const m = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}`

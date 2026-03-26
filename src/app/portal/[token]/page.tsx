@@ -20,17 +20,17 @@ interface PortalData {
 
 // Matches the dashboard Badge / status pill palette
 const STATUS_PILL: Record<string, string> = {
-  not_started: 'bg-black/[0.04] text-dark-400',
+  not_started: 'bg-black/[0.06] dark:bg-white/[0.07] text-dark-400',
   in_progress:  'bg-accent/10 text-accent',
-  review:       'bg-amber-100 text-amber-700',
+  review:       'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
   completed:    'bg-accent/15 text-accent',
-  pending:      'bg-amber-100 text-amber-700',
+  pending:      'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
   approved:     'bg-accent/15 text-accent',
-  revision:     'bg-red-100 text-red-600',
-  draft:        'bg-black/[0.04] text-dark-400',
+  revision:     'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+  draft:        'bg-black/[0.06] dark:bg-white/[0.07] text-dark-400',
   sent:         'bg-accent/10 text-accent',
   paid:         'bg-accent/15 text-accent',
-  overdue:      'bg-red-100 text-red-600',
+  overdue:      'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
 }
 
 function StatusPill({ status }: { status: string }) {
@@ -290,7 +290,7 @@ export default function PortalPage() {
                 <p className="text-sm text-dark-300 mb-3 leading-relaxed">{a.description}</p>
               )}
               {a.client_feedback && (
-                <div className="bg-black/[0.03] border-l-2 border-accent/30 pl-3 py-2 pr-3 rounded-r mb-3">
+                <div className="bg-black/[0.04] dark:bg-white/[0.04] border-l-2 border-accent/30 pl-3 py-2 pr-3 rounded-r mb-3">
                   <p className="text-[10px] uppercase tracking-wider text-dark-400 font-semibold mb-1">Your feedback</p>
                   <p className="text-sm text-dark-200">{a.client_feedback}</p>
                 </div>
@@ -315,13 +315,13 @@ export default function PortalPage() {
                         </button>
                         <button
                           onClick={() => submitApproval(a.id, 'revision')}
-                          className="px-4 py-2 bg-red-50 text-red-600 text-xs font-semibold rounded hover:bg-red-100 transition-colors cursor-pointer"
+                          className="px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-semibold rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
                         >
                           Request Revision
                         </button>
                         <button
                           onClick={() => setFeedbackForm(null)}
-                          className="px-4 py-2 text-dark-400 text-xs font-semibold rounded hover:bg-black/[0.04] transition-colors cursor-pointer"
+                          className="px-4 py-2 text-dark-400 text-xs font-semibold rounded hover:bg-black/[0.05] dark:hover:bg-white/[0.07] transition-colors cursor-pointer"
                         >
                           Cancel
                         </button>
@@ -337,7 +337,7 @@ export default function PortalPage() {
                       </button>
                       <button
                         onClick={() => setFeedbackForm({ id: a.id, feedback: '' })}
-                        className="px-4 py-2 bg-black/[0.04] text-dark-300 text-xs font-semibold rounded hover:bg-black/[0.07] transition-colors cursor-pointer flex items-center gap-1.5"
+                        className="px-4 py-2 bg-black/[0.05] dark:bg-white/[0.07] text-dark-300 text-xs font-semibold rounded hover:bg-black/[0.09] dark:hover:bg-white/[0.11] transition-colors cursor-pointer flex items-center gap-1.5"
                       >
                         Review with Feedback <ChevronRight size={11} />
                       </button>

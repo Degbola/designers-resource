@@ -1,6 +1,6 @@
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen" style={{ background: '#F7F5F2' }}>
+    <div className="min-h-screen bg-[#F7F5F2] dark:bg-[#0C120E]">
       {/* Letterpress texture — same as dashboard body::before, but scoped */}
       <div
         className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.025]"

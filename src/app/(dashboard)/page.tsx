@@ -45,10 +45,18 @@ async function getStats(userId: number) {
       FROM income WHERE user_id = ?
       GROUP BY month ORDER BY month ASC LIMIT 12
     `).bind(userId).all<{ month: string; total: number }>()
-    monthlyIncome = (monthlyIncomeResult.results || []).map((r) => ({
+    const rawIncome = (monthlyIncomeResult.results || []).map((r) => ({
       month: String(r.month),
       total: Number(r.total),
     }))
+    // Fill last 6 months so graph always has enough points to draw
+    const now = new Date()
+    const sixMonths = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    })
+    const incomeMap = new Map(rawIncome.map((r) => [r.month, r.total]))
+    monthlyIncome = sixMonths.map((m) => ({ month: m, total: incomeMap.get(m) ?? 0 }))
   } catch { /* non-critical — sparkline stays flat */ }
 
   return { clientCount, activeProjects, pendingInvoices, totalRevenue, totalExpenses, recentProjects, recentInvoices, monthlyIncome }
@@ -65,7 +73,7 @@ function buildSparkPath(points: { month: string; total: number }[] | undefined):
   if (!points || points.length < 2) return null
   const W = 400, H = 72, PAD = 4
   const max = Math.max(...points.map((p) => p.total))
-  if (max === 0) return null
+  if (max === 0) return null  // all zeros → fall through to dashed line
   const coords = points.map((p, i) => ({
     x: (i / (points.length - 1)) * W,
     y: PAD + (1 - p.total / max) * (H - PAD * 2),
@@ -193,7 +201,7 @@ export default async function DashboardPage() {
           <span className="text-[9px] font-display font-semibold uppercase tracking-[0.14em] text-dark-400 mb-5">
             Revenue · YTD
           </span>
-          <div className="font-serif text-5xl font-normal text-dark-100 mb-auto tabular-nums">
+          <div className="font-serif text-3xl sm:text-5xl font-normal text-dark-100 mb-auto tabular-nums">
             <Money amount={stats.totalRevenue} />
           </div>
           <div className="flex items-center gap-6 mt-4 mb-4">

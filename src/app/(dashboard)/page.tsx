@@ -39,29 +39,27 @@ async function getStats(userId: number) {
   `).bind(userId).all<Record<string, unknown>>()
   const recentInvoices = recentInvoicesResult.results
 
-  let monthlyIncome: { month: string; total: number }[] = []
+  let monthlyIncome: { month: string; income: number; expenses: number }[] = []
   try {
-    const monthlyIncomeResult = await db.prepare(`
-      SELECT strftime('%Y-%m', date) as month, COALESCE(SUM(amount), 0) as total
-      FROM income WHERE user_id = ?
-      GROUP BY month ORDER BY month ASC LIMIT 12
-    `).bind(userId).all<{ month: string; total: number }>()
-    const rawIncome = (monthlyIncomeResult.results || []).map((r) => ({
-      month: String(r.month),
-      total: Number(r.total),
-    }))
+    const [incRes, expRes] = await Promise.all([
+      db.prepare(`SELECT strftime('%Y-%m', date) as month, COALESCE(SUM(amount),0) as total FROM income WHERE user_id = ? GROUP BY month ORDER BY month ASC LIMIT 12`).bind(userId).all<{ month: string; total: number }>(),
+      db.prepare(`SELECT strftime('%Y-%m', date) as month, COALESCE(SUM(amount),0) as total FROM expenses WHERE user_id = ? GROUP BY month ORDER BY month ASC LIMIT 12`).bind(userId).all<{ month: string; total: number }>(),
+    ])
+    const rawInc = (incRes.results || []).map((r) => ({ month: String(r.month), total: Number(r.total) }))
+    const rawExp = (expRes.results || []).map((r) => ({ month: String(r.month), total: Number(r.total) }))
+    const incMap = new Map(rawInc.map((r) => [r.month, r.total]))
+    const expMap = new Map(rawExp.map((r) => [r.month, r.total]))
     const now = new Date()
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-    const incomeMap = new Map(rawIncome.map((r) => [r.month, r.total]))
-    // Start one month before the first income (zero anchor) so the line always draws
-    const firstIncomeMonth = rawIncome.length > 0 ? rawIncome[0].month : currentMonth
-    const anchor = new Date(firstIncomeMonth + '-01')
+    const allMonths = [...new Set([...rawInc.map((r) => r.month), ...rawExp.map((r) => r.month)])].sort()
+    const firstMonth = allMonths.length > 0 ? allMonths[0] : currentMonth
+    const anchor = new Date(firstMonth + '-01')
     anchor.setMonth(anchor.getMonth() - 1)
     const cursor = new Date(anchor)
     const end = new Date(currentMonth + '-01')
     while (cursor <= end) {
       const m = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}`
-      monthlyIncome.push({ month: m, total: incomeMap.get(m) ?? 0 })
+      monthlyIncome.push({ month: m, income: incMap.get(m) ?? 0, expenses: expMap.get(m) ?? 0 })
       cursor.setMonth(cursor.getMonth() + 1)
     }
   } catch { /* non-critical — sparkline stays flat */ }

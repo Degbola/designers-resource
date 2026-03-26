@@ -106,11 +106,24 @@ export async function PUT(req: NextRequest) {
   const db = getDb()
   const body = await req.json()
 
-  const items = body.items || []
-  const subtotal = items.reduce((sum: number, item: { quantity: number; unit_price: number }) => sum + item.quantity * item.unit_price, 0)
-  const taxRate = body.tax_rate || 0
-  const taxAmount = subtotal * (taxRate / 100)
-  const total = subtotal + taxAmount
+  const items: Array<{ quantity: number; unit_price: number; description: string }> = body.items || []
+  const hasItems = items.length > 0
+
+  let subtotal: number, taxRate: number, taxAmount: number, total: number
+  if (hasItems) {
+    subtotal = items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0)
+    taxRate = body.tax_rate || 0
+    taxAmount = subtotal * (taxRate / 100)
+    total = subtotal + taxAmount
+  } else {
+    // Status-only update (e.g. marking paid) — preserve existing financials
+    const existing = await db.prepare('SELECT subtotal, tax_rate, tax_amount, total FROM invoices WHERE id = ? AND user_id = ?')
+      .bind(body.id, user.id).first<{ subtotal: number; tax_rate: number; tax_amount: number; total: number }>()
+    subtotal = existing?.subtotal ?? 0
+    taxRate = existing?.tax_rate ?? 0
+    taxAmount = existing?.tax_amount ?? 0
+    total = existing?.total ?? 0
+  }
 
   await db.prepare(
     `UPDATE invoices SET client_id=?, project_id=?, status=?, issue_date=?, due_date=?, subtotal=?, tax_rate=?, tax_amount=?, total=?, notes=?, paid_date=?
@@ -120,11 +133,13 @@ export async function PUT(req: NextRequest) {
     subtotal, taxRate, taxAmount, total, body.notes || '', body.paid_date || null, body.id, user.id,
   ).run()
 
-  await db.prepare('DELETE FROM invoice_items WHERE invoice_id = ?').bind(body.id).run()
-  for (const item of items) {
-    await db.prepare(
-      'INSERT INTO invoice_items (invoice_id, description, quantity, unit_price, amount) VALUES (?, ?, ?, ?, ?)'
-    ).bind(body.id, item.description, item.quantity, item.unit_price, item.quantity * item.unit_price).run()
+  if (hasItems) {
+    await db.prepare('DELETE FROM invoice_items WHERE invoice_id = ?').bind(body.id).run()
+    for (const item of items) {
+      await db.prepare(
+        'INSERT INTO invoice_items (invoice_id, description, quantity, unit_price, amount) VALUES (?, ?, ?, ?, ?)'
+      ).bind(body.id, item.description, item.quantity, item.unit_price, item.quantity * item.unit_price).run()
+    }
   }
 
   // Auto-record income when marked as paid

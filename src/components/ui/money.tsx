@@ -7,22 +7,23 @@ import { useCurrency } from '@/lib/currency-context'
  * `from` is the source currency of the raw amount (default 'USD').
  * If rates haven't loaded yet, shows the amount in its original currency.
  */
-export function Money({ amount, from = 'USD', className }: {
+export function Money({ amount, from, className }: {
   amount: number
-  from?: string
+  from?: string  // source currency — if omitted, amount is already in display currency (no conversion)
   className?: string
 }) {
-  const { format, loading } = useCurrency()
+  const { format, loading, displayCurrency } = useCurrency()
   if (loading) {
-    // Show original currency while rates load
+    // Show amount in whatever currency we know about while rates load
+    const currency = from || displayCurrency || 'USD'
     try {
       return (
         <span className={className}>
-          {new Intl.NumberFormat('en-US', { style: 'currency', currency: from, minimumFractionDigits: from === 'JPY' ? 0 : 2, maximumFractionDigits: from === 'JPY' ? 0 : 2 }).format(amount)}
+          {new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: currency === 'JPY' ? 0 : 2, maximumFractionDigits: currency === 'JPY' ? 0 : 2 }).format(amount)}
         </span>
       )
     } catch {
-      return <span className={className}>{from} {amount.toFixed(2)}</span>
+      return <span className={className}>{currency} {amount.toFixed(2)}</span>
     }
   }
   return <span className={className}>{format(amount, from)}</span>

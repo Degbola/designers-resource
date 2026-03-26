@@ -16,6 +16,7 @@ import type { Income, Expense, FinanceSummary, Client } from '@/types'
 const PIE_COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#06b6d4']
 const INCOME_CATEGORIES = ['design', 'development', 'consulting', 'branding', 'illustration', 'other']
 const EXPENSE_CATEGORIES = ['software', 'hardware', 'office', 'marketing', 'education', 'travel', 'utilities', 'general']
+const ENTRY_CURRENCIES = ['NGN', 'USD', 'EUR', 'GBP', 'GHS', 'KES', 'ZAR', 'CAD', 'AUD', 'JPY', 'CHF', 'INR']
 
 export function FinancesClientPage({ initialSummary, initialIncome, initialExpenses, initialClients }: {
   initialSummary: FinanceSummary
@@ -24,16 +25,25 @@ export function FinancesClientPage({ initialSummary, initialIncome, initialExpen
   initialClients: Client[]
 }) {
   const router = useRouter()
-  const { format } = useCurrency()
-  const fmt = (amount: number) => format(amount, 'USD')
+  const { format, rates } = useCurrency()
+  const fmt = (amount: number) => format(amount, 'NGN')
+
+  // Convert any currency to NGN using live rates (locked in at submission time)
+  const toNGN = (amount: number, currency: string): number => {
+    if (currency === 'NGN') return amount
+    if (!rates[currency] || !rates['NGN']) return amount
+    return (amount / rates[currency]) * rates['NGN']
+  }
+  const fmtNGN = (n: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 }).format(n)
+
   const [summary, setSummary] = useState<FinanceSummary>(initialSummary)
   const [incomeList, setIncomeList] = useState(initialIncome)
   const [expenseList, setExpenseList] = useState(initialExpenses)
   const [clients, setClients] = useState(initialClients)
   const [showIncomeModal, setShowIncomeModal] = useState(false)
   const [showExpenseModal, setShowExpenseModal] = useState(false)
-  const [incomeForm, setIncomeForm] = useState({ client_id: '', amount: '', category: 'design', description: '', date: new Date().toISOString().split('T')[0] })
-  const [expenseForm, setExpenseForm] = useState({ amount: '', category: 'general', description: '', vendor: '', date: new Date().toISOString().split('T')[0] })
+  const [incomeForm, setIncomeForm] = useState({ client_id: '', amount: '', currency: 'NGN', category: 'design', description: '', date: new Date().toISOString().split('T')[0] })
+  const [expenseForm, setExpenseForm] = useState({ amount: '', currency: 'NGN', category: 'general', description: '', vendor: '', date: new Date().toISOString().split('T')[0] })
 
   const load = useCallback(async () => {
     const [sRes, iRes, eRes, cRes] = await Promise.all([
@@ -49,17 +59,19 @@ export function FinancesClientPage({ initialSummary, initialIncome, initialExpen
 
   const addIncome = async (e: React.FormEvent) => {
     e.preventDefault()
-    await fetch('/api/finances/income', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...incomeForm, client_id: incomeForm.client_id ? Number(incomeForm.client_id) : null, amount: Number(incomeForm.amount) }) })
+    const ngnAmount = toNGN(Number(incomeForm.amount), incomeForm.currency)
+    await fetch('/api/finances/income', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...incomeForm, client_id: incomeForm.client_id ? Number(incomeForm.client_id) : null, amount: ngnAmount }) })
     setShowIncomeModal(false)
-    setIncomeForm({ client_id: '', amount: '', category: 'design', description: '', date: new Date().toISOString().split('T')[0] })
+    setIncomeForm({ client_id: '', amount: '', currency: 'NGN', category: 'design', description: '', date: new Date().toISOString().split('T')[0] })
     load()
   }
 
   const addExpense = async (e: React.FormEvent) => {
     e.preventDefault()
-    await fetch('/api/finances/expenses', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...expenseForm, amount: Number(expenseForm.amount) }) })
+    const ngnAmount = toNGN(Number(expenseForm.amount), expenseForm.currency)
+    await fetch('/api/finances/expenses', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...expenseForm, amount: ngnAmount }) })
     setShowExpenseModal(false)
-    setExpenseForm({ amount: '', category: 'general', description: '', vendor: '', date: new Date().toISOString().split('T')[0] })
+    setExpenseForm({ amount: '', currency: 'NGN', category: 'general', description: '', vendor: '', date: new Date().toISOString().split('T')[0] })
     load()
   }
 
@@ -174,7 +186,15 @@ export function FinancesClientPage({ initialSummary, initialIncome, initialExpen
 
       <Modal open={showIncomeModal} onClose={() => setShowIncomeModal(false)} title="Add Income">
         <form onSubmit={addIncome} className="space-y-4">
-          <Input label="Amount *" type="number" min="0" step="0.01" value={incomeForm.amount} onChange={(e) => setIncomeForm({ ...incomeForm, amount: e.target.value })} required />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Amount *" type="number" min="0" step="0.01" value={incomeForm.amount} onChange={(e) => setIncomeForm({ ...incomeForm, amount: e.target.value })} required />
+            <Select label="Currency" value={incomeForm.currency} onChange={(e) => setIncomeForm({ ...incomeForm, currency: e.target.value })} options={ENTRY_CURRENCIES.map((c) => ({ value: c, label: c }))} />
+          </div>
+          {incomeForm.currency !== 'NGN' && Number(incomeForm.amount) > 0 && (
+            <p className="text-xs text-dark-400 -mt-2">
+              = {fmtNGN(toNGN(Number(incomeForm.amount), incomeForm.currency))} saved at today's rate
+            </p>
+          )}
           <Select label="Category" value={incomeForm.category} onChange={(e) => setIncomeForm({ ...incomeForm, category: e.target.value })} options={INCOME_CATEGORIES.map((c) => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) }))} />
           <Input label="Description" value={incomeForm.description} onChange={(e) => setIncomeForm({ ...incomeForm, description: e.target.value })} />
           <Select label="Client" value={incomeForm.client_id} onChange={(e) => setIncomeForm({ ...incomeForm, client_id: e.target.value })} options={[{ value: '', label: 'None' }, ...clients.map((c) => ({ value: String(c.id), label: c.name }))]} />
@@ -188,7 +208,15 @@ export function FinancesClientPage({ initialSummary, initialIncome, initialExpen
 
       <Modal open={showExpenseModal} onClose={() => setShowExpenseModal(false)} title="Add Expense">
         <form onSubmit={addExpense} className="space-y-4">
-          <Input label="Amount *" type="number" min="0" step="0.01" value={expenseForm.amount} onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })} required />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Amount *" type="number" min="0" step="0.01" value={expenseForm.amount} onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })} required />
+            <Select label="Currency" value={expenseForm.currency} onChange={(e) => setExpenseForm({ ...expenseForm, currency: e.target.value })} options={ENTRY_CURRENCIES.map((c) => ({ value: c, label: c }))} />
+          </div>
+          {expenseForm.currency !== 'NGN' && Number(expenseForm.amount) > 0 && (
+            <p className="text-xs text-dark-400 -mt-2">
+              = {fmtNGN(toNGN(Number(expenseForm.amount), expenseForm.currency))} saved at today's rate
+            </p>
+          )}
           <Select label="Category" value={expenseForm.category} onChange={(e) => setExpenseForm({ ...expenseForm, category: e.target.value })} options={EXPENSE_CATEGORIES.map((c) => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) }))} />
           <Input label="Description" value={expenseForm.description} onChange={(e) => setExpenseForm({ ...expenseForm, description: e.target.value })} />
           <Input label="Vendor" value={expenseForm.vendor} onChange={(e) => setExpenseForm({ ...expenseForm, vendor: e.target.value })} />

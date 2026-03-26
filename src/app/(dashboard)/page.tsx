@@ -49,14 +49,18 @@ async function getStats(userId: number) {
       month: String(r.month),
       total: Number(r.total),
     }))
-    // Fill last 6 months so graph always has enough points to draw
     const now = new Date()
-    const sixMonths = Array.from({ length: 6 }, (_, i) => {
-      const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-    })
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
     const incomeMap = new Map(rawIncome.map((r) => [r.month, r.total]))
-    monthlyIncome = sixMonths.map((m) => ({ month: m, total: incomeMap.get(m) ?? 0 }))
+    // Start from earliest month with income, expand to current month, zeros for gaps
+    const startMonth = rawIncome.length > 0 ? rawIncome[0].month : currentMonth
+    const cursor = new Date(startMonth + '-01')
+    const end = new Date(currentMonth + '-01')
+    while (cursor <= end) {
+      const m = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}`
+      monthlyIncome.push({ month: m, total: incomeMap.get(m) ?? 0 })
+      cursor.setMonth(cursor.getMonth() + 1)
+    }
   } catch { /* non-critical — sparkline stays flat */ }
 
   return { clientCount, activeProjects, pendingInvoices, totalRevenue, totalExpenses, recentProjects, recentInvoices, monthlyIncome }

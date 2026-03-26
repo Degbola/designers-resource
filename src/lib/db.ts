@@ -1,4 +1,5 @@
 import { createClient, type Client } from '@libsql/client'
+import { v4 as uuidv4 } from 'uuid'
 
 // D1-compatible wrapper for Turso/libsql
 // All API routes keep their .prepare().bind().all()/.first()/.run() pattern
@@ -277,5 +278,14 @@ export async function initializeSchema(): Promise<void> {
   ]
   for (const migration of migrations) {
     try { await getClient().execute(migration) } catch { /* column already exists */ }
+  }
+
+  // Backfill portal_token for any clients that are missing one
+  const missing = await getClient().execute(`SELECT id FROM clients WHERE portal_token IS NULL`)
+  for (const row of missing.rows) {
+    const token = uuidv4().replace(/-/g, '')
+    try {
+      await getClient().execute({ sql: `UPDATE clients SET portal_token = ? WHERE id = ?`, args: [token, row[0]] })
+    } catch { /* ignore constraint violations */ }
   }
 }

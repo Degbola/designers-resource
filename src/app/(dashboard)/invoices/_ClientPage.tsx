@@ -290,14 +290,14 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
                   {/* Description — full width */}
                   <input placeholder="Description (optional)" value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)}
                     className="w-full bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-3 py-[7px] text-[13px] font-display text-dark-100 placeholder:text-dark-400 focus:outline-none focus:border-accent/50 transition-colors" />
-                  {/* Qty + Price + Amount + Delete */}
+                  {/* Qty + Price + Delete */}
                   <div className="flex gap-2 items-center">
                     <input type="number" placeholder="Qty" min="1"
                       value={item.quantity}
                       onFocus={(e) => e.target.select()}
                       onChange={(e) => updateItem(idx, 'quantity', Number(e.target.value))}
                       className="w-16 bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-2 py-[7px] text-[13px] font-display text-dark-100 focus:outline-none focus:border-accent/50 transition-colors" />
-                    <div className="flex items-stretch flex-1">
+                    <div className="flex items-stretch flex-1 min-w-0">
                       <span className="flex items-center px-2 text-[11px] font-display text-dark-400 bg-[#F5F3F0] dark:bg-[rgba(255,255,255,0.02)] border border-r-0 border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded-l select-none flex-shrink-0">
                         {CURRENCY_SYMBOLS[form.currency] || form.currency}
                       </span>
@@ -307,8 +307,10 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
                         onChange={(e) => updateItem(idx, 'unit_price', Number(e.target.value))}
                         className="flex-1 min-w-0 bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded-r px-3 py-[7px] text-[13px] font-display text-dark-100 focus:outline-none focus:border-accent/50 transition-colors" />
                     </div>
-                    <span className="text-sm text-dark-200 text-right flex-shrink-0 tabular-nums">{formatCurrencyWith(item.quantity * item.unit_price, form.currency)}</span>
                     {items.length > 1 && <button type="button" onClick={() => removeItem(idx)} className="p-1.5 text-dark-400 hover:text-red-500 cursor-pointer flex-shrink-0"><X size={15} /></button>}
+                  </div>
+                  <div className="flex justify-end">
+                    <span className="text-xs text-dark-400 tabular-nums">{formatCurrencyWith(item.quantity * item.unit_price, form.currency)}</span>
                   </div>
                 </div>
               ))}

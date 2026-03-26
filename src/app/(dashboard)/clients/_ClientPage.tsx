@@ -11,12 +11,14 @@ import { Input, Textarea, Select } from '@/components/ui/input'
 import { Plus, Search, Mail, Phone, Building2, Trash2, Edit2, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import type { Client } from '@/types'
+import { useCurrency } from '@/lib/currency-context'
 
 type ClientWithStats = Client & { project_count: number; total_paid: number }
 
 export function ClientsClientPage({ initialClients }: { initialClients: ClientWithStats[] }) {
   const router = useRouter()
   const { query: globalQuery } = useSearchQuery()
+  const { format: fmt } = useCurrency()
   const [clients, setClients] = useState(initialClients)
   const [showModal, setShowModal] = useState(false)
   const [editingClient, setEditingClient] = useState<Client | null>(null)
@@ -145,7 +147,7 @@ export function ClientsClientPage({ initialClients }: { initialClients: ClientWi
               {client.phone && <p className="text-sm text-dark-300 flex items-center gap-1.5 mb-1"><Phone size={14} /> {client.phone}</p>}
               <div className="flex items-center justify-between mt-4 pt-3 border-t border-dark-600 dark:border-[rgba(255,255,255,0.07)] text-xs text-dark-400">
                 <span>{client.project_count} project{client.project_count !== 1 ? 's' : ''}</span>
-                <span>${(client.total_paid || 0).toLocaleString()} earned</span>
+                <span>{fmt(client.total_paid || 0)} earned</span>
                 {client.portal_token && <Link href={`/portal/${client.portal_token}`} className="flex items-center gap-1 text-accent hover:text-accent-hover" target="_blank"><ExternalLink size={12} /> Portal</Link>}
               </div>
             </Card>

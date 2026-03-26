@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge'
 import { Modal } from '@/components/ui/modal'
 import { Input, Select, Textarea } from '@/components/ui/input'
 import { Plus, Search, Trash2, Edit2, Calendar, DollarSign } from 'lucide-react'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
+import { useCurrency } from '@/lib/currency-context'
 import Link from 'next/link'
 import type { Project, Client } from '@/types'
 
@@ -23,6 +24,7 @@ const statusColumns = [
 export function ProjectsClientPage({ initialProjects, initialClients }: { initialProjects: Project[]; initialClients: Client[] }) {
   const router = useRouter()
   const { query: globalQuery } = useSearchQuery()
+  const { format: fmt } = useCurrency()
   const [projects, setProjects] = useState(initialProjects)
   const [clients, setClients] = useState(initialClients)
   const [showModal, setShowModal] = useState(false)
@@ -125,7 +127,7 @@ export function ProjectsClientPage({ initialProjects, initialClients }: { initia
                       <p className="text-xs text-dark-300 flex items-center gap-1 mt-2"><Calendar size={12} /> {formatDate(project.due_date)}</p>
                     )}
                     {project.budget > 0 && (
-                      <p className="text-xs text-dark-300 flex items-center gap-1"><DollarSign size={12} /> {formatCurrency(project.budget)}</p>
+                      <p className="text-xs text-dark-300 flex items-center gap-1"><DollarSign size={12} /> {fmt(project.budget)}</p>
                     )}
                     <div className="mt-3">
                       <div className="flex justify-between text-xs text-dark-400 mb-1"><span>Progress</span><span>{project.progress}%</span></div>

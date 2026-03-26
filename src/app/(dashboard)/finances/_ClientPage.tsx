@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,8 @@ import { Modal } from '@/components/ui/modal'
 import { Input, Select } from '@/components/ui/input'
 import { Tabs } from '@/components/ui/tabs'
 import { Plus, Trash2 } from 'lucide-react'
-import { formatCurrencyWith, formatDate, CURRENCIES } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
+import { useCurrency } from '@/lib/currency-context'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 import type { Income, Expense, FinanceSummary, Client } from '@/types'
 
@@ -23,20 +24,15 @@ export function FinancesClientPage({ initialSummary, initialIncome, initialExpen
   initialClients: Client[]
 }) {
   const router = useRouter()
+  const { format: fmt } = useCurrency()
   const [summary, setSummary] = useState<FinanceSummary>(initialSummary)
   const [incomeList, setIncomeList] = useState(initialIncome)
   const [expenseList, setExpenseList] = useState(initialExpenses)
   const [clients, setClients] = useState(initialClients)
-  const [currency, setCurrency] = useState('USD')
   const [showIncomeModal, setShowIncomeModal] = useState(false)
   const [showExpenseModal, setShowExpenseModal] = useState(false)
   const [incomeForm, setIncomeForm] = useState({ client_id: '', amount: '', category: 'design', description: '', date: new Date().toISOString().split('T')[0] })
   const [expenseForm, setExpenseForm] = useState({ amount: '', category: 'general', description: '', vendor: '', date: new Date().toISOString().split('T')[0] })
-
-  useEffect(() => {
-    const saved = localStorage.getItem('finance_currency')
-    if (saved) setCurrency(saved)
-  }, [])
 
   const load = useCallback(async () => {
     const [sRes, iRes, eRes, cRes] = await Promise.all([
@@ -49,13 +45,6 @@ export function FinancesClientPage({ initialSummary, initialIncome, initialExpen
     if (cRes.ok) setClients(await cRes.json())
     router.refresh()
   }, [router])
-
-  const handleCurrencyChange = (c: string) => {
-    setCurrency(c)
-    localStorage.setItem('finance_currency', c)
-  }
-
-  const fmt = (amount: number) => formatCurrencyWith(amount, currency)
 
   const addIncome = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -81,13 +70,6 @@ export function FinancesClientPage({ initialSummary, initialIncome, initialExpen
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-end">
-        <select value={currency} onChange={(e) => handleCurrencyChange(e.target.value)}
-          className="bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-3 py-[7px] text-[12px] font-display text-dark-100 focus:outline-none focus:border-accent/50 transition-colors cursor-pointer">
-          {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.label}</option>)}
-        </select>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
           { label: 'Total Income', value: summary?.total_income || 0, color: 'text-accent' },

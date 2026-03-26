@@ -1,6 +1,7 @@
 import { getDb } from '@/lib/db'
 import { notFound } from 'next/navigation'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
+import { Money } from '@/components/ui/money'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
@@ -35,7 +36,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <Badge variant={project.priority}>{project.priority} priority</Badge>
               <span className="text-sm text-dark-300 flex items-center gap-1"><User size={14} /> {project.client_name}</span>
               {project.start_date && <span className="text-sm text-dark-300 flex items-center gap-1"><Calendar size={14} /> {formatDate(project.start_date)} - {formatDate(project.due_date)}</span>}
-              {project.budget > 0 && <span className="text-sm text-dark-300 flex items-center gap-1"><DollarSign size={14} /> {formatCurrency(project.budget)}</span>}
+              {project.budget > 0 && <span className="text-sm text-dark-300 flex items-center gap-1"><DollarSign size={14} /> <Money amount={project.budget} /></span>}
             </div>
           </div>
         </div>

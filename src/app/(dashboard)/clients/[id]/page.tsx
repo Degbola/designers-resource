@@ -1,6 +1,7 @@
 import { getDb } from '@/lib/db'
 import { notFound } from 'next/navigation'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
+import { Money } from '@/components/ui/money'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
@@ -69,7 +70,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                   </div>
                   <div className="text-right">
                     <Badge variant={p.status}>{p.status.replace('_', ' ')}</Badge>
-                    {p.budget > 0 && <p className="text-xs text-dark-300 mt-1">{formatCurrency(p.budget)}</p>}
+                    {p.budget > 0 && <p className="text-xs text-dark-300 mt-1"><Money amount={p.budget} /></p>}
                   </div>
                 </Link>
               ))}
@@ -93,7 +94,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                     <p className="text-xs text-dark-400">{formatDate(inv.issue_date)}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium text-dark-100 text-sm">{formatCurrency(inv.total)}</p>
+                    <p className="font-medium text-dark-100 text-sm"><Money amount={inv.total} from={(inv as any).currency || 'USD'} /></p>
                     <Badge variant={inv.status}>{inv.status}</Badge>
                   </div>
                 </Link>

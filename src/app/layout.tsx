@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/lib/theme'
 import { Inter, Playfair_Display } from 'next/font/google'
@@ -20,6 +20,11 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: 'Seysey Studios',
   description: 'Your all-in-one designer resource platform',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({

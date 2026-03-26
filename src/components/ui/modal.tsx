@@ -38,15 +38,16 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 animate-fade-in"
       onClick={(e) => { if (e.target === overlayRef.current) onClose() }}
     >
       <div className={cn(
-        'w-full rounded-lg shadow-xl',
+        'w-full shadow-xl',
+        'rounded-t-2xl sm:rounded-lg',
         'bg-[#FDFCFA] dark:bg-[#0a0f0b]',
         'border border-[#E2DDD8] dark:border-[rgba(255,255,255,0.10)]',
-        'max-h-[85vh] flex flex-col',
-        sizes[size]
+        'max-h-[92dvh] sm:max-h-[85dvh] flex flex-col',
+        'sm:' + sizes[size]
       )}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-dark-600 dark:border-[rgba(255,255,255,0.07)]">

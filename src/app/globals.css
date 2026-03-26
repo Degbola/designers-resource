@@ -83,6 +83,13 @@ body::before {
   overflow: hidden;
 }
 
+/* ── Prevent iOS auto-zoom on input focus (< 16px triggers zoom) ── */
+@media (hover: none) and (pointer: coarse) {
+  input, select, textarea {
+    font-size: 16px;
+  }
+}
+
 /* ── Native select option reset ─────────────────────── */
 select option {
   background-color: #FDFCFA;

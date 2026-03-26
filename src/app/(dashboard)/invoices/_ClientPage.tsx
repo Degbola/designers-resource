@@ -286,14 +286,19 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
             <label className="block text-[10px] font-display font-semibold uppercase tracking-[0.08em] text-dark-300 mb-2">Line Items</label>
             <div className="space-y-2">
               {items.map((item, idx) => (
-                <div key={idx} className="space-y-2 sm:space-y-0 sm:flex sm:gap-2 sm:items-start border border-dark-600 dark:border-[rgba(255,255,255,0.08)] p-3 sm:p-0 sm:border-0">
-                  <input placeholder="Description" value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)}
-                    className="w-full sm:flex-1 bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-3 py-[7px] text-[13px] font-display text-dark-100 placeholder:text-dark-400 focus:outline-none focus:border-accent/50 transition-colors" />
+                <div key={idx} className="border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded p-3 space-y-2">
+                  {/* Description — full width */}
+                  <input placeholder="Description (optional)" value={item.description} onChange={(e) => updateItem(idx, 'description', e.target.value)}
+                    className="w-full bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-3 py-[7px] text-[13px] font-display text-dark-100 placeholder:text-dark-400 focus:outline-none focus:border-accent/50 transition-colors" />
+                  {/* Qty + Price + Amount + Delete */}
                   <div className="flex gap-2 items-center">
-                    <input type="number" placeholder="Qty" min="1" value={item.quantity} onChange={(e) => updateItem(idx, 'quantity', Number(e.target.value))}
-                      className="w-20 bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-3 py-[7px] text-[13px] font-display text-dark-100 focus:outline-none focus:border-accent/50 transition-colors" />
-                    <div className="flex items-stretch flex-1 sm:w-32 sm:flex-none">
-                      <span className="flex items-center px-2 text-[11px] font-display text-dark-400 bg-[#F5F3F0] dark:bg-[rgba(255,255,255,0.02)] border border-r-0 border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded-l select-none">
+                    <input type="number" placeholder="Qty" min="1"
+                      value={item.quantity}
+                      onFocus={(e) => e.target.select()}
+                      onChange={(e) => updateItem(idx, 'quantity', Number(e.target.value))}
+                      className="w-16 bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-2 py-[7px] text-[13px] font-display text-dark-100 focus:outline-none focus:border-accent/50 transition-colors" />
+                    <div className="flex items-stretch flex-1">
+                      <span className="flex items-center px-2 text-[11px] font-display text-dark-400 bg-[#F5F3F0] dark:bg-[rgba(255,255,255,0.02)] border border-r-0 border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded-l select-none flex-shrink-0">
                         {CURRENCY_SYMBOLS[form.currency] || form.currency}
                       </span>
                       <input type="number" placeholder="0.00" min="0" step="0.01"
@@ -302,8 +307,8 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
                         onChange={(e) => updateItem(idx, 'unit_price', Number(e.target.value))}
                         className="flex-1 min-w-0 bg-[#FDFCFA] dark:bg-[rgba(255,255,255,0.04)] border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded-r px-3 py-[7px] text-[13px] font-display text-dark-100 focus:outline-none focus:border-accent/50 transition-colors" />
                     </div>
-                    <span className="w-24 py-2 text-sm text-dark-200 text-right flex-shrink-0">{formatCurrencyWith(item.quantity * item.unit_price, form.currency)}</span>
-                    {items.length > 1 && <button type="button" onClick={() => removeItem(idx)} className="p-2 text-dark-400 hover:text-red-500 cursor-pointer flex-shrink-0"><X size={16} /></button>}
+                    <span className="text-sm text-dark-200 text-right flex-shrink-0 tabular-nums">{formatCurrencyWith(item.quantity * item.unit_price, form.currency)}</span>
+                    {items.length > 1 && <button type="button" onClick={() => removeItem(idx)} className="p-1.5 text-dark-400 hover:text-red-500 cursor-pointer flex-shrink-0"><X size={15} /></button>}
                   </div>
                 </div>
               ))}

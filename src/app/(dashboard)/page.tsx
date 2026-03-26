@@ -38,12 +38,18 @@ async function getStats(userId: number) {
   `).bind(userId).all<Record<string, unknown>>()
   const recentInvoices = recentInvoicesResult.results
 
-  const monthlyIncomeResult = await db.prepare(`
-    SELECT strftime('%Y-%m', date) as month, COALESCE(SUM(amount), 0) as total
-    FROM income WHERE user_id = ?
-    GROUP BY month ORDER BY month ASC LIMIT 12
-  `).bind(userId).all<{ month: string; total: number }>()
-  const monthlyIncome = monthlyIncomeResult.results
+  let monthlyIncome: { month: string; total: number }[] = []
+  try {
+    const monthlyIncomeResult = await db.prepare(`
+      SELECT strftime('%Y-%m', date) as month, COALESCE(SUM(amount), 0) as total
+      FROM income WHERE user_id = ?
+      GROUP BY month ORDER BY month ASC LIMIT 12
+    `).bind(userId).all<{ month: string; total: number }>()
+    monthlyIncome = (monthlyIncomeResult.results || []).map((r) => ({
+      month: String(r.month),
+      total: Number(r.total),
+    }))
+  } catch { /* non-critical — sparkline stays flat */ }
 
   return { clientCount, activeProjects, pendingInvoices, totalRevenue, totalExpenses, recentProjects, recentInvoices, monthlyIncome }
 }
@@ -55,8 +61,8 @@ function getGreeting() {
   return 'Good evening'
 }
 
-function buildSparkPath(points: { month: string; total: number }[]): { line: string; area: string } | null {
-  if (points.length < 2) return null
+function buildSparkPath(points: { month: string; total: number }[] | undefined): { line: string; area: string } | null {
+  if (!points || points.length < 2) return null
   const W = 400, H = 72, PAD = 4
   const max = Math.max(...points.map((p) => p.total))
   if (max === 0) return null
@@ -80,7 +86,7 @@ function buildSparkPath(points: { month: string; total: number }[]): { line: str
   return { line, area }
 }
 
-function Sparkline({ data }: { data: { month: string; total: number }[] }) {
+function Sparkline({ data }: { data?: { month: string; total: number }[] }) {
   const paths = buildSparkPath(data)
   return (
     <svg viewBox="0 0 400 72" preserveAspectRatio="none" style={{ width: '100%', height: '100%' }}>

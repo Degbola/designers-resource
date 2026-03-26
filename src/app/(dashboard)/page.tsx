@@ -12,6 +12,7 @@ import {
   Wand2,
 } from 'lucide-react'
 import Link from 'next/link'
+import { Sparkline } from '@/components/ui/sparkline'
 
 async function getStats(userId: number) {
   const db = getDb()
@@ -73,53 +74,6 @@ function getGreeting() {
   return 'Good evening'
 }
 
-function buildSparkPath(points: { month: string; total: number }[] | undefined): { line: string; area: string } | null {
-  if (!points || points.length < 2) return null
-  const W = 400, H = 72, PAD = 4
-  const max = Math.max(...points.map((p) => p.total))
-  if (max === 0) return null  // all zeros → fall through to dashed line
-  const coords = points.map((p, i) => ({
-    x: (i / (points.length - 1)) * W,
-    y: PAD + (1 - p.total / max) * (H - PAD * 2),
-  }))
-  // Smooth curve using cardinal spline approximation
-  const tension = 0.4
-  const pts = coords.map((c, i) => {
-    if (i === 0 || i === coords.length - 1) return `${c.x},${c.y}`
-    const prev = coords[i - 1], next = coords[i + 1]
-    const cpx1 = prev.x + (c.x - prev.x) * tension
-    const cpy1 = prev.y + (c.y - prev.y) * tension
-    const cpx2 = c.x - (next.x - prev.x) * tension
-    const cpy2 = c.y - (next.y - prev.y) * tension
-    return `C${cpx1},${cpy1} ${cpx2},${cpy2} ${c.x},${c.y}`
-  })
-  const line = `M${coords[0].x},${coords[0].y} ${pts.slice(1).join(' ')}`
-  const area = `${line} L${W},${H} L0,${H} Z`
-  return { line, area }
-}
-
-function Sparkline({ data }: { data?: { month: string; total: number }[] }) {
-  const paths = buildSparkPath(data)
-  return (
-    <svg viewBox="0 0 400 72" preserveAspectRatio="none" style={{ width: '100%', height: '100%' }}>
-      <defs>
-        <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1A4332" stopOpacity="0.12" />
-          <stop offset="100%" stopColor="#1A4332" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {paths ? (
-        <>
-          <path d={paths.area} fill="url(#sparkFill)" />
-          <path d={paths.line} fill="none" stroke="#1A4332" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="dark:[stroke:rgba(82,183,136,0.7)]" />
-        </>
-      ) : (
-        /* flat decorative line when no data */
-        <path d="M0,56 L400,56" fill="none" stroke="#1A4332" strokeWidth="1" strokeOpacity="0.2" strokeDasharray="4 4" />
-      )}
-    </svg>
-  )
-}
 
 // Reusable green CTA card — same language as "Start New Project"
 function CtaCard({ href, eyebrow, heading, icon: Icon }: {

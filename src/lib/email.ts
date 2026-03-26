@@ -25,7 +25,7 @@ export async function sendInvoiceEmail(
     : []
 
   await getTransporter().sendMail({
-    from: senderEmail ? `${senderEmail} <${process.env.GMAIL_USER}>` : FROM,
+    from: senderEmail ? `"${senderEmail}" <${process.env.GMAIL_USER}>` : FROM,
     replyTo: senderEmail || undefined,
     to,
     subject: `Invoice ${invoiceNumber} - Payment Due ${dueDate}`,
@@ -49,9 +49,8 @@ export async function sendInvoiceEmail(
           </tr>
         </table>
         <p>Thank you for your business!</p>
-        ${senderEmail ? `<p style="color: #6b7280; font-size: 13px;">For questions, reply to this email or contact <a href="mailto:${senderEmail}" style="color: #1A4332;">${senderEmail}</a></p>` : ''}
+        <p style="color: #6b7280; font-size: 13px;">For questions, simply reply to this email.</p>
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-        <p style="color: #9ca3af; font-size: 12px;">Sent via Seysey Studios</p>
       </div>
     `,
     attachments,

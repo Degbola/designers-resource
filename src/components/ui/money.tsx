@@ -8,8 +8,8 @@ import { useCurrency } from '@/lib/currency-context'
  * If rates haven't loaded yet, shows the amount in its original currency.
  */
 // Base currency for amounts without an explicit currency (income, expenses, etc.)
-// These are assumed to be recorded in NGN; switch the display currency to convert.
-const BASE_CURRENCY = 'NGN'
+// These are assumed to be recorded in USD; switch the display currency to convert.
+const BASE_CURRENCY = 'USD'
 
 export function Money({ amount, from, className }: {
   amount: number

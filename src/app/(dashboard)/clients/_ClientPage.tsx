@@ -19,7 +19,7 @@ export function ClientsClientPage({ initialClients }: { initialClients: ClientWi
   const router = useRouter()
   const { query: globalQuery } = useSearchQuery()
   const { format } = useCurrency()
-  const fmt = (amount: number) => format(amount, 'NGN')
+  const fmt = (amount: number) => format(amount, 'USD')
   const [clients, setClients] = useState(initialClients)
   const [showModal, setShowModal] = useState(false)
   const [editingClient, setEditingClient] = useState<Client | null>(null)

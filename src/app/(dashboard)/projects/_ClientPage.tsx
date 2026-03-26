@@ -25,7 +25,7 @@ export function ProjectsClientPage({ initialProjects, initialClients }: { initia
   const router = useRouter()
   const { query: globalQuery } = useSearchQuery()
   const { format } = useCurrency()
-  const fmt = (amount: number) => format(amount, 'NGN')
+  const fmt = (amount: number) => format(amount, 'USD')
   const [projects, setProjects] = useState(initialProjects)
   const [clients, setClients] = useState(initialClients)
   const [showModal, setShowModal] = useState(false)

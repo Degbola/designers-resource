@@ -9,13 +9,13 @@ import { useCurrency } from '@/lib/currency-context'
  */
 export function Money({ amount, from, className }: {
   amount: number
-  from?: string  // source currency — if omitted, amount is already in display currency (no conversion)
+  from?: string  // source currency — defaults to user's baseCurrency setting
   className?: string
 }) {
-  const { format, loading, displayCurrency } = useCurrency()
+  const { format, loading, baseCurrency, displayCurrency } = useCurrency()
+  const sourceCurrency = from ?? baseCurrency
   if (loading) {
-    // Show amount in whatever currency we know about while rates load
-    const currency = from || displayCurrency || 'USD'
+    const currency = sourceCurrency || displayCurrency || 'USD'
     try {
       return (
         <span className={className}>
@@ -26,5 +26,5 @@ export function Money({ amount, from, className }: {
       return <span className={className}>{currency} {amount.toFixed(2)}</span>
     }
   }
-  return <span className={className}>{format(amount, from)}</span>
+  return <span className={className}>{format(amount, sourceCurrency)}</span>
 }

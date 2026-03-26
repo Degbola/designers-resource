@@ -10,13 +10,14 @@ import { useCurrency } from '@/lib/currency-context'
 const DISPLAY_CURRENCIES = ['USD', 'EUR', 'GBP', 'NGN', 'GHS', 'KES', 'ZAR', 'CAD', 'AUD', 'JPY', 'CHF', 'INR']
 
 function CurrencySelector() {
-  const { displayCurrency, setDisplayCurrency } = useCurrency()
+  const { displayCurrency, setDisplayCurrency, baseCurrency, setBaseCurrency } = useCurrency()
   const [open, setOpen] = useState(false)
+  const [tab, setTab] = useState<'display' | 'base'>('display')
   return (
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        title="Change display currency"
+        title="Currency settings"
         className="text-[10px] font-display font-semibold border border-dark-600 dark:border-[rgba(255,255,255,0.08)] rounded px-2 py-[3px] text-dark-400 hover:text-dark-200 hover:border-accent/40 transition-all cursor-pointer tracking-[0.06em]"
       >
         {displayCurrency}
@@ -24,16 +25,38 @@ function CurrencySelector() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-1 z-50 shadow-lg min-w-[80px] rounded-lg border border-[#E2DDD8] dark:border-[rgba(255,255,255,0.10)] bg-[#FDFCFA] dark:bg-[#0a0f0b] overflow-hidden animate-fade-in max-h-64 overflow-y-auto">
-            {DISPLAY_CURRENCIES.map((c) => (
-              <button
-                key={c}
-                onClick={() => { setDisplayCurrency(c); setOpen(false) }}
-                className={`block w-full text-left px-3 py-2 text-[11px] font-display font-medium transition-colors cursor-pointer hover:bg-dark-700 dark:hover:bg-[rgba(255,255,255,0.04)] ${c === displayCurrency ? 'text-accent' : 'text-dark-300 hover:text-dark-100'}`}
-              >
-                {c}
-              </button>
-            ))}
+          <div className="absolute right-0 top-full mt-1 z-50 shadow-lg w-[160px] rounded-lg border border-[#E2DDD8] dark:border-[rgba(255,255,255,0.10)] bg-[#FDFCFA] dark:bg-[#0a0f0b] overflow-hidden animate-fade-in">
+            {/* Tabs */}
+            <div className="flex border-b border-[#E2DDD8] dark:border-[rgba(255,255,255,0.08)]">
+              {(['display', 'base'] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={`flex-1 py-2 text-[9px] font-display font-semibold uppercase tracking-[0.08em] transition-colors cursor-pointer ${tab === t ? 'text-accent border-b-2 border-accent' : 'text-dark-400 hover:text-dark-200'}`}
+                >
+                  {t === 'display' ? 'Show as' : 'Recorded in'}
+                </button>
+              ))}
+            </div>
+            {/* Currency list */}
+            <div className="max-h-52 overflow-y-auto">
+              {DISPLAY_CURRENCIES.map((c) => {
+                const active = tab === 'display' ? c === displayCurrency : c === baseCurrency
+                return (
+                  <button
+                    key={c}
+                    onClick={() => {
+                      if (tab === 'display') setDisplayCurrency(c)
+                      else setBaseCurrency(c)
+                      setOpen(false)
+                    }}
+                    className={`block w-full text-left px-3 py-2 text-[11px] font-display font-medium transition-colors cursor-pointer hover:bg-dark-700 dark:hover:bg-[rgba(255,255,255,0.04)] ${active ? 'text-accent' : 'text-dark-300 hover:text-dark-100'}`}
+                  >
+                    {c}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </>
       )}

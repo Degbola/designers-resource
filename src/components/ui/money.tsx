@@ -7,15 +7,19 @@ import { useCurrency } from '@/lib/currency-context'
  * `from` is the source currency of the raw amount (default 'USD').
  * If rates haven't loaded yet, shows the amount in its original currency.
  */
+// Base currency for amounts without an explicit currency (income, expenses, etc.)
+// These are assumed to be recorded in NGN; switch the display currency to convert.
+const BASE_CURRENCY = 'NGN'
+
 export function Money({ amount, from, className }: {
   amount: number
-  from?: string  // source currency — defaults to user's baseCurrency setting
+  from?: string  // source currency of this amount — defaults to NGN
   className?: string
 }) {
-  const { format, loading, baseCurrency, displayCurrency } = useCurrency()
-  const sourceCurrency = from ?? baseCurrency
+  const { format, loading, displayCurrency } = useCurrency()
+  const sourceCurrency = from ?? BASE_CURRENCY
   if (loading) {
-    const currency = sourceCurrency || displayCurrency || 'USD'
+    const currency = sourceCurrency || displayCurrency || BASE_CURRENCY
     try {
       return (
         <span className={className}>

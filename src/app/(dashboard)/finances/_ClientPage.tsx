@@ -24,7 +24,8 @@ export function FinancesClientPage({ initialSummary, initialIncome, initialExpen
   initialClients: Client[]
 }) {
   const router = useRouter()
-  const { format: fmt } = useCurrency()
+  const { format } = useCurrency()
+  const fmt = (amount: number) => format(amount, 'NGN')
   const [summary, setSummary] = useState<FinanceSummary>(initialSummary)
   const [incomeList, setIncomeList] = useState(initialIncome)
   const [expenseList, setExpenseList] = useState(initialExpenses)

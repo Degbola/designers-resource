@@ -18,7 +18,8 @@ type ClientWithStats = Client & { project_count: number; total_paid: number }
 export function ClientsClientPage({ initialClients }: { initialClients: ClientWithStats[] }) {
   const router = useRouter()
   const { query: globalQuery } = useSearchQuery()
-  const { format: fmt } = useCurrency()
+  const { format } = useCurrency()
+  const fmt = (amount: number) => format(amount, 'NGN')
   const [clients, setClients] = useState(initialClients)
   const [showModal, setShowModal] = useState(false)
   const [editingClient, setEditingClient] = useState<Client | null>(null)

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
 import { Input, Select } from '@/components/ui/input'
 import { Tabs } from '@/components/ui/tabs'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Download } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { useCurrency } from '@/lib/currency-context'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
@@ -81,8 +81,103 @@ export function FinancesClientPage({ initialSummary, initialIncome, initialExpen
   const tooltipStyle = { contentStyle: { background: '#FDFCFA', border: '0.5px solid #E2DDD8', borderRadius: '0', color: '#111008', fontFamily: 'var(--font-inter)' } }
   const netProfit = summary?.net_profit || 0
 
+  const exportToExcel = async () => {
+    const ExcelJS = (await import('exceljs')).default
+
+    // Group by month
+    const monthMap: Record<string, { income: typeof incomeList; expenses: typeof expenseList }> = {}
+    for (const inc of incomeList) {
+      const m = inc.date.slice(0, 7)
+      if (!monthMap[m]) monthMap[m] = { income: [], expenses: [] }
+      monthMap[m].income.push(inc)
+    }
+    for (const exp of expenseList) {
+      const m = exp.date.slice(0, 7)
+      if (!monthMap[m]) monthMap[m] = { income: [], expenses: [] }
+      monthMap[m].expenses.push(exp)
+    }
+
+    const wb = new ExcelJS.Workbook()
+
+    const GREEN_BG = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FF1A4332' } }
+    const GREEN_LIGHT = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFD1FAE5' } }
+    const WHITE_FONT = { bold: true, color: { argb: 'FFFFFFFF' } }
+    const GREEN_FONT = { bold: true, color: { argb: 'FF1A4332' } }
+    const HEADER_FONT = { bold: true, color: { argb: 'FF111110' } }
+
+    const styleRow = (row: ExcelJS.Row, fill: typeof GREEN_BG, font: typeof WHITE_FONT) => {
+      row.eachCell((cell) => { cell.fill = fill; cell.font = font })
+    }
+
+    for (const month of Object.keys(monthMap).sort()) {
+      const { income, expenses } = monthMap[month]
+      const totalInc = income.reduce((s, i) => s + Number(i.amount), 0)
+      const totalExp = expenses.reduce((s, e) => s + Number(e.amount), 0)
+      const netProfit = totalInc - totalExp
+
+      const label = new Date(month + '-02').toLocaleString('default', { month: 'long', year: 'numeric' })
+      const ws = wb.addWorksheet(label)
+      ws.columns = [
+        { width: 14 }, { width: 22 }, { width: 16 }, { width: 32 }, { width: 18 },
+      ]
+
+      // INCOME section header
+      const incHeader = ws.addRow(['INCOME'])
+      styleRow(incHeader, GREEN_BG, WHITE_FONT)
+
+      // Column headers
+      const incColRow = ws.addRow(['Date', 'Client', 'Category', 'Description', 'Amount (NGN)'])
+      incColRow.font = HEADER_FONT
+      incColRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } }
+
+      for (const i of income) {
+        ws.addRow([i.date, i.client_name || '', i.category, i.description || '', Number(i.amount)])
+      }
+
+      // Total Income row — green highlight
+      const totalIncRow = ws.addRow(['', '', '', 'Total Income', totalInc])
+      styleRow(totalIncRow, GREEN_LIGHT, GREEN_FONT)
+
+      ws.addRow([])
+
+      // EXPENSES section header
+      const expHeader = ws.addRow(['EXPENSES'])
+      styleRow(expHeader, GREEN_BG, WHITE_FONT)
+
+      const expColRow = ws.addRow(['Date', 'Vendor', 'Category', 'Description', 'Amount (NGN)'])
+      expColRow.font = HEADER_FONT
+      expColRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } }
+
+      for (const e of expenses) {
+        ws.addRow([e.date, e.vendor || '', e.category, e.description || '', Number(e.amount)])
+      }
+
+      // Total Expenses row — green highlight
+      const totalExpRow = ws.addRow(['', '', '', 'Total Expenses', totalExp])
+      styleRow(totalExpRow, GREEN_LIGHT, GREEN_FONT)
+
+      ws.addRow([])
+
+      // Net Profit row — dark green highlight
+      const netRow = ws.addRow(['', '', '', 'Net Profit', netProfit])
+      styleRow(netRow, GREEN_BG, WHITE_FONT)
+    }
+
+    const buffer = await wb.xlsx.writeBuffer()
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `finances-${new Date().toISOString().split('T')[0]}.xlsx`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
+      <div className="flex justify-end">
+        <Button variant="secondary" onClick={exportToExcel}><Download size={15} /> Export Excel</Button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
           { label: 'Total Income', value: summary?.total_income || 0, color: 'text-accent' },

@@ -1,118 +1,110 @@
 import { getDb } from '@/lib/db'
-import { notFound } from 'next/navigation'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { getSession } from '@/lib/auth'
+import { redirect, notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-import { PdfDownloadButton } from '@/components/tools/pdf-button-client'
+import { InvoiceTemplate } from '@/components/invoice-templates'
+import { InvoiceA4Frame } from '@/components/invoice-templates/A4Frame'
+import type { InvoiceData, TemplateId } from '@/components/invoice-templates'
+import type { BrandSettings } from '@/app/api/brand-settings/route'
 import type { Invoice, InvoiceItem } from '@/types'
+import { InvoiceDetailActions } from './_Actions'
 
 export default async function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const user = await getSession()
+  if (!user) redirect('/login')
+
   const { id } = await params
   const db = getDb()
 
-  const invoice = await db.prepare(`SELECT i.*, c.name as client_name, c.email as client_email, c.company, c.address, c.phone
-    FROM invoices i LEFT JOIN clients c ON i.client_id = c.id WHERE i.id = ?`
-  ).bind(id).first<Invoice & { company: string; address: string; phone: string }>()
+  const invoice = await db.prepare(`SELECT i.*, c.name as client_name, c.email as client_email, c.company, c.address, c.phone, c.portal_token
+    FROM invoices i LEFT JOIN clients c ON i.client_id = c.id WHERE i.id = ? AND i.user_id = ?`
+  ).bind(id, user.id).first<Invoice & { company: string; address: string; phone: string; portal_token: string; template_id?: string; brand_color?: string; accent_color?: string; logo_url?: string; terms?: string; font_family?: string; font_weight?: number; theme?: string }>()
 
   if (!invoice) notFound()
 
   const itemsResult = await db.prepare('SELECT * FROM invoice_items WHERE invoice_id = ?').bind(id).all<InvoiceItem>()
   const items = itemsResult.results
 
+  const brand = await db.prepare('SELECT * FROM user_brand_settings WHERE user_id = ?')
+    .bind(user.id).first<BrandSettings>()
+
+  // Resolve branding — invoice overrides win
+  const brandColor = invoice.brand_color || brand?.brand_color || '#1A4332'
+  const accentColor = invoice.accent_color || brand?.accent_color || '#52b788'
+  const logoUrl = invoice.logo_url || brand?.logo_url || ''
+  const templateId = (invoice.template_id || brand?.default_template || 'classic') as TemplateId
+  const fontFamily = invoice.font_family || brand?.font_family || 'Inter'
+  const fontWeight = invoice.font_weight || brand?.font_weight || 400
+  const theme = (invoice.theme || brand?.default_theme || 'light') as 'light' | 'dark'
+
+  const data: InvoiceData = {
+    invoice_number: invoice.invoice_number,
+    status: invoice.status,
+    issue_date: invoice.issue_date,
+    due_date: invoice.due_date,
+    paid_date: invoice.paid_date,
+    currency: invoice.currency || 'USD',
+    from: {
+      name: brand?.business_name || user.name,
+      email: brand?.business_email || user.email,
+      phone: brand?.business_phone || '',
+      address: brand?.business_address || '',
+    },
+    to: {
+      name: invoice.client_name || '',
+      email: invoice.client_email || '',
+      company: invoice.company || '',
+      address: invoice.address || '',
+      phone: invoice.phone || '',
+    },
+    items: items.map(i => ({
+      description: i.description,
+      quantity: i.quantity,
+      unit_price: i.unit_price,
+      amount: i.amount,
+    })),
+    subtotal: invoice.subtotal,
+    tax_rate: invoice.tax_rate,
+    tax_amount: invoice.tax_amount,
+    total: invoice.total,
+    notes: invoice.notes,
+    terms: invoice.terms || brand?.default_terms || '',
+    logo_url: logoUrl,
+    brand_color: brandColor,
+    accent_color: accentColor,
+    font_family: fontFamily,
+    font_weight: fontWeight,
+    theme,
+  }
+
   return (
-    <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
-      <div className="flex items-center justify-between">
-        <Link href="/invoices" className="inline-flex items-center gap-2 text-sm text-dark-300 hover:text-dark-100 transition-colors">
-          <ArrowLeft size={16} /> Back to Invoices
-        </Link>
-        <PdfDownloadButton invoice={{
-          invoice_number: invoice.invoice_number,
-          client_name: invoice.client_name || '',
-          client_email: invoice.client_email || '',
-          company: invoice.company || '',
-          address: invoice.address || '',
-          phone: invoice.phone || '',
-          issue_date: invoice.issue_date,
-          due_date: invoice.due_date,
-          paid_date: invoice.paid_date,
-          status: invoice.status,
-          subtotal: invoice.subtotal,
-          tax_rate: invoice.tax_rate,
-          tax_amount: invoice.tax_amount,
-          total: invoice.total,
-          notes: invoice.notes || '',
-        }} items={items.map(i => ({ description: i.description, quantity: i.quantity, unit_price: i.unit_price, amount: i.amount }))} />
+    <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          <Link href="/invoices" className="inline-flex items-center gap-2 text-sm text-dark-300 hover:text-dark-100 transition-colors">
+            <ArrowLeft size={16} /> Back to Invoices
+          </Link>
+          <Badge variant={invoice.status}>{invoice.status}</Badge>
+        </div>
+        <InvoiceDetailActions
+          invoiceId={Number(id)}
+          templateId={templateId}
+          data={data}
+          currentTemplate={templateId}
+          portalToken={invoice.portal_token || ''}
+          clientEmail={invoice.client_email || ''}
+          status={invoice.status}
+        />
       </div>
 
-      <Card className="!p-4 sm:!p-8">
-        <div className="flex items-start justify-between mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-dark-100 mb-1">INVOICE</h2>
-            <p className="text-accent font-mono text-lg">{invoice.invoice_number}</p>
-          </div>
-          <Badge variant={invoice.status} className="text-sm px-3 py-1">{invoice.status}</Badge>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
-          <div>
-            <h4 className="text-xs uppercase tracking-wider text-dark-400 mb-2">Bill To</h4>
-            <p className="font-semibold text-dark-100">{invoice.client_name}</p>
-            {invoice.company && <p className="text-sm text-dark-300">{invoice.company}</p>}
-            {invoice.client_email && <p className="text-sm text-dark-300">{invoice.client_email}</p>}
-            {invoice.phone && <p className="text-sm text-dark-300">{invoice.phone}</p>}
-            {invoice.address && <p className="text-sm text-dark-300">{invoice.address}</p>}
-          </div>
-          <div className="sm:text-right">
-            <div className="space-y-1 text-sm">
-              <p className="text-dark-400">Issue Date: <span className="text-dark-200">{formatDate(invoice.issue_date)}</span></p>
-              <p className="text-dark-400">Due Date: <span className="text-dark-200">{formatDate(invoice.due_date)}</span></p>
-              {invoice.paid_date && <p className="text-dark-400">Paid: <span className="text-green-400">{formatDate(invoice.paid_date)}</span></p>}
-            </div>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto -mx-4 sm:-mx-8 px-4 sm:px-8">
-        <table className="w-full mb-8 min-w-[400px]">
-          <thead>
-            <tr className="border-b border-black/[0.07] dark:border-white/[0.08]">
-              <th className="text-left py-3 text-xs uppercase tracking-wider text-dark-400">Description</th>
-              <th className="text-right py-3 text-xs uppercase tracking-wider text-dark-400">Qty</th>
-              <th className="text-right py-3 text-xs uppercase tracking-wider text-dark-400">Price</th>
-              <th className="text-right py-3 text-xs uppercase tracking-wider text-dark-400">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item) => (
-              <tr key={item.id} className="border-b border-black/[0.07] dark:border-white/[0.08]">
-                <td className="py-3 text-dark-100">{item.description}</td>
-                <td className="py-3 text-dark-200 text-right">{item.quantity}</td>
-                <td className="py-3 text-dark-200 text-right">{formatCurrency(item.unit_price)}</td>
-                <td className="py-3 text-dark-100 text-right">{formatCurrency(item.amount)}</td>
-              </tr>
-            ))}
-            {items.length === 0 && (
-              <tr><td colSpan={4} className="py-6 text-center text-dark-400">No line items</td></tr>
-            )}
-          </tbody>
-        </table>
-        </div>
-
-        <div className="flex justify-end">
-          <div className="w-full sm:w-72 space-y-2">
-            <div className="flex justify-between text-sm text-dark-300"><span>Subtotal</span><span>{formatCurrency(invoice.subtotal)}</span></div>
-            <div className="flex justify-between text-sm text-dark-300"><span>Tax ({invoice.tax_rate}%)</span><span>{formatCurrency(invoice.tax_amount)}</span></div>
-            <div className="flex justify-between font-bold text-xl text-dark-100 border-t border-black/[0.07] dark:border-white/[0.08] pt-3"><span>Total</span><span>{formatCurrency(invoice.total)}</span></div>
-          </div>
-        </div>
-
-        {invoice.notes && (
-          <div className="mt-8 pt-6 border-t border-black/[0.07] dark:border-white/[0.08]">
-            <h4 className="text-xs uppercase tracking-wider text-dark-400 mb-2">Notes</h4>
-            <p className="text-sm text-dark-300">{invoice.notes}</p>
-          </div>
-        )}
+      {/* Rendered template — proper A4 ratio */}
+      <Card className="!p-3 bg-[#f5f5f7] dark:!bg-[rgba(0,0,0,0.2)]">
+        <InvoiceA4Frame>
+          <InvoiceTemplate templateId={templateId} data={data} />
+        </InvoiceA4Frame>
       </Card>
     </div>
   )

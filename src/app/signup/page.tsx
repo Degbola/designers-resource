@@ -57,17 +57,6 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
 
-      {/* Background atmosphere */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-48 -right-48 w-[500px] h-[500px] rounded-full bg-accent/[0.04] blur-3xl" />
-        <div className="absolute -bottom-48 -left-48 w-[400px] h-[400px] rounded-full bg-accent/[0.03] blur-3xl" />
-        <div className="absolute inset-0 opacity-[0.018]"
-          style={{
-            backgroundImage: 'linear-gradient(#1A4332 1px, transparent 1px), linear-gradient(90deg, #1A4332 1px, transparent 1px)',
-            backgroundSize: '48px 48px',
-          }}
-        />
-      </div>
 
       <div className="w-full max-w-[360px] relative animate-fade-in">
 

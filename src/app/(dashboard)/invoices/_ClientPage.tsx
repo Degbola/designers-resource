@@ -177,11 +177,13 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
           <Select options={[{ value: 'all', label: 'All' }, { value: 'draft', label: 'Draft' }, { value: 'sent', label: 'Sent' }, { value: 'paid', label: 'Paid' }, { value: 'overdue', label: 'Overdue' }]}
             value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="w-32" />
         </div>
-        <Button onClick={openNew} className="w-full sm:w-auto"><Plus size={16} /> Create Invoice</Button>
+        <Link href="/invoices/new" className="w-full sm:w-auto">
+          <Button className="w-full"><Plus size={16} /> Create Invoice</Button>
+        </Link>
       </div>
 
       {filtered.length === 0 ? (
-        <button type="button" onClick={openNew} className="w-full text-left group cursor-pointer">
+        <Link href="/invoices/new" className="w-full text-left group cursor-pointer block">
           <div className="flex items-end justify-between px-6 py-8 rounded-md bg-accent group-hover:bg-accent-hover transition-all duration-300 group-hover:-translate-y-0.5">
             <div>
               <span className="text-[9px] font-display font-semibold uppercase tracking-[0.14em] text-white/50 block mb-3">{search || filterStatus !== 'all' ? 'No Matches' : 'Get Started'}</span>
@@ -189,7 +191,7 @@ export function InvoicesClientPage({ initialInvoices, initialClients, initialPro
             </div>
             {!search && filterStatus === 'all' && <Plus size={22} className="text-white/30 group-hover:text-white/60 transition-colors flex-shrink-0 ml-4" />}
           </div>
-        </button>
+        </Link>
       ) : (
         <div className="space-y-3">
           {filtered.map((inv) => (

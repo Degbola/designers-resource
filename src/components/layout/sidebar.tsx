@@ -15,6 +15,7 @@ import {
   Sparkles,
   Wand2,
   LayoutGrid,
+  Paintbrush,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -59,6 +60,12 @@ const NAV_GROUPS = [
       { href: '/tools/social-content', label: 'Social Content',  icon: LayoutGrid, permission: 'social' as Permission },
     ],
   },
+  {
+    label: 'Settings',
+    items: [
+      { href: '/settings/brand', label: 'Brand', icon: Paintbrush, permission: null },
+    ],
+  },
 ]
 
 export function MobileMenuButton({ onClick }: { onClick: () => void }) {
@@ -78,7 +85,7 @@ export function Sidebar({ user, mobileOpen, onMobileClose }: { user: SafeUser; m
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    Workspace: true, Finance: false, Library: false, Tools: false,
+    Workspace: true, Finance: false, Library: false, Tools: false, Settings: false,
   })
 
   const toggleGroup = (label: string) => setOpenGroups(prev => ({ ...prev, [label]: !prev[label] }))

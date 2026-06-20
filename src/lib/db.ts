@@ -249,6 +249,22 @@ export async function initializeSchema(): Promise<void> {
       posts_json TEXT NOT NULL,
       created_at TEXT DEFAULT (datetime('now'))
     )`),
+    db.prepare(`CREATE TABLE IF NOT EXISTS user_brand_settings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+      logo_url TEXT DEFAULT '',
+      brand_color TEXT DEFAULT '#1A4332',
+      accent_color TEXT DEFAULT '#52b788',
+      business_name TEXT DEFAULT '',
+      business_email TEXT DEFAULT '',
+      business_address TEXT DEFAULT '',
+      business_phone TEXT DEFAULT '',
+      default_template TEXT DEFAULT 'classic',
+      default_terms TEXT DEFAULT '',
+      font_family TEXT DEFAULT 'Inter',
+      font_weight INTEGER DEFAULT 400,
+      updated_at TEXT DEFAULT (datetime('now'))
+    )`),
     db.prepare(`CREATE TABLE IF NOT EXISTS portal_messages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       client_id INTEGER NOT NULL,
@@ -277,6 +293,17 @@ export async function initializeSchema(): Promise<void> {
     `ALTER TABLE invoices ADD COLUMN currency TEXT DEFAULT 'USD'`,
     `ALTER TABLE users ADD COLUMN display_currency TEXT DEFAULT 'USD'`,
     `ALTER TABLE users ADD COLUMN base_currency TEXT DEFAULT 'USD'`,
+    `ALTER TABLE invoices ADD COLUMN template_id TEXT DEFAULT 'classic'`,
+    `ALTER TABLE invoices ADD COLUMN brand_color TEXT DEFAULT ''`,
+    `ALTER TABLE invoices ADD COLUMN accent_color TEXT DEFAULT ''`,
+    `ALTER TABLE invoices ADD COLUMN logo_url TEXT DEFAULT ''`,
+    `ALTER TABLE invoices ADD COLUMN terms TEXT DEFAULT ''`,
+    `ALTER TABLE invoices ADD COLUMN font_family TEXT DEFAULT ''`,
+    `ALTER TABLE invoices ADD COLUMN font_weight INTEGER DEFAULT 0`,
+    `ALTER TABLE user_brand_settings ADD COLUMN font_family TEXT DEFAULT 'Inter'`,
+    `ALTER TABLE user_brand_settings ADD COLUMN font_weight INTEGER DEFAULT 400`,
+    `ALTER TABLE user_brand_settings ADD COLUMN default_theme TEXT DEFAULT 'light'`,
+    `ALTER TABLE invoices ADD COLUMN theme TEXT DEFAULT ''`,
   ]
   for (const migration of migrations) {
     try { await getClient().execute(migration) } catch { /* column already exists */ }

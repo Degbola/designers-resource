@@ -36,7 +36,7 @@ export function Sparkline({ data }: { data: { month: string; income: number; exp
         {hasNegative && <ReferenceLine y={0} stroke="rgba(0,0,0,0.15)" strokeDasharray="3 3" />}
         <Tooltip
           {...tooltipStyle}
-          formatter={(v: number) => [fmtNGN(v), 'Net']}
+          formatter={(v) => [fmtNGN(Number(v) || 0), 'Net'] as [string, string]}
           labelFormatter={(l) => l}
         />
         <Area

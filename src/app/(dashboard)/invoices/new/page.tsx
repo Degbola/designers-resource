@@ -27,6 +27,9 @@ export default async function NewInvoicePage() {
     business_phone: '',
     default_template: 'classic',
     default_terms: '',
+    font_family: 'Inter',
+    font_weight: 400,
+    default_theme: 'light',
   }
 
   return (

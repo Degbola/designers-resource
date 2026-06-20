@@ -12,6 +12,7 @@ import { formatDate } from '@/lib/utils'
 import { useCurrency } from '@/lib/currency-context'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 import type { Income, Expense, FinanceSummary, Client } from '@/types'
+import type { Row as ExcelRow } from 'exceljs'
 
 const PIE_COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#06b6d4']
 const INCOME_CATEGORIES = ['design', 'development', 'consulting', 'branding', 'illustration', 'other']
@@ -105,7 +106,7 @@ export function FinancesClientPage({ initialSummary, initialIncome, initialExpen
     const GREEN_FONT = { bold: true, color: { argb: 'FF1A4332' } }
     const HEADER_FONT = { bold: true, color: { argb: 'FF111110' } }
 
-    const styleRow = (row: ExcelJS.Row, fill: typeof GREEN_BG, font: typeof WHITE_FONT) => {
+    const styleRow = (row: ExcelRow, fill: typeof GREEN_BG, font: typeof WHITE_FONT) => {
       row.eachCell((cell) => { cell.fill = fill; cell.font = font })
     }
 
